@@ -5,6 +5,12 @@
 vendor/
 .env
 
+# Go binaries (built artifacts)
+/server
+/services/loop/backend/server
+/services/reserve/backend/server
+**/tmp/
+
 # Node
 node_modules/
 dist/
