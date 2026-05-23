@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cygnus LOOP — Brand Concept</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+JP:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --gold: #c8a882;
+    --gold-dim: rgba(200,168,130,0.12);
+    --text: #e8e4dc;
+    --muted: rgba(232,228,220,0.55);
+    --border: rgba(232,228,220,0.1);
+    --surface: #141414;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10,10,10,0.8);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+
+  .nav-cygnus {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 14px;
+    letter-spacing: 0.22em;
+    color: var(--text);
+  }
+
+  .nav-loop {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 14px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+  }
+
+  .nav-link {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-link:hover { color: var(--gold); }
+
+  /* ── SHARED ── */
+  .section-label {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 40px;
+  }
+
+  /* ════════════════════════════
+     HERO
+  ════════════════════════════ */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding-top: 72px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 50% 60% at 75% 50%, rgba(200,168,130,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 30% 40% at 20% 80%, rgba(200,168,130,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 56px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-logo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    margin-bottom: 72px;
+  }
+
+  .logo-cygnus {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: clamp(36px, 5.5vw, 64px);
+    letter-spacing: 0.22em;
+    color: var(--text);
+  }
+
+  .logo-loop {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: clamp(36px, 5.5vw, 64px);
+    letter-spacing: 0.22em;
+    color: var(--gold);
+  }
+
+  .hero-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(40px, 7vw, 88px);
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 36px;
+  }
+
+  .hero-ja {
+    font-size: clamp(13px, 1.8vw, 17px);
+    line-height: 2.2;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .hero-foot {
+    padding: 22px 56px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-foot-label {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .scroll-cue {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .scroll-line { width: 28px; height: 1px; background: var(--gold); }
+
+  /* ════════════════════════════
+     BRAND — NAME ORIGIN
+  ════════════════════════════ */
+  .brand-origin {
+    padding: 120px 56px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .brand-origin-left {}
+
+  .origin-display {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: clamp(48px, 7vw, 96px);
+    letter-spacing: 0.18em;
+    line-height: 1;
+    margin-bottom: 48px;
+  }
+
+  .origin-display .w-cygnus { color: var(--text); display: block; }
+  .origin-display .w-loop   { color: var(--gold); display: block; }
+
+  .origin-body {
+    font-size: 13px;
+    line-height: 2.2;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .brand-origin-right {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 56px;
+  }
+
+  .word-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .word-card-top {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .word-en {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 22px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .word-origin {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  .word-meaning {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .word-sub {
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  /* ════════════════════════════
+     BRAND — TYPEFACE
+  ════════════════════════════ */
+  .brand-type {
+    padding: 0 56px 120px;
+    border-top: 1px solid var(--border);
+  }
+
+  .brand-type-header {
+    padding: 48px 0 56px;
+  }
+
+  .type-showcase {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .type-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .type-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .type-sample-josefin {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 36px;
+    letter-spacing: 0.22em;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .type-sample-josefin span { color: var(--gold); }
+
+  .type-sample-cormorant {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 36px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .type-desc {
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+
+  .type-spec {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    opacity: 0.7;
+  }
+
+  /* ════════════════════════════
+     BRAND — COLOR
+  ════════════════════════════ */
+  .brand-color {
+    padding: 0 56px 120px;
+    border-top: 1px solid var(--border);
+  }
+
+  .brand-color-header {
+    padding: 48px 0 56px;
+  }
+
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+  }
+
+  .color-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .color-swatch {
+    height: 120px;
+    border: 1px solid var(--border);
+  }
+
+  .color-info {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .color-name {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .color-role {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .color-hex {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+
+  /* ════════════════════════════
+     PROMISE (ツール概要①)
+  ════════════════════════════ */
+  .promise {
+    padding: 120px 56px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .promise-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.3;
+    color: var(--text);
+    margin-bottom: 32px;
+  }
+
+  .promise-heading em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .promise-body {
+    font-size: 14px;
+    line-height: 2.2;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .flow-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .flow-item:first-child { padding-top: 0; }
+  .flow-item:last-child { border-bottom: none; }
+
+  .flow-num {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    padding-top: 2px;
+    min-width: 24px;
+  }
+
+  .flow-title {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+  }
+
+  .flow-desc {
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+
+  .flow-arrow {
+    position: absolute;
+    left: 8px;
+    bottom: -12px;
+    width: 1px;
+    height: 24px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    opacity: 0.35;
+  }
+
+  /* ════════════════════════════
+     VALUES (ツール概要②)
+  ════════════════════════════ */
+  .values {
+    padding: 0 56px 120px;
+    border-top: 1px solid var(--border);
+  }
+
+  .values-header { padding: 48px 0 56px; }
+
+  .values-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  .value-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: background 0.25s;
+  }
+
+  .value-card:hover { background: var(--gold-dim); }
+
+  .value-icon {
+    font-size: 26px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .value-title {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+
+  .value-desc {
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+
+  /* ════════════════════════════
+     CLOSING
+  ════════════════════════════ */
+  .closing {
+    border-top: 1px solid var(--border);
+    padding: 140px 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 52px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .closing::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(200,168,130,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .closing-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .closing-cygnus {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 48px;
+    letter-spacing: 0.22em;
+    color: var(--text);
+  }
+
+  .closing-loop {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
+    font-size: 48px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+  }
+
+  .closing-copy {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(28px, 4.5vw, 56px);
+    color: var(--text);
+    line-height: 1.3;
+    position: relative;
+    z-index: 1;
+  }
+
+  .closing-sub {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    opacity: 0.5;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-logo  { animation: fadeUp 0.8s ease 0.1s both; }
+  .hero-en    { animation: fadeUp 0.8s ease 0.3s both; }
+  .hero-ja    { animation: fadeUp 0.8s ease 0.5s both; }
+  .hero-foot  { animation: fadeUp 0.6s ease 0.6s both; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero-inner, .hero-foot { padding-left: 24px; padding-right: 24px; }
+    .brand-origin { grid-template-columns: 1fr; padding: 80px 24px; gap: 48px; }
+    .brand-type, .brand-color { padding: 0 24px 80px; }
+    .type-showcase { grid-template-columns: 1fr; }
+    .color-grid { grid-template-columns: 1fr 1fr; }
+    .promise { grid-template-columns: 1fr; padding: 80px 24px; gap: 48px; }
+    .values { padding: 0 24px 80px; }
+    .values-grid { grid-template-columns: 1fr; }
+    .closing { padding: 80px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <span class="nav-cygnus">CYGNUS</span>
+    <span class="nav-loop">LOOP</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="#brand">Brand</a>
+    <a class="nav-link" href="#typeface">Typeface</a>
+    <a class="nav-link" href="#color">Color</a>
+    <a class="nav-link" href="#concept">Concept</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-logo">
+      <span class="logo-cygnus">CYGNUS</span>
+      <span class="logo-loop">LOOP</span>
+    </div>
+    <div class="hero-en">
+      Focus on<br>
+      what only<br>
+      you can do.
+    </div>
+    <div class="hero-ja">あなたにしかできないことに、集中できる時間を。</div>
+  </div>
+  <div class="hero-foot">
+    <div class="hero-foot-label">Salon Operations Platform</div>
+    <div class="scroll-cue"><div class="scroll-line"></div>Scroll</div>
+  </div>
+</section>
+
+<!-- ══ BRAND: NAME ORIGIN ══ -->
+<section class="brand-origin" id="brand">
+  <div class="brand-origin-left">
+    <div class="section-label">// Brand Name</div>
+    <div class="origin-display">
+      <span class="w-cygnus">CYGNUS</span>
+      <span class="w-loop">LOOP</span>
+    </div>
+    <div class="origin-body">
+      宇宙補給船「シグナス」と、循環するサイクルを組み合わせた名前。<br><br>
+      NASAの無人補給船シグナスが、ISSへ必要なものを自動で届け続けるように——Cygnus LOOPは、サロンに必要なものを自動で循環させる。<br><br>
+      発注・在庫・補充のループが止まらない。美容師はただ、お客様と向き合えばいい。
+    </div>
+  </div>
+  <div class="brand-origin-right">
+    <div class="word-card">
+      <div class="word-card-top">
+        <span class="word-en">Cygnus</span>
+        <span class="word-origin">NASA 無人補給宇宙船</span>
+      </div>
+      <div class="word-meaning">国際宇宙ステーションへの自動補給ミッションに使われる宇宙船の名前。</div>
+      <div class="word-sub">自律的に・確実に・止まることなく届ける。<br>その姿がこのツールの在り方と重なる。</div>
+    </div>
+    <div class="word-card">
+      <div class="word-card-top">
+        <span class="word-en">LOOP</span>
+        <span class="word-origin">英語 / 循環・繰り返し</span>
+      </div>
+      <div class="word-meaning">在庫が減る → 自動発注 → 補充される、という一連のサイクルを表す。</div>
+      <div class="word-sub">止まらない循環が、サロンの安定を支える。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ BRAND: TYPEFACE ══ -->
+<section class="brand-type" id="typeface">
+  <div class="brand-type-header">
+    <div class="section-label">// Typeface</div>
+  </div>
+  <div class="type-showcase">
+    <div class="type-card">
+      <div class="type-label">Primary — Wordmark</div>
+      <div class="type-sample-josefin">CYGNUS<br><span>LOOP</span></div>
+      <div class="type-spec">Josefin Sans / Weight 100 / Tracking 0.22em</div>
+      <div class="type-desc">ロゴ・見出しに使用。幾何学的で精密なラインが、宇宙的な無機質さと美容系の洗練を両立する。極細ウェイトが上質感を演出。</div>
+    </div>
+    <div class="type-card">
+      <div class="type-label">Secondary — Headline</div>
+      <div class="type-sample-cormorant">The salon,<br>uninterrupted.</div>
+      <div class="type-spec">Cormorant Garamond / Italic 300</div>
+      <div class="type-desc">キャッチコピー・大見出しに使用。セリフ体のイタリックが感情的な温かみとエレガンスを加え、Josefin Sansとの対比で奥行きを生む。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ BRAND: COLOR ══ -->
+<section class="brand-color" id="color">
+  <div class="brand-color-header">
+    <div class="section-label">// Color Palette</div>
+  </div>
+  <div class="color-grid">
+    <div class="color-card">
+      <div class="color-swatch" style="background:#0a0a0a;"></div>
+      <div class="color-info">
+        <div class="color-name">Deep Black</div>
+        <div class="color-role">背景色。宇宙の深さと、プロフェッショナルな静けさを表現。</div>
+        <div class="color-hex">#0A0A0A</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#c8a882;"></div>
+      <div class="color-info">
+        <div class="color-name">Gold Dust</div>
+        <div class="color-role">アクセントカラー。美容・上質・温かみを象徴するシグネチャーカラー。</div>
+        <div class="color-hex">#C8A882</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#e8e4dc;"></div>
+      <div class="color-info">
+        <div class="color-name">Warm White</div>
+        <div class="color-role">テキスト色。純白でなく温かみのある白で、美容室の雰囲気に溶け込む。</div>
+        <div class="color-hex">#E8E4DC</div>
+      </div>
+    </div>
+    <div class="color-card">
+      <div class="color-swatch" style="background:#141414; border: 1px solid rgba(232,228,220,0.1);"></div>
+      <div class="color-info">
+        <div class="color-name">Surface</div>
+        <div class="color-role">カード・パネルの背景色。ブラックに深みのレイヤーを加える。</div>
+        <div class="color-hex">#141414</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROMISE ══ -->
+<section class="promise" id="concept">
+  <div>
+    <div class="section-label">// Our Promise</div>
+    <div class="promise-heading">
+      サロンワークの<em>質</em>が、<br>
+      顧客満足度を<br>
+      変える。
+    </div>
+    <div class="promise-body">
+      美容師の仕事の本質は、お客様と向き合うことだ。<br>
+      発注、在庫管理、売上確認——<br>
+      それらはすべて、Cygnus LOOPに任せればいい。
+    </div>
+  </div>
+  <div>
+    <div class="flow-item">
+      <div class="flow-num">01</div>
+      <div>
+        <div class="flow-title">雑務から解放される</div>
+        <div class="flow-desc">発注・在庫管理・売上確認が自動化され、余計な時間と判断コストがゼロになる。</div>
+      </div>
+      <div class="flow-arrow"></div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">02</div>
+      <div>
+        <div class="flow-title">サロンワークに集中できる</div>
+        <div class="flow-desc">技術・接客・コミュニケーション——美容師本来の仕事に、全力を注げる。</div>
+      </div>
+      <div class="flow-arrow"></div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">03</div>
+      <div>
+        <div class="flow-title">サロンワークの質が上がる</div>
+        <div class="flow-desc">集中できる環境が、技術と接客の精度を高める。</div>
+      </div>
+      <div class="flow-arrow"></div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">04</div>
+      <div>
+        <div class="flow-title">顧客満足度につながる</div>
+        <div class="flow-desc">お客様の体験が変わり、リピートと口コミが生まれる。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ VALUES ══ -->
+<section class="values">
+  <div class="values-header">
+    <div class="section-label">// What We Automate</div>
+  </div>
+  <div class="values-grid">
+    <div class="value-card">
+      <div class="value-icon">∞</div>
+      <div class="value-title">自動発注</div>
+      <div class="value-desc">POSデータと在庫をリアルタイムに連携。規定数を下回ったら自動でディーラーへ発注。発注漏れも過剰在庫も、もう起きない。</div>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">◎</div>
+      <div class="value-title">在庫管理</div>
+      <div class="value-desc">メニューごとの使用量をPOSから自動算出。今日の施術で何がどれだけ使われたか、リアルタイムで把握できる。</div>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">↗</div>
+      <div class="value-title">売上・タスク管理</div>
+      <div class="value-desc">各店舗の売上を一画面で確認。スタッフのタスク進捗も可視化。オーナーの「把握コスト」を限りなくゼロに近づける。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CLOSING ══ -->
+<section class="closing">
+  <div class="closing-logo">
+    <span class="closing-cygnus">CYGNUS</span>
+    <span class="closing-loop">LOOP</span>
+  </div>
+  <div class="closing-copy">The salon, uninterrupted.</div>
+  <div class="closing-sub">Coming Soon — 2025</div>
+</section>
+
+</body>
+</html>
