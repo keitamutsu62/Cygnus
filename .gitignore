@@ -1,0 +1,26 @@
+# Go
+*.exe
+*.test
+*.out
+vendor/
+.env
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Secrets
+*.pem
+*.key
+.env.local
+.env.*.local

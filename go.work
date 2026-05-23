@@ -1,0 +1,7 @@
+go 1.25
+
+use (
+	./pkg/auth
+	./services/loop/backend
+	./services/reserve/backend
+)
