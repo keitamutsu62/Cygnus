@@ -1,3 +1,5 @@
+schema "cygnus_dev" {}
+
 table "salons" {
   schema = schema.cygnus_dev
   column "id" {
