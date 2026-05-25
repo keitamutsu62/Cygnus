@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Sans+JP:wght@300;400;500&display=swap');
+
+@theme {
+  --color-gold:        #c8a882;
+  --color-gold-light:  #d4b896;
+  --color-bg:          #0a0a0a;
+  --color-surface:     #141414;
+  --color-surface-2:   #1a1a1a;
+  --color-border:      #2a2a2a;
+  --color-text:        #e8e4dc;
+  --color-text-muted:  #888888;
+
+  --font-sans:    'Noto Sans JP', sans-serif;
+  --font-display: 'Josefin Sans', sans-serif;
+  --font-serif:   'Cormorant Garamond', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: #0a0a0a;
+  color: #e8e4dc;
+  font-family: 'Noto Sans JP', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
