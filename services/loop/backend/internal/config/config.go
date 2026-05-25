@@ -3,14 +3,15 @@ package config
 import "os"
 
 type Config struct {
-	Port       string
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	RedisURL   string
-	JWTSecret  string
+	Port        string
+	DBHost      string
+	DBPort      string
+	DBUser      string
+	DBPassword  string
+	DBName      string
+	RedisURL    string
+	JWTSecret   string
+	FrontendURL string
 }
 
 func Load() *Config {
@@ -22,7 +23,8 @@ func Load() *Config {
 		DBPassword: getEnv("DB_PASSWORD", "cygnus"),
 		DBName:     getEnv("DB_NAME", "cygnus_dev"),
 		RedisURL:   getEnv("REDIS_URL", "redis://localhost:6379"),
-		JWTSecret:  getEnv("JWT_SECRET", "change-me"),
+		JWTSecret:   getEnv("JWT_SECRET", "change-me"),
+		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:5173"),
 	}
 }
 

@@ -4,19 +4,47 @@ import (
 	"net/http"
 
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/config"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/handler"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/infrastructure/mailer"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/infrastructure/mysql"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/middleware"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/usecase"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	echomiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
 	cfg := config.Load()
 
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
+	// DB接続
+	db, err := mysql.New(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+	if err != nil {
+		panic("DB接続失敗: " + err.Error())
+	}
 
-	// Health
+	// リポジトリ
+	salonRepo := mysql.NewSalonRepository(db)
+	planRepo := mysql.NewPlanRepository(db)
+	subRepo := mysql.NewSubscriptionRepository(db)
+	staffRepo := mysql.NewStaffRepository(db)
+	invRepo := mysql.NewInvitationRepository(db)
+
+	// メーラー（開発用ログ出力）
+	m := mailer.NewLogMailer()
+
+	// ユースケース
+	authUC := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, m, cfg.JWTSecret)
+
+	// ハンドラ
+	authH := handler.NewAuthHandler(authUC, cfg.FrontendURL)
+
+	// Echo
+	e := echo.New()
+	e.Use(echomiddleware.Logger())
+	e.Use(echomiddleware.Recover())
+	e.Use(echomiddleware.CORS())
+
+	// ヘルスチェック
 	e.GET("/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
 			"service": "cygnus-loop",
@@ -24,17 +52,15 @@ func main() {
 		})
 	})
 
-	// API v1
-	v1 := e.Group("/api/v1")
+	// 認証（ログイン不要）
+	auth := e.Group("/api/v1/auth")
+	auth.POST("/register", authH.Register)
+	auth.POST("/login", authH.Login)
+	auth.POST("/accept-invitation", authH.AcceptInvitation)
 
-	// Salons
-	salons := v1.Group("/salons")
-	_ = salons // TODO: SalonHandler を wire する
-
-	// Staffs（サロンスタッフ管理）
-	// salons.GET("/:salonId/staffs",     staffHandler.List)
-	// salons.GET("/:salonId/staffs/:id", staffHandler.Get)
-	// salons.POST("/:salonId/staffs",    staffHandler.Create)
+	// 認証必要なルート
+	api := e.Group("/api/v1", middleware.JWT(cfg.JWTSecret))
+	api.POST("/auth/invite", authH.Invite)
 
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 }
