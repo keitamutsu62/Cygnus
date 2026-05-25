@@ -1,20 +1,34 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
+const S = {
+  bg:          '#1a1816',
+  gold:        '#c8a882',
+  text:        '#e8e4dc',
+  muted:       'rgba(232,228,220,0.55)',
+  border:      'rgba(232,228,220,0.1)',
+  inputBg:     'rgba(232,228,220,0.04)',
+  inputBorder: 'rgba(232,228,220,0.12)',
+  inputFocus:  'rgba(200,168,130,0.4)',
+  josefin:     "'Josefin Sans', sans-serif",
+  zen:         "'Zen Kaku Gothic New', sans-serif",
+}
+
 export default function RegisterPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    salonName: '',
-    ownerName: '',
-    ownerEmail: '',
-    ownerPassword: '',
+    salonName:       '',
+    ownerName:       '',
+    ownerEmail:      '',
+    ownerPassword:   '',
     confirmPassword: '',
+    role:            'owner',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  function handleChange(field: keyof typeof form, value: string) {
+    setForm(prev => ({ ...prev, [field]: value }))
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -30,17 +44,18 @@ export default function RegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          salon_name: form.salonName,
-          owner_name: form.ownerName,
-          owner_email: form.ownerEmail,
+          salon_name:     form.salonName,
+          owner_name:     form.ownerName,
+          owner_email:    form.ownerEmail,
           owner_password: form.ownerPassword,
+          role:           form.role,
         }),
       })
       if (!res.ok) {
-        const data = await res.json()
+        const data = await res.json().catch(() => ({}))
         setError(data.message === 'email already in use'
           ? 'このメールアドレスはすでに登録されています'
-          : '登録に失敗しました')
+          : '登録に失敗しました。入力内容をご確認ください')
         return
       }
       navigate('/login')
@@ -51,101 +66,235 @@ export default function RegisterPage() {
     }
   }
 
-  const fields = [
-    { name: 'salonName',        label: 'Salon Name',      type: 'text',     placeholder: 'Hair Studio LUNA' },
-    { name: 'ownerName',        label: 'Your Name',       type: 'text',     placeholder: '田中 彩花' },
-    { name: 'ownerEmail',       label: 'Email',           type: 'email',    placeholder: 'hello@salon.com' },
-    { name: 'ownerPassword',    label: 'Password',        type: 'password', placeholder: '••••••••' },
-    { name: 'confirmPassword',  label: 'Confirm Password',type: 'password', placeholder: '••••••••' },
-  ] as const
+  const fields: { key: keyof typeof form; label: string; type: string; placeholder: string }[] = [
+    { key: 'salonName',       label: 'サロン名',          type: 'text',     placeholder: 'Hair Studio LUNA' },
+    { key: 'ownerName',       label: 'オーナー氏名',       type: 'text',     placeholder: '田中 彩花' },
+    { key: 'ownerEmail',      label: 'メールアドレス',     type: 'email',    placeholder: 'hello@salon.com' },
+    { key: 'ownerPassword',   label: 'パスワード',         type: 'password', placeholder: '••••••••' },
+    { key: 'confirmPassword', label: 'パスワード（確認）', type: 'password', placeholder: '••••••••' },
+  ]
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12"
-         style={{ background: 'linear-gradient(135deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%)' }}>
+    <div style={{
+      minHeight: '100dvh',
+      background: S.bg,
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '0 28px 40px',
+        overflowY: 'auto',
+      }}>
 
-      {/* ロゴ */}
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl tracking-[0.25em] uppercase mb-1"
-            style={{ fontFamily: 'Josefin Sans', fontWeight: 300, color: '#c8a882' }}>
-          CYGNUS
-        </h1>
-        <p className="text-xs tracking-[0.3em] uppercase"
-           style={{ color: '#888', fontFamily: 'Josefin Sans' }}>
-          LOOP
-        </p>
-      </div>
-
-      {/* カード */}
-      <div className="w-full max-w-sm rounded-2xl p-8"
-           style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
-
-        <h2 className="text-lg font-light mb-1" style={{ color: '#e8e4dc' }}>
-          サロン登録
-        </h2>
-        <p className="text-sm mb-8" style={{ color: '#888' }}>
-          無料でアカウントを作成
-        </p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {fields.map(f => (
-            <div key={f.name} className="flex flex-col gap-1.5">
-              <label className="text-xs tracking-widest uppercase"
-                     style={{ color: '#888', fontFamily: 'Josefin Sans' }}>
-                {f.label}
-              </label>
-              <input
-                type={f.type}
-                name={f.name}
-                value={form[f.name]}
-                onChange={handleChange}
-                placeholder={f.placeholder}
-                required
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors"
-                style={{
-                  background: '#1a1a1a',
-                  border: '1px solid #2a2a2a',
-                  color: '#e8e4dc',
-                }}
-                onFocus={e => e.currentTarget.style.borderColor = '#c8a882'}
-                onBlur={e => e.currentTarget.style.borderColor = '#2a2a2a'}
-              />
+        {/* ロゴエリア */}
+        <div style={{
+          padding: '48px 0 36px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 14,
+        }}>
+          <OrbitSVG />
+          <div style={{ textAlign: 'center', lineHeight: 1 }}>
+            <div style={{ fontFamily: S.josefin, fontWeight: 100, fontSize: 22, letterSpacing: '0.22em', color: S.text }}>
+              CYGNUS
             </div>
+            <div style={{ fontFamily: S.josefin, fontWeight: 100, fontSize: 22, letterSpacing: '0.22em', color: S.gold }}>
+              LOOP
+            </div>
+          </div>
+        </div>
+
+        {/* ヘッドライン */}
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontSize: 19, fontWeight: 300, color: S.text, marginBottom: 6, fontFamily: S.zen }}>
+            サロンアカウントを作成
+          </div>
+          <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.7, letterSpacing: '0.05em', fontFamily: S.josefin, fontWeight: 100 }}>
+            Start your journey with Cygnus LOOP.
+          </div>
+        </div>
+
+        {/* フォーム */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {fields.map(f => (
+            <FieldInput
+              key={f.key}
+              label={f.label}
+              type={f.type}
+              value={form[f.key]}
+              onChange={v => handleChange(f.key, v)}
+              placeholder={f.placeholder}
+            />
           ))}
 
+          {/* 役職 */}
+          <RoleSelect value={form.role} onChange={v => handleChange('role', v)} />
+
           {error && (
-            <p className="text-xs text-center py-2 px-3 rounded-lg"
-               style={{ color: '#e88', background: 'rgba(255,80,80,0.08)' }}>
-              {error}
-            </p>
+            <div style={{
+              fontSize: 12,
+              color: '#e07060',
+              background: 'rgba(224,112,96,0.1)',
+              border: '1px solid rgba(224,112,96,0.2)',
+              borderRadius: 2,
+              padding: '10px 14px',
+              fontFamily: S.zen,
+            }}>{error}</div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl text-sm tracking-widest uppercase mt-2 transition-opacity"
             style={{
-              background: 'linear-gradient(135deg, #c8a882, #a8845e)',
-              color: '#0a0a0a',
-              fontFamily: 'Josefin Sans',
-              fontWeight: 600,
+              width: '100%',
+              padding: 15,
+              background: S.gold,
+              border: 'none',
+              borderRadius: 2,
+              fontFamily: S.josefin,
+              fontWeight: 200,
+              fontSize: 12,
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              color: '#1a1816',
+              cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.7 : 1,
+              marginTop: 6,
+              WebkitAppearance: 'none',
             }}
           >
-            {loading ? '...' : 'Create Account'}
+            {loading ? '...' : 'アカウントを作成'}
           </button>
         </form>
 
-        <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px" style={{ background: '#2a2a2a' }} />
-          <span className="text-xs" style={{ color: '#555' }}>or</span>
-          <div className="flex-1 h-px" style={{ background: '#2a2a2a' }} />
+        {/* フッター */}
+        <div style={{ marginTop: 'auto', paddingTop: 24, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
+            すでにアカウントをお持ちの方は{' '}
+            <Link to="/login" style={{ color: S.gold, opacity: 0.8, textDecoration: 'none' }}>
+              ログイン
+            </Link>
+          </div>
         </div>
-
-        <p className="text-center text-xs" style={{ color: '#888' }}>
-          すでにアカウントをお持ちの方は{' '}
-          <Link to="/login" style={{ color: '#c8a882' }}>ログイン</Link>
-        </p>
       </div>
     </div>
+  )
+}
+
+function FieldInput({
+  label, type, value, onChange, placeholder
+}: {
+  label: string
+  type: string
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+}) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+      <div style={{
+        fontSize: 10,
+        letterSpacing: '0.18em',
+        textTransform: 'uppercase',
+        color: 'rgba(232,228,220,0.55)',
+        fontFamily: "'Josefin Sans', sans-serif",
+        fontWeight: 100,
+      }}>{label}</div>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        required
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          background: 'rgba(232,228,220,0.04)',
+          border: `1px solid ${focused ? 'rgba(200,168,130,0.4)' : 'rgba(232,228,220,0.12)'}`,
+          borderRadius: 2,
+          padding: '13px 14px',
+          fontSize: 16,
+          color: '#e8e4dc',
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontWeight: 300,
+          outline: 'none',
+          WebkitAppearance: 'none',
+          width: '100%',
+        }}
+      />
+    </div>
+  )
+}
+
+function RoleSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [focused, setFocused] = useState(false)
+  const options = [
+    { value: 'owner', label: 'オーナー' },
+    { value: 'admin', label: '管理職' },
+    { value: 'staff', label: 'スタッフ' },
+  ]
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+      <div style={{
+        fontSize: 10,
+        letterSpacing: '0.18em',
+        textTransform: 'uppercase',
+        color: 'rgba(232,228,220,0.55)',
+        fontFamily: "'Josefin Sans', sans-serif",
+        fontWeight: 100,
+      }}>役職</div>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          background: 'rgba(232,228,220,0.04)',
+          border: `1px solid ${focused ? 'rgba(200,168,130,0.4)' : 'rgba(232,228,220,0.12)'}`,
+          borderRadius: 2,
+          padding: '13px 14px',
+          fontSize: 16,
+          color: '#e8e4dc',
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontWeight: 300,
+          outline: 'none',
+          WebkitAppearance: 'none',
+          appearance: 'none',
+          width: '100%',
+          cursor: 'pointer',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(200,168,130,0.6)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right 14px center',
+        }}
+      >
+        {options.map(o => (
+          <option key={o.value} value={o.value} style={{ background: '#211f1d', color: '#e8e4dc' }}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function OrbitSVG() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 80 80" fill="none">
+      <style>{`
+        @keyframes rCW  { from { transform: rotate(0deg);    } to { transform: rotate(360deg);  } }
+        @keyframes rCCW { from { transform: rotate(0deg);    } to { transform: rotate(-360deg); } }
+        .ro1 { animation: rCW  28s linear infinite; transform-origin: 40px 40px; }
+        .ro2 { animation: rCCW 28s linear infinite; transform-origin: 40px 40px; }
+      `}</style>
+      <ellipse className="ro1" cx="40" cy="40" rx="28" ry="14"
+        transform="rotate(18 40 40)" stroke="#c8a882" strokeWidth="1" opacity="0.9"/>
+      <ellipse className="ro2" cx="40" cy="40" rx="28" ry="14"
+        transform="rotate(-18 40 40)" stroke="#c8a882" strokeWidth="1" opacity="0.5"/>
+    </svg>
   )
 }

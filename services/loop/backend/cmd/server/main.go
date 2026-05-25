@@ -28,15 +28,18 @@ func main() {
 	subRepo := mysql.NewSubscriptionRepository(db)
 	staffRepo := mysql.NewStaffRepository(db)
 	invRepo := mysql.NewInvitationRepository(db)
+	invtRepo := mysql.NewInventoryRepository(db)
 
 	// メーラー（開発用ログ出力）
 	m := mailer.NewLogMailer()
 
 	// ユースケース
 	authUC := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, m, cfg.JWTSecret)
+	invtUC := usecase.NewInventoryUsecase(invtRepo)
 
 	// ハンドラ
 	authH := handler.NewAuthHandler(authUC, cfg.FrontendURL)
+	invtH := handler.NewInventoryHandler(invtUC)
 
 	// Echo
 	e := echo.New()
@@ -61,6 +64,8 @@ func main() {
 	// 認証必要なルート
 	api := e.Group("/api/v1", middleware.JWT(cfg.JWTSecret))
 	api.POST("/auth/invite", authH.Invite)
+	api.GET("/inventory", invtH.List)
+	api.PATCH("/inventory/:id/quantity", invtH.UpdateQuantity)
 
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 }

@@ -42,79 +42,169 @@ export default function AcceptInvitationPage() {
     }
   }
 
+  const josefin = "'Josefin Sans', sans-serif"
+  const zen     = "'Zen Kaku Gothic New', sans-serif"
+  const gold    = '#c8a882'
+  const text    = '#e8e4dc'
+  const muted   = 'rgba(232,228,220,0.55)'
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6"
-         style={{ background: 'linear-gradient(135deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%)' }}>
+    <div style={{
+      minHeight: '100dvh',
+      background: '#1a1816',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '0 28px 40px',
+        overflowY: 'auto',
+      }}>
 
-      <div className="mb-12 text-center">
-        <h1 className="text-3xl tracking-[0.25em] uppercase mb-1"
-            style={{ fontFamily: 'Josefin Sans', fontWeight: 300, color: '#c8a882' }}>
-          CYGNUS
-        </h1>
-        <p className="text-xs tracking-[0.3em] uppercase"
-           style={{ color: '#888', fontFamily: 'Josefin Sans' }}>
-          LOOP
-        </p>
-      </div>
-
-      <div className="w-full max-w-sm rounded-2xl p-8"
-           style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
-
-        <h2 className="text-lg font-light mb-1" style={{ color: '#e8e4dc' }}>
-          招待を承諾
-        </h2>
-        <p className="text-sm mb-8" style={{ color: '#888' }}>
-          名前とパスワードを設定してください
-        </p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {[
-            { label: 'Your Name', value: name, onChange: setName, type: 'text', placeholder: '田中 健太' },
-            { label: 'Password', value: password, onChange: setPassword, type: 'password', placeholder: '••••••••' },
-            { label: 'Confirm Password', value: confirm, onChange: setConfirm, type: 'password', placeholder: '••••••••' },
-          ].map(f => (
-            <div key={f.label} className="flex flex-col gap-1.5">
-              <label className="text-xs tracking-widest uppercase"
-                     style={{ color: '#888', fontFamily: 'Josefin Sans' }}>
-                {f.label}
-              </label>
-              <input
-                type={f.type}
-                value={f.value}
-                onChange={e => f.onChange(e.target.value)}
-                placeholder={f.placeholder}
-                required
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#e8e4dc' }}
-                onFocus={e => e.currentTarget.style.borderColor = '#c8a882'}
-                onBlur={e => e.currentTarget.style.borderColor = '#2a2a2a'}
-              />
+        {/* ロゴエリア */}
+        <div style={{
+          padding: '48px 0 40px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 14,
+        }}>
+          <OrbitSVG />
+          <div style={{ textAlign: 'center', lineHeight: 1 }}>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 22, letterSpacing: '0.22em', color: text }}>
+              CYGNUS
             </div>
-          ))}
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 22, letterSpacing: '0.22em', color: gold }}>
+              LOOP
+            </div>
+          </div>
+        </div>
+
+        {/* ヘッドライン */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 19, fontWeight: 300, color: text, marginBottom: 6, fontFamily: zen }}>
+            チームへようこそ。
+          </div>
+          <div style={{ fontSize: 12, color: muted, lineHeight: 1.7, letterSpacing: '0.05em', fontFamily: josefin, fontWeight: 100 }}>
+            名前とパスワードを設定してください。
+          </div>
+        </div>
+
+        {/* フォーム */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <FieldInput label="氏名" type="text" value={name} onChange={setName} placeholder="田中 健太" />
+          <FieldInput label="パスワード" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
+          <FieldInput label="パスワード（確認）" type="password" value={confirm} onChange={setConfirm} placeholder="••••••••" />
 
           {error && (
-            <p className="text-xs text-center py-2 px-3 rounded-lg"
-               style={{ color: '#e88', background: 'rgba(255,80,80,0.08)' }}>
-              {error}
-            </p>
+            <div style={{
+              fontSize: 12,
+              color: '#e07060',
+              background: 'rgba(224,112,96,0.1)',
+              border: '1px solid rgba(224,112,96,0.2)',
+              borderRadius: 2,
+              padding: '10px 14px',
+              fontFamily: zen,
+            }}>{error}</div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl text-sm tracking-widest uppercase mt-2"
             style={{
-              background: 'linear-gradient(135deg, #c8a882, #a8845e)',
-              color: '#0a0a0a',
-              fontFamily: 'Josefin Sans',
-              fontWeight: 600,
+              width: '100%',
+              padding: 15,
+              background: gold,
+              border: 'none',
+              borderRadius: 2,
+              fontFamily: josefin,
+              fontWeight: 200,
+              fontSize: 12,
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              color: '#1a1816',
+              cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.7 : 1,
+              marginTop: 6,
+              WebkitAppearance: 'none',
             }}
           >
-            {loading ? '...' : 'Join Team'}
+            {loading ? '...' : 'チームに参加する'}
           </button>
         </form>
+
+        {/* フッター */}
+        <div style={{ marginTop: 'auto', paddingTop: 24, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: muted, lineHeight: 1.7, fontFamily: zen }}>
+            招待に心当たりがない場合は無視してください
+          </div>
+        </div>
       </div>
     </div>
+  )
+}
+
+function FieldInput({
+  label, type, value, onChange, placeholder
+}: {
+  label: string
+  type: string
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+}) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+      <div style={{
+        fontSize: 10,
+        letterSpacing: '0.18em',
+        textTransform: 'uppercase',
+        color: 'rgba(232,228,220,0.55)',
+        fontFamily: "'Josefin Sans', sans-serif",
+        fontWeight: 100,
+      }}>{label}</div>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        required
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          background: 'rgba(232,228,220,0.04)',
+          border: `1px solid ${focused ? 'rgba(200,168,130,0.4)' : 'rgba(232,228,220,0.12)'}`,
+          borderRadius: 2,
+          padding: '13px 14px',
+          fontSize: 16,
+          color: '#e8e4dc',
+          fontFamily: "'Zen Kaku Gothic New', sans-serif",
+          fontWeight: 300,
+          outline: 'none',
+          WebkitAppearance: 'none',
+          width: '100%',
+        }}
+      />
+    </div>
+  )
+}
+
+function OrbitSVG() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 80 80" fill="none">
+      <style>{`
+        @keyframes aiCW  { from { transform: rotate(0deg);    } to { transform: rotate(360deg);  } }
+        @keyframes aiCCW { from { transform: rotate(0deg);    } to { transform: rotate(-360deg); } }
+        .ai1 { animation: aiCW  28s linear infinite; transform-origin: 40px 40px; }
+        .ai2 { animation: aiCCW 28s linear infinite; transform-origin: 40px 40px; }
+      `}</style>
+      <ellipse className="ai1" cx="40" cy="40" rx="28" ry="14"
+        transform="rotate(18 40 40)" stroke="#c8a882" strokeWidth="1" opacity="0.9"/>
+      <ellipse className="ai2" cx="40" cy="40" rx="28" ry="14"
+        transform="rotate(-18 40 40)" stroke="#c8a882" strokeWidth="1" opacity="0.5"/>
+    </svg>
   )
 }
