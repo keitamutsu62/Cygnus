@@ -1600,6 +1600,21 @@ html, body {
   </div>
 </div>
 
+<div class="modal" id="deleteStaffModal">
+  <div class="modal-inner" id="deleteStaffModalInner">
+    <div class="modal-handle"></div>
+    <div style="font-size:16px;font-weight:400;color:var(--text);margin-bottom:8px;">削除しますか？</div>
+    <div id="deleteStaffConfirmText" style="font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:20px;">
+      このスタッフのアカウントを削除します。
+    </div>
+    <div style="padding:12px 14px;background:rgba(224,112,96,0.08);border:1px solid rgba(224,112,96,0.2);border-radius:2px;margin-bottom:20px;">
+      <div style="font-size:12px;color:#e07060;line-height:1.8;">削除したデータは復元できません。退職等でアカウントが不要になった場合にのみ実行してください。</div>
+    </div>
+    <button class="btn-cancel" style="border-color:rgba(224,112,96,0.4);color:#e07060;" onclick="confirmDeleteStaff()">削除する</button>
+    <button class="btn-confirm" style="margin-top:8px;" onclick="closeModal('deleteStaffModal')">キャンセル</button>
+  </div>
+</div>
+
 <!-- ===== MASTER ===== -->
 <div class="screen" id="screen-master">
   <div class="top-bar">
@@ -1815,6 +1830,10 @@ html, body {
     <div class="setting-group" style="margin-bottom:40px;">
       <div id="staffDetailDeactivateRow" class="setting-row" style="cursor:pointer;" onclick="openModal('deactivateConfirmModal')">
         <div class="s-info"><div class="s-label" style="color:var(--alert);">無効にする</div><div class="s-value">このスタッフのログインを停止します</div></div>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e07060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>
+      </div>
+      <div class="setting-row" style="cursor:pointer;" onclick="openModal('deleteStaffModal')">
+        <div class="s-info"><div class="s-label" style="color:var(--alert);">削除する</div><div class="s-value">アカウントとデータを完全に削除します</div></div>
         <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e07060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>
       </div>
     </div>
@@ -2763,7 +2782,35 @@ function goToStaffDetail(name, store, role, active) {
     deactivateRow.style.display = 'none';
   }
   document.getElementById('deactivateConfirmText').textContent = name + ' さんをCygnus LOOPに無効にしますか？無効化後はログインできなくなります。';
+  document.getElementById('deleteStaffConfirmText').textContent = name + ' さんのアカウントを完全に削除します。この操作は取り消せません。';
   goTo('staff-detail');
+}
+
+function _updateSettingsStaffRow(name, active) {
+  var rows = document.querySelectorAll('#screen-settings .setting-row');
+  rows.forEach(function(row) {
+    var label = row.querySelector('.s-label');
+    if (!label || label.textContent !== name) return;
+    var badge = row.querySelector('.s-badge');
+    if (!badge) return;
+    if (active) {
+      badge.className = 's-badge s-connected';
+      badge.textContent = '有効';
+    } else {
+      badge.className = 's-badge s-warning';
+      badge.textContent = '無効';
+    }
+    var d = _staffDetailCurrent;
+    row.setAttribute('onclick', "goToStaffDetail('" + d.name + "', '" + d.store + "', '" + d.role + "', " + active + ")");
+  });
+}
+
+function _removeSettingsStaffRow(name) {
+  var rows = document.querySelectorAll('#screen-settings .setting-row');
+  rows.forEach(function(row) {
+    var label = row.querySelector('.s-label');
+    if (label && label.textContent === name) row.remove();
+  });
 }
 
 function confirmDeactivateStaff() {
@@ -2776,6 +2823,13 @@ function confirmDeactivateStaff() {
   statusEl.textContent = '無効';
   deactivateRow.style.display = 'none';
   _staffDetailCurrent.active = false;
+  _updateSettingsStaffRow(_staffDetailCurrent.name, false);
+}
+
+function confirmDeleteStaff() {
+  closeModal('deleteStaffModal');
+  _removeSettingsStaffRow(_staffDetailCurrent.name);
+  goTo('settings');
 }
 
 function goToStoreTab(storeName) {
