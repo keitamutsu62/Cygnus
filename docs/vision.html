@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cygnus — 技術者が主役の世界へ</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0f0e0c;
+    color: #e8e4dc;
+    font-family: 'Josefin Sans', 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .header-logo-text { line-height: 1; }
+  .header-logo-text .brand { font-weight: 200; font-size: 15px; letter-spacing: 0.35em; color: #e8e4dc; }
+  .header-logo-text .sub   { font-weight: 200; font-size: 10px; letter-spacing: 0.3em; color: rgba(200,168,130,0.6); margin-top: 2px; }
+  .header-tagline {
+    font-weight: 100;
+    font-size: clamp(22px, 4vw, 36px);
+    letter-spacing: 0.04em;
+    color: #e8e4dc;
+    margin-bottom: 10px;
+  }
+  .header-tagline em { font-style: normal; color: #c8a882; }
+  .header-sub {
+    font-weight: 200;
+    font-size: clamp(11px, 1.5vw, 13px);
+    letter-spacing: 0.12em;
+    color: rgba(232,228,220,0.45);
+  }
+
+  /* ── Main diagram ── */
+  .diagram {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    margin-bottom: 56px;
+  }
+
+  /* LEFT — 現在の世界 */
+  .side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .side-label {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(232,228,220,0.3);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .silo-box {
+    border: 1px solid rgba(232,228,220,0.1);
+    border-radius: 3px;
+    padding: 10px 14px;
+    background: rgba(232,228,220,0.03);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .silo-box.dim { opacity: 0.5; }
+  .silo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .silo-icon.red    { background: rgba(220,80,80,0.15); border: 1px solid rgba(220,80,80,0.25); }
+  .silo-icon.gray   { background: rgba(150,150,150,0.1); border: 1px solid rgba(150,150,150,0.2); }
+  .silo-icon.blue   { background: rgba(80,130,220,0.1);  border: 1px solid rgba(80,130,220,0.2); }
+  .silo-icon.green  { background: rgba(80,180,120,0.1);  border: 1px solid rgba(80,180,120,0.2); }
+  .silo-name { font-size: 11px; font-weight: 300; letter-spacing: 0.05em; color: rgba(232,228,220,0.6); }
+  .silo-desc { font-size: 9px; letter-spacing: 0.05em; color: rgba(232,228,220,0.3); margin-top: 2px; }
+
+  .stylist-trapped {
+    margin-top: 12px;
+    border: 1px dashed rgba(220,80,80,0.25);
+    border-radius: 3px;
+    padding: 12px 14px;
+    text-align: center;
+    background: rgba(220,80,80,0.04);
+  }
+  .stylist-trapped .t-label { font-size: 10px; letter-spacing: 0.15em; color: rgba(220,80,80,0.6); margin-bottom: 4px; }
+  .stylist-trapped .t-name  { font-size: 12px; font-weight: 300; color: rgba(232,228,220,0.5); }
+  .stylist-trapped .t-sub   { font-size: 9px; color: rgba(232,228,220,0.25); margin-top: 3px; letter-spacing: 0.05em; }
+
+  /* ARROW */
+  .arrow-area {
+    flex: 0 0 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .arrow-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(200,168,130,0.2), #c8a882, rgba(200,168,130,0.2));
+    position: relative;
+  }
+  .arrow-line::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: -4px;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 8px solid #c8a882;
+  }
+  .arrow-word {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: #c8a882;
+    text-align: center;
+  }
+
+  /* RIGHT — Cygnus世界 */
+  .cygnus-world {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .orbit-diagram {
+    position: relative;
+    width: 260px;
+    height: 260px;
+  }
+
+  /* 軌道リング */
+  .orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(200,168,130,0.15);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .orbit-ring.r1 { width: 120px; height: 120px; }
+  .orbit-ring.r2 { width: 200px; height: 200px; border-style: dashed; border-color: rgba(200,168,130,0.1); }
+  .orbit-ring.r3 { width: 260px; height: 260px; border-color: rgba(200,168,130,0.06); }
+
+  /* 中心 — スタイリストID */
+  .center-node {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,168,130,0.18) 0%, rgba(200,168,130,0.05) 70%);
+    border: 1px solid rgba(200,168,130,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    box-shadow: 0 0 24px rgba(200,168,130,0.12);
+  }
+  .center-node .cn-label {
+    font-size: 7px;
+    letter-spacing: 0.15em;
+    color: rgba(200,168,130,0.7);
+    text-transform: uppercase;
+  }
+  .center-node .cn-main {
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: #c8a882;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* 軌道上のノード */
+  .orbit-node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    transform: translate(-50%, -50%);
+  }
+  .orbit-node .on-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(200,168,130,0.4);
+    background: rgba(200,168,130,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: #c8a882;
+    font-weight: 300;
+  }
+  .orbit-node .on-dot.future {
+    border-color: rgba(200,168,130,0.15);
+    background: transparent;
+    color: rgba(200,168,130,0.3);
+  }
+  .orbit-node .on-label {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    color: rgba(232,228,220,0.5);
+    white-space: nowrap;
+  }
+  .orbit-node .on-label.future { color: rgba(232,228,220,0.2); }
+
+  /* 外周ノード（統合対象） */
+  .outer-node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transform: translate(-50%, -50%);
+  }
+  .outer-node .oun-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(232,228,220,0.12);
+    background: rgba(232,228,220,0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .outer-node .oun-label {
+    font-size: 7px;
+    letter-spacing: 0.05em;
+    color: rgba(232,228,220,0.3);
+    white-space: nowrap;
+  }
+
+  /* ── Bottom — 3つの価値提案 ── */
+  .values {
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .value-card {
+    border: 1px solid rgba(200,168,130,0.15);
+    border-radius: 3px;
+    padding: 20px 18px;
+    background: rgba(200,168,130,0.04);
+  }
+  .value-num {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(200,168,130,0.5);
+    margin-bottom: 10px;
+  }
+  .value-title {
+    font-size: clamp(12px, 1.5vw, 14px);
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: #e8e4dc;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .value-title em { font-style: normal; color: #c8a882; }
+  .value-body {
+    font-size: clamp(10px, 1.2vw, 11px);
+    font-weight: 200;
+    letter-spacing: 0.04em;
+    color: rgba(232,228,220,0.45);
+    line-height: 1.8;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+  }
+  .footer-copy {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: rgba(232,228,220,0.2);
+  }
+  .footer-copy em { font-style: normal; color: rgba(200,168,130,0.4); }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .diagram { flex-direction: column; gap: 24px; }
+    .arrow-area { transform: rotate(90deg); }
+    .values { grid-template-columns: 1fr; }
+    .orbit-diagram { width: 220px; height: 220px; }
+    .orbit-ring.r1 { width: 100px; height: 100px; }
+    .orbit-ring.r2 { width: 166px; height: 166px; }
+    .orbit-ring.r3 { width: 220px; height: 220px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="header-logo">
+    <svg width="28" height="28" viewBox="0 0 80 80" fill="none">
+      <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="3" opacity="0.9"/>
+      <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="3" opacity="0.5"/>
+    </svg>
+    <div class="header-logo-text">
+      <div class="brand">CYGNUS</div>
+      <div class="sub">STYLIST OS</div>
+    </div>
+  </div>
+  <div class="header-tagline">技術者が<em>主役</em>の世界へ</div>
+  <div class="header-sub">スタイリストIDを軸に、分断されたすべてをひとつに</div>
+</div>
+
+<!-- ── DIAGRAM ── -->
+<div class="diagram">
+
+  <!-- LEFT: 現在の世界 -->
+  <div class="side">
+    <div class="side-label">// 現在の世界</div>
+
+    <div class="silo-box">
+      <div class="silo-icon red">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1" y="3" width="12" height="9" rx="1.5" stroke="rgba(220,80,80,0.7)" stroke-width="1.1"/>
+          <path d="M4 3V2C4 1.4 4.4 1 5 1H9C9.6 1 10 1.4 10 2V3" stroke="rgba(220,80,80,0.7)" stroke-width="1.1"/>
+        </svg>
+      </div>
+      <div>
+        <div class="silo-name">ホットペッパービューティ</div>
+        <div class="silo-desc">掲載料・成果報酬で売上を吸収</div>
+      </div>
+    </div>
+
+    <div class="silo-box dim">
+      <div class="silo-icon gray">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="rgba(150,150,150,0.6)" stroke-width="1.1"/>
+          <line x1="2" y1="6" x2="12" y2="6" stroke="rgba(150,150,150,0.6)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div>
+        <div class="silo-name">POSレジ</div>
+        <div class="silo-desc">データは店舗に閉じている</div>
+      </div>
+    </div>
+
+    <div class="silo-box dim">
+      <div class="silo-icon blue">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1" y="2" width="12" height="10" rx="1.5" stroke="rgba(80,130,220,0.6)" stroke-width="1.1"/>
+          <polyline points="1,5.5 7,8 13,5.5" stroke="rgba(80,130,220,0.6)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div>
+        <div class="silo-name">予約システム</div>
+        <div class="silo-desc">顧客情報は職場の所有物</div>
+      </div>
+    </div>
+
+    <div class="silo-box dim">
+      <div class="silo-icon green">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1L9.5 5H12.5L10 7.5L11 11L7 9L3 11L4 7.5L1.5 5H4.5Z" stroke="rgba(80,180,120,0.6)" stroke-width="1" fill="none"/>
+        </svg>
+      </div>
+      <div>
+        <div class="silo-name">在庫・発注</div>
+        <div class="silo-desc">アナログ管理、DX未着手</div>
+      </div>
+    </div>
+
+    <div class="stylist-trapped">
+      <div class="t-label">// Stylist</div>
+      <div class="t-name">スタイリスト</div>
+      <div class="t-sub">プラットフォームに依存、転職で資産ゼロに</div>
+    </div>
+  </div>
+
+  <!-- ARROW -->
+  <div class="arrow-area">
+    <div class="arrow-line"></div>
+    <div class="arrow-word">CYGNUS</div>
+  </div>
+
+  <!-- RIGHT: Cygnus世界 -->
+  <div class="cygnus-world">
+    <div class="side-label" style="margin-bottom:12px;">// Cygnus の世界</div>
+
+    <div class="orbit-diagram">
+      <!-- 軌道リング -->
+      <div class="orbit-ring r3"></div>
+      <div class="orbit-ring r2"></div>
+      <div class="orbit-ring r1"></div>
+
+      <!-- 中心: スタイリストID -->
+      <div class="center-node">
+        <svg width="16" height="16" viewBox="0 0 80 80" fill="none">
+          <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/>
+          <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/>
+        </svg>
+        <div class="cn-label">Stylist ID</div>
+        <div class="cn-main">技術者の<br>唯一の軸</div>
+      </div>
+
+      <!-- 第1軌道: Cygnusプロダクト -->
+      <!-- LOOP: 上 -->
+      <div class="orbit-node" style="top:8%;left:50%;">
+        <div class="on-dot">LOOP</div>
+        <div class="on-label">在庫・売上管理</div>
+      </div>
+      <!-- RESERVE: 右 -->
+      <div class="orbit-node" style="top:50%;left:92%;">
+        <div class="on-dot">RSV</div>
+        <div class="on-label">予約・顧客管理</div>
+      </div>
+      <!-- ?: 下 -->
+      <div class="orbit-node" style="top:92%;left:50%;">
+        <div class="on-dot future">+</div>
+        <div class="on-label future">次のサービス</div>
+      </div>
+      <!-- ?: 左 -->
+      <div class="orbit-node" style="top:50%;left:8%;">
+        <div class="on-dot future">+</div>
+        <div class="on-label future">次のサービス</div>
+      </div>
+
+      <!-- 第2軌道: 外部連携 -->
+      <!-- POS: 右上 -->
+      <div class="outer-node" style="top:18%;left:78%;">
+        <div class="oun-dot">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="rgba(232,228,220,0.3)" stroke-width="1.1"/>
+            <line x1="2" y1="6" x2="12" y2="6" stroke="rgba(232,228,220,0.3)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="oun-label">POS</div>
+      </div>
+      <!-- SNS: 右下 -->
+      <div class="outer-node" style="top:78%;left:82%;">
+        <div class="oun-dot">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="5" stroke="rgba(232,228,220,0.3)" stroke-width="1.1"/>
+            <line x1="7" y1="2" x2="7" y2="12" stroke="rgba(232,228,220,0.3)" stroke-width="0.8"/>
+            <line x1="2" y1="7" x2="12" y2="7" stroke="rgba(232,228,220,0.3)" stroke-width="0.8"/>
+          </svg>
+        </div>
+        <div class="oun-label">SNS</div>
+      </div>
+      <!-- 実績: 左下 -->
+      <div class="outer-node" style="top:80%;left:20%;">
+        <div class="oun-dot">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <polyline points="1,11 4,7 7,9 10,4 13,6" stroke="rgba(232,228,220,0.3)" stroke-width="1.1" fill="none"/>
+          </svg>
+        </div>
+        <div class="oun-label">実績</div>
+      </div>
+      <!-- 資格: 左上 -->
+      <div class="outer-node" style="top:20%;left:18%;">
+        <div class="oun-dot">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="6" r="3.5" stroke="rgba(232,228,220,0.3)" stroke-width="1.1"/>
+            <path d="M4 9.5L3 13L7 11L11 13L10 9.5" stroke="rgba(232,228,220,0.3)" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+        <div class="oun-label">資格・技術</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── VALUE CARDS ── -->
+<div class="values">
+
+  <div class="value-card">
+    <div class="value-num">// 01</div>
+    <div class="value-title">技術者の資産を<br><em>技術者の手に</em></div>
+    <div class="value-body">
+      顧客履歴・売上実績・技術評価を<br>
+      スタイリストIDに紐づけることで、<br>
+      転職・独立しても資産がゼロになならない。
+    </div>
+  </div>
+
+  <div class="value-card">
+    <div class="value-num">// 02</div>
+    <div class="value-title">プラットフォームへの<br><em>依存から解放</em></div>
+    <div class="value-body">
+      集客・予約・決済をCygnusが統合することで、<br>
+      掲載料や成果報酬による売上の流出を止め、<br>
+      技術者が適正な報酬を受け取れる構造へ。
+    </div>
+  </div>
+
+  <div class="value-card">
+    <div class="value-num">// 03</div>
+    <div class="value-title">分断されたDXを<br><em>ひとつに</em></div>
+    <div class="value-body">
+      POS・予約・在庫・売上がバラバラに存在する<br>
+      現状を、Cygnusがひとつのプラットフォームに<br>
+      統合。まず<em>LOOP</em>から始まる。
+    </div>
+  </div>
+
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="footer">
+  <div class="footer-copy">
+    <em>CYGNUS</em> &nbsp;—&nbsp; Stylist OS &nbsp;·&nbsp; 2026
+  </div>
+</div>
+
+</body>
+</html>
