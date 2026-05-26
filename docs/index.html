@@ -739,6 +739,61 @@ html, body {
 .o2 { transform-origin: 40px 40px; animation: orbitDrift 28s linear infinite reverse; }
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: 88px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  box-shadow: 0 4px 20px rgba(198,164,122,0.4);
+  z-index: 20;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.fab.hidden { opacity: 0; pointer-events: none; transform: scale(0.8); }
+.fab:active { transform: scale(0.93); }
+.fab-label { font-family: 'Josefin Sans', sans-serif; font-size: 8px; letter-spacing: 0.12em; color: #1a1816; font-weight: 400; }
+
+/* ── CHECKOUT SCREEN ── */
+.co-section { margin-bottom: 24px; }
+.co-section-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.co-item-row { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 12px 14px; margin-bottom: 6px; }
+.co-item-info { flex: 1; }
+.co-item-name { font-size: 13px; color: var(--text); margin-bottom: 2px; }
+.co-item-type { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
+.co-item-price { font-family: 'Josefin Sans', sans-serif; font-weight: 100; font-size: 14px; color: var(--gold); flex-shrink: 0; }
+.co-item-remove { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 18px; cursor: pointer; flex-shrink: 0; line-height: 1; }
+.co-add-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 12px; background: transparent; border: 1px dashed rgba(198,164,122,0.25); border-radius: 2px; color: rgba(198,164,122,0.7); font-size: 11px; letter-spacing: 0.12em; cursor: pointer; font-family: 'Josefin Sans', sans-serif; }
+.co-total-card { background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 2px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.co-total-label { font-size: 11px; letter-spacing: 0.15em; color: var(--muted); }
+.co-total-amount { font-family: 'Josefin Sans', sans-serif; font-weight: 100; font-size: 30px; color: var(--text); }
+.co-total-amount span { font-size: 15px; color: var(--muted); margin-right: 3px; }
+.co-payment-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 28px; }
+.co-pay-btn { padding: 13px 8px; border: 1px solid var(--border); border-radius: 2px; background: var(--surface); color: var(--muted); font-size: 11px; letter-spacing: 0.1em; cursor: pointer; font-family: 'Josefin Sans', sans-serif; text-align: center; transition: all 0.15s; }
+.co-pay-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(198,164,122,0.08); }
+.co-success { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 16px; padding: 48px 32px; text-align: center; }
+.co-success.show { display: flex; }
+.co-success-icon { width: 68px; height: 68px; border-radius: 50%; background: rgba(109,186,142,0.12); border: 1px solid rgba(109,186,142,0.4); display: flex; align-items: center; justify-content: center; animation: fadeUp 0.4s ease; }
+.co-success-title { font-size: 17px; font-weight: 300; letter-spacing: 0.08em; color: var(--text); animation: fadeUp 0.4s ease 0.1s both; }
+.co-success-amount { font-family: 'Josefin Sans', sans-serif; font-weight: 100; font-size: 38px; color: var(--gold); animation: fadeUp 0.4s ease 0.2s both; }
+.co-success-sub { font-size: 11px; color: var(--muted); line-height: 1.8; animation: fadeUp 0.4s ease 0.3s both; }
+
+/* ── PICKER MODAL ── */
+.picker-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.picker-item:last-child { border-bottom: none; }
+.picker-item:active { background: rgba(198,164,122,0.05); }
+.picker-item-name { font-size: 13px; color: var(--text); }
+.picker-item-price { font-family: 'Josefin Sans', sans-serif; font-weight: 100; font-size: 13px; color: var(--gold); }
 </style>
 </head>
 <body>
@@ -1839,6 +1894,102 @@ html, body {
         <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e07060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ===== FAB: 会計入力 ===== -->
+<button class="fab hidden" id="fabCheckout" onclick="openCheckout()">
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+    <path d="M7 4C7 4 5 6 5 9C5 12 7 14 7 14" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M15 4C15 4 17 6 17 9C17 12 15 14 15 14" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="4" y1="9" x2="18" y2="9" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="11" y1="14" x2="11" y2="19" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="8" y1="19" x2="14" y2="19" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+  </svg>
+  <div class="fab-label">会計</div>
+</button>
+
+<!-- ===== CHECKOUT ===== -->
+<div class="screen" id="screen-checkout">
+  <div class="top-bar">
+    <button onclick="closeCheckout()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="11,4 6,9 11,14" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div style="font-family:'Josefin Sans',sans-serif;font-weight:200;font-size:13px;letter-spacing:0.2em;color:var(--text);">会計入力</div>
+    <div style="width:18px;"></div>
+  </div>
+
+  <!-- 通常入力フォーム -->
+  <div class="scroll" id="coForm">
+
+    <!-- 担当スタッフ -->
+    <div class="co-section">
+      <div class="co-section-title">担当スタッフ</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;" id="coStaffRow">
+        <div style="font-size:13px;color:var(--text);" id="coStaffName">高橋 美咲</div>
+        <div style="font-size:10px;letter-spacing:0.1em;color:var(--muted);">東松戸店 · オーナー</div>
+      </div>
+    </div>
+
+    <!-- 施術メニュー -->
+    <div class="co-section">
+      <div class="co-section-title">施術メニュー</div>
+      <div id="coMenuItems"></div>
+      <button class="co-add-btn" onclick="openPickerModal('menu')">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        メニューを追加
+      </button>
+    </div>
+
+    <!-- 物販 -->
+    <div class="co-section">
+      <div class="co-section-title">物販</div>
+      <div id="coRetailItems"></div>
+      <button class="co-add-btn" onclick="openPickerModal('retail')">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        物販を追加
+      </button>
+    </div>
+
+    <!-- 合計 -->
+    <div class="co-total-card">
+      <div class="co-total-label">合計金額</div>
+      <div class="co-total-amount"><span>¥</span><span id="coTotalAmount">0</span></div>
+    </div>
+
+    <!-- 支払方法 -->
+    <div class="co-section">
+      <div class="co-section-title">支払方法</div>
+      <div class="co-payment-grid">
+        <button class="co-pay-btn active" id="coPayCash" onclick="selectCoPayment('cash')">現金</button>
+        <button class="co-pay-btn" id="coPayCard" onclick="selectCoPayment('card')">カード</button>
+        <button class="co-pay-btn" id="coPayIc" onclick="selectCoPayment('ic')">電子マネー</button>
+      </div>
+    </div>
+
+    <button class="btn-confirm" onclick="completeCheckout()">会計完了</button>
+  </div>
+
+  <!-- 完了画面 -->
+  <div class="co-success" id="coSuccess">
+    <div class="co-success-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <polyline points="6,14 11,20 22,9" stroke="#6dba8e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="co-success-title">会計完了</div>
+    <div class="co-success-amount" id="coSuccessAmount">¥0</div>
+    <div class="co-success-sub" id="coSuccessSub"></div>
+  </div>
+</div>
+
+<!-- ===== PICKER MODAL ===== -->
+<div class="modal" id="pickerModal">
+  <div class="modal-inner" style="max-height:75vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;" id="pickerModalTitle">メニューを選択</div>
+    <div id="pickerModalList"></div>
+    <button class="btn-cancel" style="margin-top:12px;" onclick="closeModal('pickerModal')">キャンセル</button>
   </div>
 </div>
 
@@ -3708,6 +3859,225 @@ function renderAiResult(data, staffName) {
     + agendaHTML;
 
   resultArea.style.display = 'block';
+}
+
+
+// ═══════════════════════════════════════════
+// FAB 表示制御
+// ═══════════════════════════════════════════
+var FAB_VISIBLE_SCREENS = ['dashboard', 'inventory', 'sales', 'settings'];
+
+function updateFab() {
+  var fab = document.getElementById('fabCheckout');
+  if (!fab) return;
+  if (FAB_VISIBLE_SCREENS.indexOf(current) >= 0) {
+    fab.classList.remove('hidden');
+  } else {
+    fab.classList.add('hidden');
+  }
+}
+
+// goToをラップしてFAB制御を追加
+var _origGoTo = goTo;
+goTo = function(id) {
+  _origGoTo(id);
+  updateFab();
+};
+
+// ═══════════════════════════════════════════
+// 会計データ
+// ═══════════════════════════════════════════
+var checkoutMenuList = [
+  { name: 'カットのみ',              price: 4950  },
+  { name: 'カット + カラー',          price: 11550 },
+  { name: 'リタッチカラー',           price: 8250  },
+  { name: 'バレイヤージュカラー',      price: 14300 },
+  { name: 'カット + ナチュラルパーマ', price: 11550 },
+  { name: 'カット + 3Dデジタルパーマ', price: 15400 },
+  { name: 'カット + オーガニック縮毛矯正', price: 15950 },
+  { name: 'オーガニック縮毛矯正',      price: 22000 },
+  { name: 'ストレートパーマ',          price: 22000 },
+  { name: 'ヘッドスパ',               price: 5500  },
+];
+var checkoutRetailList = [
+  { name: 'エルジューダ エマルジョン+', price: 2750 },
+  { name: 'エルジューダ FO',           price: 2750 },
+  { name: 'ミルボン シャンプー',        price: 2200 },
+  { name: 'ミルボン トリートメント',    price: 2420 },
+  { name: 'スムージングオイル',         price: 3300 },
+  { name: 'ヘアマスク',                price: 3850 },
+];
+
+var _coState = {
+  staff: '',
+  items: [],   // { type: 'menu'|'retail', name: '', price: 0 }
+  payment: 'cash',
+  prevScreen: 'dashboard',
+  pickerType: 'menu'
+};
+
+// ═══════════════════════════════════════════
+// 会計画面を開く / 閉じる
+// ═══════════════════════════════════════════
+function openCheckout() {
+  _coState.prevScreen = current;
+  _coState.staff = currentUser.name;
+  _coState.items = [];
+  _coState.payment = 'cash';
+
+  // スタッフ表示
+  var staffInfo = allStaff.find(function(s) { return s.name === currentUser.name; });
+  var coStaffName = document.getElementById('coStaffName');
+  var coStaffRow  = document.getElementById('coStaffRow');
+  if (coStaffName) coStaffName.textContent = currentUser.name;
+  if (coStaffRow && staffInfo) {
+    coStaffRow.querySelector('div:last-child').textContent = staffInfo.store + ' · ' + staffInfo.role;
+  }
+
+  // フォームリセット
+  renderCoItems();
+  updateCoTotal();
+  selectCoPayment('cash');
+  document.getElementById('coForm').style.display = 'block';
+  document.getElementById('coSuccess').classList.remove('show');
+
+  var prev = document.getElementById('screen-' + current);
+  var next = document.getElementById('screen-checkout');
+  prev.classList.remove('active');
+  prev.classList.add('slide-back');
+  setTimeout(function() { prev.classList.remove('slide-back'); }, 300);
+  next.classList.add('active');
+  current = 'checkout';
+  updateFab();
+}
+
+function closeCheckout() {
+  var prev = document.getElementById('screen-checkout');
+  var next = document.getElementById('screen-' + _coState.prevScreen);
+  if (!next) next = document.getElementById('screen-dashboard');
+  prev.classList.remove('active');
+  prev.classList.add('slide-back');
+  setTimeout(function() { prev.classList.remove('slide-back'); }, 300);
+  next.classList.add('active');
+  current = _coState.prevScreen || 'dashboard';
+  updateFab();
+}
+
+// ═══════════════════════════════════════════
+// アイテム管理
+// ═══════════════════════════════════════════
+function renderCoItems() {
+  var menuEl   = document.getElementById('coMenuItems');
+  var retailEl = document.getElementById('coRetailItems');
+  var menuItems   = _coState.items.filter(function(i) { return i.type === 'menu'; });
+  var retailItems = _coState.items.filter(function(i) { return i.type === 'retail'; });
+
+  menuEl.innerHTML = menuItems.map(function(item, idx) {
+    var realIdx = _coState.items.indexOf(item);
+    return '<div class="co-item-row">'
+      + '<div class="co-item-info"><div class="co-item-name">' + item.name + '</div></div>'
+      + '<div class="co-item-price">¥' + item.price.toLocaleString() + '</div>'
+      + '<div class="co-item-remove" onclick="removeCoItem(' + realIdx + ')">×</div>'
+      + '</div>';
+  }).join('');
+
+  retailEl.innerHTML = retailItems.map(function(item) {
+    var realIdx = _coState.items.indexOf(item);
+    return '<div class="co-item-row">'
+      + '<div class="co-item-info"><div class="co-item-name">' + item.name + '</div></div>'
+      + '<div class="co-item-price">¥' + item.price.toLocaleString() + '</div>'
+      + '<div class="co-item-remove" onclick="removeCoItem(' + realIdx + ')">×</div>'
+      + '</div>';
+  }).join('');
+}
+
+function removeCoItem(idx) {
+  _coState.items.splice(idx, 1);
+  renderCoItems();
+  updateCoTotal();
+}
+
+function updateCoTotal() {
+  var total = _coState.items.reduce(function(sum, i) { return sum + i.price; }, 0);
+  document.getElementById('coTotalAmount').textContent = total.toLocaleString();
+}
+
+// ═══════════════════════════════════════════
+// ピッカーモーダル
+// ═══════════════════════════════════════════
+function openPickerModal(type) {
+  _coState.pickerType = type;
+  var list = type === 'menu' ? checkoutMenuList : checkoutRetailList;
+  var title = type === 'menu' ? 'メニューを選択' : '物販を選択';
+  document.getElementById('pickerModalTitle').textContent = title;
+  document.getElementById('pickerModalList').innerHTML = list.map(function(item) {
+    return '<div class="picker-item" onclick="addCoItem(\'' + item.name + '\',' + item.price + ',\'' + type + '\')">'
+      + '<div class="picker-item-name">' + item.name + '</div>'
+      + '<div class="picker-item-price">¥' + item.price.toLocaleString() + '</div>'
+      + '</div>';
+  }).join('');
+  openModal('pickerModal');
+}
+
+function addCoItem(name, price, type) {
+  _coState.items.push({ type: type, name: name, price: price });
+  renderCoItems();
+  updateCoTotal();
+  closeModal('pickerModal');
+}
+
+// ═══════════════════════════════════════════
+// 支払方法
+// ═══════════════════════════════════════════
+function selectCoPayment(method) {
+  _coState.payment = method;
+  document.getElementById('coPayCash').classList.toggle('active', method === 'cash');
+  document.getElementById('coPayCard').classList.toggle('active', method === 'card');
+  document.getElementById('coPayIc').classList.toggle('active', method === 'ic');
+}
+
+// ═══════════════════════════════════════════
+// 会計完了
+// ═══════════════════════════════════════════
+function completeCheckout() {
+  if (_coState.items.length === 0) {
+    alert('メニューまたは物販を1件以上追加してください');
+    return;
+  }
+  var total    = _coState.items.reduce(function(sum, i) { return sum + i.price; }, 0);
+  var techSales = _coState.items.filter(function(i) { return i.type === 'menu'; })
+                    .reduce(function(sum, i) { return sum + i.price; }, 0);
+  var goodsSales = _coState.items.filter(function(i) { return i.type === 'retail'; })
+                    .reduce(function(sum, i) { return sum + i.price; }, 0);
+  var payLabel = { cash: '現金', card: 'クレジットカード', ic: '電子マネー' }[_coState.payment];
+
+  // periodDataに売上を加算
+  function addNum(str, n) {
+    return (parseInt(str.replace(/,/g,''), 10) + n).toLocaleString();
+  }
+  periodData.today.all.sales   = addNum(periodData.today.all.sales, total);
+  periodData.today.all.clients = String(parseInt(periodData.today.all.clients, 10) + 1);
+  if (_coState.staff === currentUser.name) {
+    periodData.today.staff.sales = addNum(periodData.today.staff.sales, total);
+    periodData.today.staff.goods = addNum(periodData.today.staff.goods.replace('¥',''), goodsSales);
+  }
+  periodData.today.store.sales = addNum(periodData.today.store.sales, total);
+
+  // 成功画面表示
+  document.getElementById('coForm').style.display = 'none';
+  document.getElementById('coSuccessAmount').textContent = '¥' + total.toLocaleString();
+  document.getElementById('coSuccessSub').innerHTML
+    = _coState.staff + ' · ' + payLabel + '<br>'
+    + _coState.items.length + '件 / 技術 ¥' + techSales.toLocaleString()
+    + (goodsSales > 0 ? ' · 物販 ¥' + goodsSales.toLocaleString() : '');
+  document.getElementById('coSuccess').classList.add('show');
+
+  // 2秒後にダッシュボードへ
+  setTimeout(function() {
+    _coState.prevScreen = 'dashboard';
+    closeCheckout();
+    if (typeof updateSalesCard === 'function') updateSalesCard();
+  }, 2200);
 }
 
 </script>
