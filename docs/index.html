@@ -2159,7 +2159,7 @@ html, body {
 </div>
 
 <!-- ===== FAB: 会計入力 (.appの外に置きposition:fixedを確実に動作させる) ===== -->
-<button class="fab hidden" id="fabCheckout" onclick="openCheckout()">
+<button class="fab" id="fabCheckout" style="display:none" onclick="openCheckout()">
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
     <path d="M7 4C7 4 5 6 5 9C5 12 7 14 7 14" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
     <path d="M15 4C15 4 17 6 17 9C17 12 15 14 15 14" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
@@ -3869,11 +3869,7 @@ var FAB_VISIBLE_SCREENS = ['dashboard', 'inventory', 'sales', 'settings'];
 function updateFab() {
   var fab = document.getElementById('fabCheckout');
   if (!fab) return;
-  if (FAB_VISIBLE_SCREENS.indexOf(current) >= 0) {
-    fab.classList.remove('hidden');
-  } else {
-    fab.classList.add('hidden');
-  }
+  fab.style.display = FAB_VISIBLE_SCREENS.indexOf(current) >= 0 ? 'flex' : 'none';
 }
 
 // goToをラップしてFAB制御を追加
