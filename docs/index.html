@@ -1343,20 +1343,20 @@ html, body {
     <!-- スタッフ管理 -->
     <div class="setting-group-label"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> スタッフ管理</div>
     <div class="setting-group" style="margin-bottom:20px;">
-      <div class="setting-row">
+      <div class="setting-row" style="cursor:pointer;" onclick="goToStaffDetail('田中 彩花', '渋谷店', 'オーナー', true)">
         <div class="staff-av" style="width:32px;height:32px;font-size:11px;">田</div>
         <div class="s-info"><div class="s-label">田中 彩花</div><div class="s-value">渋谷店 · オーナー</div></div>
-        <div class="s-badge s-connected">有効</div>
+        <div style="display:flex;align-items:center;gap:8px;"><div class="s-badge s-connected">有効</div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       </div>
-      <div class="setting-row">
+      <div class="setting-row" style="cursor:pointer;" onclick="goToStaffDetail('鈴木 健太', '渋谷店', 'スタッフ', true)">
         <div class="staff-av" style="width:32px;height:32px;font-size:11px;">鈴</div>
         <div class="s-info"><div class="s-label">鈴木 健太</div><div class="s-value">渋谷店 · スタッフ</div></div>
-        <div class="s-badge s-connected">有効</div>
+        <div style="display:flex;align-items:center;gap:8px;"><div class="s-badge s-connected">有効</div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       </div>
-      <div class="setting-row">
+      <div class="setting-row" style="cursor:pointer;" onclick="goToStaffDetail('山本 さくら', '恵比寿店', 'スタッフ', true)">
         <div class="staff-av" style="width:32px;height:32px;font-size:11px;">山</div>
         <div class="s-info"><div class="s-label">山本 さくら</div><div class="s-value">恵比寿店 · スタッフ</div></div>
-        <div class="s-badge s-connected">有効</div>
+        <div style="display:flex;align-items:center;gap:8px;"><div class="s-badge s-connected">有効</div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       </div>
       <div style="padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-top:1px solid var(--border);" onclick="openModal('inviteModal')">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="7" y1="2" x2="7" y2="12" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -1585,6 +1585,21 @@ html, body {
   </div>
 </div>
 
+<div class="modal" id="deactivateConfirmModal">
+  <div class="modal-inner" id="deactivateConfirmModalInner">
+    <div class="modal-handle"></div>
+    <div style="font-size:16px;font-weight:400;color:var(--text);margin-bottom:8px;">無効にしますか？</div>
+    <div id="deactivateConfirmText" style="font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:20px;">
+      このスタッフはCygnus LOOPにログインできなくなります。
+    </div>
+    <div style="padding:12px 14px;background:rgba(224,112,96,0.08);border:1px solid rgba(224,112,96,0.2);border-radius:2px;margin-bottom:20px;">
+      <div style="font-size:12px;color:#e07060;line-height:1.8;">無効化後もデータは保持されます。再度有効にすることが可能です。</div>
+    </div>
+    <button class="btn-cancel" style="border-color:rgba(224,112,96,0.4);color:#e07060;" onclick="confirmDeactivateStaff()">無効にする</button>
+    <button class="btn-confirm" style="margin-top:8px;" onclick="closeModal('deactivateConfirmModal')">キャンセル</button>
+  </div>
+</div>
+
 <!-- ===== MASTER ===== -->
 <div class="screen" id="screen-master">
   <div class="top-bar">
@@ -1761,6 +1776,47 @@ html, body {
     <div class="setting-group">
       <div class="setting-row"><div class="s-info"><div class="s-label">パスワード変更</div></div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div class="setting-row" onclick="goTo('login')"><div class="s-info"><div class="s-label" style="color:var(--alert);">ログアウト</div></div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STAFF DETAIL ===== -->
+<div class="screen" id="screen-staff-detail">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div onclick="goTo('settings')" style="cursor:pointer;opacity:0.6;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polyline points="13,4 7,10 13,16" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="font-size:16px;font-weight:400;">スタッフ詳細</div>
+    </div>
+  </div>
+  <div class="scroll" style="padding-top:24px;">
+    <!-- アバター -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 0 32px;">
+      <div id="staffDetailAvatar" style="width:72px;height:72px;border-radius:50%;background:var(--gold-dim);border:2px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:var(--gold);"></div>
+      <div style="text-align:center;">
+        <div id="staffDetailName" style="font-size:18px;font-weight:400;color:var(--text);margin-bottom:4px;"></div>
+        <div id="staffDetailSub" style="font-size:12px;color:var(--muted);"></div>
+      </div>
+      <div id="staffDetailBadge" class="s-badge s-connected">有効</div>
+    </div>
+
+    <!-- スタッフ情報 -->
+    <div class="setting-group-label"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> アカウント情報</div>
+    <div class="setting-group">
+      <div class="setting-row"><div class="s-info"><div class="s-label">氏名</div><div id="staffDetailInfoName" class="s-value"></div></div></div>
+      <div class="setting-row"><div class="s-info"><div class="s-label">所属店舗</div><div id="staffDetailInfoStore" class="s-value"></div></div></div>
+      <div class="setting-row"><div class="s-info"><div class="s-label">役職</div><div id="staffDetailInfoRole" class="s-value"></div></div></div>
+      <div class="setting-row"><div class="s-info"><div class="s-label">ステータス</div><div id="staffDetailInfoStatus" class="s-value"></div></div></div>
+    </div>
+
+    <!-- 操作 -->
+    <div class="setting-group-label" style="margin-top:8px;"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> アカウント操作</div>
+    <div class="setting-group" style="margin-bottom:40px;">
+      <div id="staffDetailDeactivateRow" class="setting-row" style="cursor:pointer;" onclick="openModal('deactivateConfirmModal')">
+        <div class="s-info"><div class="s-label" style="color:var(--alert);">無効にする</div><div class="s-value">このスタッフのログインを停止します</div></div>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e07060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>
+      </div>
     </div>
   </div>
 </div>
@@ -2680,6 +2736,46 @@ function goToStaffSales(staffName) {
     var sc = document.querySelector('#screen-sales .scroll');
     if (sc) sc.scrollTop = 0;
   }, 320);
+}
+
+var _staffDetailCurrent = {};
+function goToStaffDetail(name, store, role, active) {
+  _staffDetailCurrent = { name: name, store: store, role: role, active: active };
+  var initial = name.charAt(0);
+  document.getElementById('staffDetailAvatar').textContent = initial;
+  document.getElementById('staffDetailName').textContent = name;
+  document.getElementById('staffDetailSub').textContent = store + ' · ' + role;
+  document.getElementById('staffDetailInfoName').textContent = name;
+  document.getElementById('staffDetailInfoStore').textContent = store;
+  document.getElementById('staffDetailInfoRole').textContent = role;
+  var badge = document.getElementById('staffDetailBadge');
+  var statusEl = document.getElementById('staffDetailInfoStatus');
+  var deactivateRow = document.getElementById('staffDetailDeactivateRow');
+  if (active) {
+    badge.className = 's-badge s-connected';
+    badge.textContent = '有効';
+    statusEl.textContent = '有効';
+    deactivateRow.style.display = '';
+  } else {
+    badge.className = 's-badge s-warning';
+    badge.textContent = '無効';
+    statusEl.textContent = '無効';
+    deactivateRow.style.display = 'none';
+  }
+  document.getElementById('deactivateConfirmText').textContent = name + ' さんをCygnus LOOPに無効にしますか？無効化後はログインできなくなります。';
+  goTo('staff-detail');
+}
+
+function confirmDeactivateStaff() {
+  closeModal('deactivateConfirmModal');
+  var badge = document.getElementById('staffDetailBadge');
+  var statusEl = document.getElementById('staffDetailInfoStatus');
+  var deactivateRow = document.getElementById('staffDetailDeactivateRow');
+  badge.className = 's-badge s-warning';
+  badge.textContent = '無効';
+  statusEl.textContent = '無効';
+  deactivateRow.style.display = 'none';
+  _staffDetailCurrent.active = false;
 }
 
 function goToStoreTab(storeName) {
