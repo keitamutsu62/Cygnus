@@ -2368,7 +2368,7 @@ function openOrder(product, qty, price, dealer) {
   document.getElementById('orderModalInner').style.transform = '';
   document.getElementById('orderModalInner').style.transition = '';
   document.getElementById('orderModal').classList.add('open');
-  setupSwipeToClose('orderModalInner', 'orderModal');
+  setupSwipeToClose(document.getElementById('orderModalInner'), 'orderModal');
 }
 
 function confirmOrder() {
@@ -2463,18 +2463,19 @@ function moveAlertToOrder(product, qty, dealer) {
 }
 
 function openModal(id) {
-  document.getElementById(id).classList.add('open');
-  const inner = document.getElementById(id).querySelector('.modal-inner');
-  if (inner) setupSwipeToClose(inner.id, id);
+  var modal = document.getElementById(id);
+  modal.classList.add('open');
+  var inner = modal.querySelector('.modal-inner');
+  if (inner) setupSwipeToClose(inner, id);
 }
 
 function closeModal(id) {
-  const modal = document.getElementById(id);
-  const inner = modal.querySelector('.modal-inner');
+  var modal = document.getElementById(id);
+  var inner = modal.querySelector('.modal-inner');
   if (inner) {
     inner.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
     inner.style.transform = 'translateY(100%)';
-    setTimeout(() => {
+    setTimeout(function() {
       modal.classList.remove('open');
       inner.style.transform = '';
       inner.style.transition = '';
@@ -2484,43 +2485,47 @@ function closeModal(id) {
   }
 }
 
-// スワイプで閉じる（重複登録防止）
-function setupSwipeToClose(innerId, modalId) {
-  const inner = document.getElementById(innerId);
+// スワイプで閉じる（要素参照渡し・スクロール対応・重複登録防止）
+function setupSwipeToClose(inner, modalId) {
   if (!inner || inner._swipeSetup) return;
   inner._swipeSetup = true;
 
-  let startY = 0;
-  let isDragging = false;
+  var startY = 0;
+  var isDragging = false;
 
-  inner.addEventListener('touchstart', (e) => {
+  inner.addEventListener('touchstart', function(e) {
     startY = e.touches[0].clientY;
     isDragging = true;
   }, { passive: true });
 
-  inner.addEventListener('touchmove', (e) => {
+  inner.addEventListener('touchmove', function(e) {
     if (!isDragging) return;
-    const dy = e.touches[0].clientY - startY;
-    if (dy > 0) {
+    var dy = e.touches[0].clientY - startY;
+    // スクロール可能モーダルはトップ位置でのみ下スワイプを受け付ける
+    if (dy > 0 && inner.scrollTop === 0) {
       e.preventDefault();
-      inner.style.transform = `translateY(${dy}px)`;
+      inner.style.transform = 'translateY(' + dy + 'px)';
       inner.style.transition = 'none';
     }
   }, { passive: false });
 
-  inner.addEventListener('touchend', (e) => {
+  inner.addEventListener('touchend', function(e) {
+    if (!isDragging) return;
     isDragging = false;
-    const dy = e.changedTouches[0].clientY - startY;
+    var dy = e.changedTouches[0].clientY - startY;
     inner.style.transition = '';
     inner.style.transform = '';
-    if (dy > 80) {
+    if (dy > 80 && inner.scrollTop === 0) {
       closeModal(modalId);
     }
   });
 }
 
 function openBarcode() {
-  document.getElementById('barcodeModal').classList.add('open');
+  var modal = document.getElementById('barcodeModal');
+  modal.classList.add('open');
+  var inner = modal.querySelector('.modal-inner');
+  if (inner) setupSwipeToClose(inner, 'barcodeModal');
 }
 
 function simulateScan() {
