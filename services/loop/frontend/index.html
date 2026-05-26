@@ -787,6 +787,11 @@ html, body {
 .co-success-title { font-size: 17px; font-weight: 300; letter-spacing: 0.08em; color: var(--text); animation: fadeUp 0.4s ease 0.1s both; }
 .co-success-amount { font-family: 'Josefin Sans', sans-serif; font-weight: 100; font-size: 38px; color: var(--gold); animation: fadeUp 0.4s ease 0.2s both; }
 .co-success-sub { font-size: 11px; color: var(--muted); line-height: 1.8; animation: fadeUp 0.4s ease 0.3s both; }
+.co-shimei-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 10px; }
+.co-shimei-row { background: var(--surface); border: 1px solid var(--gold-border); border-radius: 2px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+.co-total-breakdown { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.05em; }
+.shimei-master-rate { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; margin: 0 20px 12px; }
+.shimei-master-note { margin: 0 20px; padding: 10px 14px; background: rgba(200,168,130,0.05); border: 1px solid var(--gold-border); border-radius: 2px; font-size: 11px; color: var(--muted); line-height: 1.6; }
 
 /* ── PICKER MODAL ── */
 .picker-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
@@ -1519,11 +1524,13 @@ html, body {
   <div class="menu-master-tabs" style="margin-top:16px;">
     <button class="menu-master-tab-btn active" id="mmTabMenu" onclick="switchMenuTab('menu')">施術メニュー</button>
     <button class="menu-master-tab-btn" id="mmTabRetail" onclick="switchMenuTab('retail')">物販</button>
+    <button class="menu-master-tab-btn" id="mmTabShimei" onclick="switchMenuTab('shimei')">指名料</button>
   </div>
 
   <div class="scroll" style="padding-top:0;">
     <div id="mmMenuPanel"><!-- JS描画 --></div>
     <div id="mmRetailPanel" style="display:none;"><!-- JS描画 --></div>
+    <div id="mmShimeiPanel" style="display:none;"><!-- JS描画 --></div>
     <div style="height:20px;"></div>
   </div>
 </div>
@@ -1994,6 +2001,19 @@ html, body {
       </div>
     </div>
 
+    <!-- 指名区分 -->
+    <div class="co-section">
+      <div class="co-section-title">指名区分</div>
+      <div class="co-shimei-grid">
+        <button class="co-pay-btn active" id="coShimeiFree" onclick="selectShimei(false)">フリー</button>
+        <button class="co-pay-btn" id="coShimeiOn" onclick="selectShimei(true)">指名</button>
+      </div>
+      <div id="coShimeiRow" style="display:none;" class="co-shimei-row">
+        <div style="font-size:13px;color:var(--text);">指名料</div>
+        <div style="font-family:'Josefin Sans',sans-serif;font-weight:100;font-size:14px;color:var(--gold);">¥<span id="coShimeiAmt">1,100</span></div>
+      </div>
+    </div>
+
     <!-- 施術メニュー -->
     <div class="co-section">
       <div class="co-section-title">施術メニュー</div>
@@ -2016,7 +2036,10 @@ html, body {
 
     <!-- 合計 -->
     <div class="co-total-card">
-      <div class="co-total-label">合計金額</div>
+      <div>
+        <div class="co-total-label">合計金額</div>
+        <div class="co-total-breakdown" id="coTotalBreakdown" style="display:none;">指名料 ¥<span id="coBreakdownShimei">1,100</span> 含む</div>
+      </div>
       <div class="co-total-amount"><span>¥</span><span id="coTotalAmount">0</span></div>
     </div>
 
@@ -2080,6 +2103,24 @@ html, body {
     <button class="btn-confirm" style="margin-top:20px;" onclick="saveMenuEdit()">保存する</button>
     <button class="btn-cancel" style="margin-top:8px;" onclick="closeModal('menuEditModal')">キャンセル</button>
     <button id="menuEditDeleteBtn" style="width:100%;padding:12px;background:transparent;border:none;font-size:11px;letter-spacing:0.12em;color:var(--alert);cursor:pointer;margin-top:4px;font-family:'Josefin Sans',sans-serif;" onclick="deleteMenuEntry()">このメニューを削除</button>
+  </div>
+</div>
+
+<!-- ===== SHIMEI EDIT MODAL ===== -->
+<div class="modal" id="shimeiEditModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;">指名料を設定</div>
+    <div class="field">
+      <div class="field-label">指名料（税込）</div>
+      <div style="position:relative;">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;">¥</span>
+        <input class="field-input" type="number" id="shimeiEditPrice" placeholder="0" style="padding-left:28px;"/>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;">設定した金額は会計時に「指名」を選択すると自動加算されます</div>
+    <button class="btn-confirm" style="margin-top:20px;" onclick="saveShimeiEdit()">保存する</button>
+    <button class="btn-cancel" style="margin-top:8px;" onclick="closeModal('shimeiEditModal')">キャンセル</button>
   </div>
 </div>
 
@@ -4022,10 +4063,13 @@ var checkoutRetailList = [
   { name: 'ヘアマスク',                price: 3850 },
 ];
 
+var checkoutShimeiRyo = 1100;
+
 var _coState = {
   staff: '',
   items: [],   // { type: 'menu'|'retail', name: '', price: 0 }
   payment: 'cash',
+  shimei: false,
   prevScreen: 'dashboard',
   pickerType: 'menu'
 };
@@ -4038,6 +4082,7 @@ function openCheckout() {
   _coState.staff = currentUser.name;
   _coState.items = [];
   _coState.payment = 'cash';
+  _coState.shimei = false;
 
   // 画面遷移
   var prev = document.getElementById('screen-' + current);
@@ -4072,6 +4117,7 @@ function openCheckout() {
     if (ctx) ctx.textContent = storeName + 'のメニューを読み込み済み · 施術 ' + checkoutMenuList.length + '件 / 物販 ' + checkoutRetailList.length + '件';
 
     renderCoItems();
+    selectShimei(false);
     updateCoTotal();
     selectCoPayment('cash');
 
@@ -4127,8 +4173,11 @@ function removeCoItem(idx) {
 }
 
 function updateCoTotal() {
-  var total = _coState.items.reduce(function(sum, i) { return sum + i.price; }, 0);
+  var subtotal = _coState.items.reduce(function(sum, i) { return sum + i.price; }, 0);
+  var total = subtotal + (_coState.shimei ? checkoutShimeiRyo : 0);
   document.getElementById('coTotalAmount').textContent = total.toLocaleString();
+  var bd = document.getElementById('coTotalBreakdown');
+  if (bd) bd.style.display = _coState.shimei ? 'block' : 'none';
 }
 
 // ═══════════════════════════════════════════
@@ -4180,7 +4229,9 @@ function completeCheckout() {
     alert('メニューまたは物販を1件以上追加してください');
     return;
   }
-  var total    = _coState.items.reduce(function(sum, i) { return sum + i.price; }, 0);
+  var subtotal  = _coState.items.reduce(function(sum, i) { return sum + i.price; }, 0);
+  var shimeiAmt = _coState.shimei ? checkoutShimeiRyo : 0;
+  var total     = subtotal + shimeiAmt;
   var techSales = _coState.items.filter(function(i) { return i.type === 'menu'; })
                     .reduce(function(sum, i) { return sum + i.price; }, 0);
   var goodsSales = _coState.items.filter(function(i) { return i.type === 'retail'; })
@@ -4205,7 +4256,8 @@ function completeCheckout() {
   document.getElementById('coSuccessSub').innerHTML
     = _coState.staff + ' · ' + payLabel + '<br>'
     + _coState.items.length + '件 / 技術 ¥' + techSales.toLocaleString()
-    + (goodsSales > 0 ? ' · 物販 ¥' + goodsSales.toLocaleString() : '');
+    + (goodsSales > 0 ? ' · 物販 ¥' + goodsSales.toLocaleString() : '')
+    + (shimeiAmt > 0 ? ' · 指名料 ¥' + shimeiAmt.toLocaleString() : '');
   document.getElementById('coSuccess').classList.add('show');
 
   // 2秒後にダッシュボードへ
@@ -4222,6 +4274,7 @@ function completeCheckout() {
 function renderMenuMaster() {
   var menuPanel   = document.getElementById('mmMenuPanel');
   var retailPanel = document.getElementById('mmRetailPanel');
+  var shimeiPanel = document.getElementById('mmShimeiPanel');
   if (!menuPanel || !retailPanel) return;
 
   function makeRows(list, type) {
@@ -4246,16 +4299,68 @@ function renderMenuMaster() {
     + '<div class="menu-master-add" onclick="alert(\'バックエンド接続後に登録できます\')">'
     + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="7" y1="2" x2="7" y2="12" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/></svg>'
     + '物販商品を追加</div>';
+
+  if (shimeiPanel) {
+    shimeiPanel.innerHTML = '<div class="shimei-master-rate">'
+      + '<div>'
+      + '<div style="font-size:13px;color:var(--text);margin-bottom:3px;">指名料</div>'
+      + '<div style="font-size:10px;color:var(--muted);">会計時に「指名」選択で自動加算</div>'
+      + '</div>'
+      + '<div style="display:flex;align-items:center;gap:12px;">'
+      + '<div style="font-family:\'Josefin Sans\',sans-serif;font-weight:100;font-size:18px;color:var(--gold);" id="mmShimeiDisplay">¥' + checkoutShimeiRyo.toLocaleString() + '</div>'
+      + '<div class="menu-master-edit" onclick="openShimeiEdit()">編集</div>'
+      + '</div>'
+      + '</div>'
+      + '<div class="shimei-master-note">指名料は店舗全体に適用される一律金額です。スタイリスト個別の設定はバックエンド接続後に対応予定。</div>';
+  }
 }
 
 function switchMenuTab(tab) {
   document.getElementById('mmTabMenu').classList.toggle('active', tab === 'menu');
   document.getElementById('mmTabRetail').classList.toggle('active', tab === 'retail');
-  document.getElementById('mmMenuPanel').style.display   = tab === 'menu'   ? 'block' : 'none';
-  document.getElementById('mmRetailPanel').style.display = tab === 'retail' ? 'block' : 'none';
+  document.getElementById('mmTabShimei').classList.toggle('active', tab === 'shimei');
+  document.getElementById('mmMenuPanel').style.display    = tab === 'menu'   ? 'block' : 'none';
+  document.getElementById('mmRetailPanel').style.display  = tab === 'retail' ? 'block' : 'none';
+  document.getElementById('mmShimeiPanel').style.display  = tab === 'shimei' ? 'block' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', renderMenuMaster);
+
+// ═══════════════════════════════════════════
+// 指名料
+// ═══════════════════════════════════════════
+function selectShimei(flag) {
+  _coState.shimei = flag;
+  document.getElementById('coShimeiFree').classList.toggle('active', !flag);
+  document.getElementById('coShimeiOn').classList.toggle('active', flag);
+  var row = document.getElementById('coShimeiRow');
+  if (row) {
+    row.style.display = flag ? 'flex' : 'none';
+    var amtEl = document.getElementById('coShimeiAmt');
+    if (amtEl) amtEl.textContent = checkoutShimeiRyo.toLocaleString();
+    var bdEl = document.getElementById('coBreakdownShimei');
+    if (bdEl) bdEl.textContent = checkoutShimeiRyo.toLocaleString();
+  }
+  updateCoTotal();
+}
+
+function openShimeiEdit() {
+  document.getElementById('shimeiEditPrice').value = checkoutShimeiRyo;
+  openModal('shimeiEditModal');
+}
+
+function saveShimeiEdit() {
+  var price = parseInt(document.getElementById('shimeiEditPrice').value, 10);
+  if (isNaN(price) || price < 0) {
+    alert('金額を正しく入力してください');
+    return;
+  }
+  checkoutShimeiRyo = price;
+  closeModal('shimeiEditModal');
+  renderMenuMaster();
+  switchMenuTab('shimei');
+  showToast('指名料を ¥' + price.toLocaleString() + ' に更新しました');
+}
 
 // ═══════════════════════════════════════════
 // 共通トースト
