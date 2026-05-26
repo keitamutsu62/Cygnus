@@ -3,551 +3,955 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cygnus — 技術者が主役の世界へ</title>
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400&display=swap" rel="stylesheet">
+<title>CYGNUS — Brand Bible</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400&family=Noto+Sans+JP:wght@200;300;400&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg:    #0A0A0A;
+  --s1:    #111318;
+  --s2:    #1A1D22;
+  --s3:    #23272D;
+  --s4:    #2F333A;
+  --s5:    #3E4249;
+  --sl:    #E0DDD6;
+  --text:  #E8E4DC;
+  --text2: #B8B3A6;
+  --gold:  #C6A47A;
+  --gold2: #DBB98B;
+  --bd:    rgba(232,228,220,0.07);
+  --gbd:   rgba(198,164,122,0.2);
+  --muted: rgba(232,228,220,0.35);
+  --dim:   rgba(232,228,220,0.18);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Josefin Sans',sans-serif;
+  line-height:1.6;
+}
 
-  body {
-    background: #0f0e0c;
-    color: #e8e4dc;
-    font-family: 'Josefin Sans', 'Helvetica Neue', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-    overflow-x: hidden;
-  }
+/* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+.hero{
+  min-height:100vh;
+  background:linear-gradient(150deg,#111318 0%,#0A0A0A 60%,#0e0f12 100%);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:10vh 10%;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid var(--bd);
+}
+.hero::before{
+  content:'';
+  position:absolute;
+  top:-20%;right:-10%;
+  width:70vw;height:70vw;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(198,164,122,0.03) 0%,transparent 65%);
+  pointer-events:none;
+}
+.hero-logo{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:48px;
+}
+.hero-logo-name{
+  font-weight:200;font-size:clamp(36px,5vw,56px);
+  letter-spacing:0.4em;color:var(--text);
+}
+.hero-tagline-en{
+  font-weight:100;font-size:clamp(16px,2vw,22px);
+  letter-spacing:0.22em;color:var(--gold);
+  margin-bottom:14px;
+}
+.hero-tagline-jp{
+  font-family:'Noto Sans JP',sans-serif;
+  font-weight:200;font-size:clamp(12px,1.4vw,15px);
+  letter-spacing:0.08em;color:var(--text2);
+}
+.hero-scroll{
+  position:absolute;bottom:40px;left:50%;
+  transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.hero-scroll-line{
+  width:1px;height:32px;
+  background:linear-gradient(180deg,transparent,var(--gold),transparent);
+  animation:scrollpulse 2s ease-in-out infinite;
+}
+@keyframes scrollpulse{0%,100%{opacity:0.3;}50%{opacity:0.8;}}
+.hero-scroll-txt{
+  font-size:8px;letter-spacing:0.3em;color:var(--dim);
+}
 
-  /* ── Header ── */
-  .header {
-    text-align: center;
-    margin-bottom: 56px;
-  }
-  .header-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .header-logo-text { line-height: 1; }
-  .header-logo-text .brand { font-weight: 200; font-size: 15px; letter-spacing: 0.35em; color: #e8e4dc; }
-  .header-logo-text .sub   { font-weight: 200; font-size: 10px; letter-spacing: 0.3em; color: rgba(200,168,130,0.6); margin-top: 2px; }
-  .header-tagline {
-    font-weight: 100;
-    font-size: clamp(22px, 4vw, 36px);
-    letter-spacing: 0.04em;
-    color: #e8e4dc;
-    margin-bottom: 10px;
-  }
-  .header-tagline em { font-style: normal; color: #c8a882; }
-  .header-sub {
-    font-weight: 200;
-    font-size: clamp(11px, 1.5vw, 13px);
-    letter-spacing: 0.12em;
-    color: rgba(232,228,220,0.45);
-  }
+/* ═══════════════════════════════════════
+   GRID
+═══════════════════════════════════════ */
+.bible-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--bd);
+}
+.bc{
+  padding:40px 36px;
+  border-right:1px solid var(--bd);
+  border-bottom:1px solid var(--bd);
+}
+.bc:nth-child(3n){border-right:none;}
+.bc.s2{grid-column:span 2;}
+.bc.s3{grid-column:span 3;border-right:none;}
+.bc.s1r2{grid-row:span 2;}
 
-  /* ── Main diagram ── */
-  .diagram {
-    width: 100%;
-    max-width: 900px;
-    display: flex;
-    align-items: center;
-    gap: 0;
-    position: relative;
-    margin-bottom: 56px;
-  }
+.cell-title{
+  font-size:9px;letter-spacing:0.3em;
+  text-transform:uppercase;color:var(--gold);
+  margin-bottom:5px;
+}
+.cell-sub{
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:11px;font-weight:200;
+  color:var(--muted);margin-bottom:28px;
+  letter-spacing:0.04em;
+}
 
-  /* LEFT — 現在の世界 */
-  .side {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .side-label {
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: rgba(232,228,220,0.3);
-    margin-bottom: 6px;
-    text-align: center;
-  }
+/* ═══════════════════════════════════════
+   CYGNUS WORLD
+═══════════════════════════════════════ */
+.world-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(2,76px);
+  gap:5px;
+}
+.wi{
+  border-radius:2px;
+  background:var(--s2);
+  overflow:hidden;
+  position:relative;
+}
+.wi::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(198,164,122,0.06) 0%,transparent 100%);
+}
+.wi.wa{background:linear-gradient(145deg,#1d1608 0%,#2a1c0a 60%,#160e04 100%);}
+.wi.wb{background:linear-gradient(145deg,#0e1118 0%,#1a1d24 100%);}
+.wi.wc{background:linear-gradient(145deg,#0c1014 0%,#181c22 100%);}
+.wi.wd{background:linear-gradient(145deg,#16120a 0%,#221a0e 100%);}
+.wi.we{background:linear-gradient(145deg,#0a0a0a 0%,#111318 100%);}
+.wi.wf{background:linear-gradient(145deg,#1c1408 0%,#261a0a 100%);}
+.wi-label{
+  position:absolute;bottom:6px;left:8px;
+  font-size:7px;letter-spacing:0.12em;
+  color:rgba(198,164,122,0.4);z-index:1;
+}
 
-  .silo-box {
-    border: 1px solid rgba(232,228,220,0.1);
-    border-radius: 3px;
-    padding: 10px 14px;
-    background: rgba(232,228,220,0.03);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .silo-box.dim { opacity: 0.5; }
-  .silo-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .silo-icon.red    { background: rgba(220,80,80,0.15); border: 1px solid rgba(220,80,80,0.25); }
-  .silo-icon.gray   { background: rgba(150,150,150,0.1); border: 1px solid rgba(150,150,150,0.2); }
-  .silo-icon.blue   { background: rgba(80,130,220,0.1);  border: 1px solid rgba(80,130,220,0.2); }
-  .silo-icon.green  { background: rgba(80,180,120,0.1);  border: 1px solid rgba(80,180,120,0.2); }
-  .silo-name { font-size: 11px; font-weight: 300; letter-spacing: 0.05em; color: rgba(232,228,220,0.6); }
-  .silo-desc { font-size: 9px; letter-spacing: 0.05em; color: rgba(232,228,220,0.3); margin-top: 2px; }
+/* ═══════════════════════════════════════
+   COLOR PALETTE
+═══════════════════════════════════════ */
+.palette-group{margin-bottom:22px;}
+.pg-label{
+  font-size:7px;letter-spacing:0.25em;
+  text-transform:uppercase;color:var(--dim);
+  margin-bottom:8px;
+}
+.swatches{display:flex;gap:6px;}
+.sw{
+  flex:1;height:28px;border-radius:2px;
+  position:relative;
+}
+.sw-hex{
+  position:absolute;bottom:-15px;left:0;
+  font-size:7px;letter-spacing:0.04em;
+  color:var(--dim);white-space:nowrap;
+}
 
-  .stylist-trapped {
-    margin-top: 12px;
-    border: 1px dashed rgba(220,80,80,0.25);
-    border-radius: 3px;
-    padding: 12px 14px;
-    text-align: center;
-    background: rgba(220,80,80,0.04);
-  }
-  .stylist-trapped .t-label { font-size: 10px; letter-spacing: 0.15em; color: rgba(220,80,80,0.6); margin-bottom: 4px; }
-  .stylist-trapped .t-name  { font-size: 12px; font-weight: 300; color: rgba(232,228,220,0.5); }
-  .stylist-trapped .t-sub   { font-size: 9px; color: rgba(232,228,220,0.25); margin-top: 3px; letter-spacing: 0.05em; }
+/* ═══════════════════════════════════════
+   MATERIAL & TEXTURE
+═══════════════════════════════════════ */
+.tex-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.tex{
+  height:72px;border-radius:2px;
+  overflow:hidden;position:relative;
+}
+.tex.t1{
+  background:repeating-linear-gradient(
+    40deg,#1a1d22,#1a1d22 2px,#111318 2px,#111318 10px);
+}
+.tex.t2{
+  background:linear-gradient(135deg,
+    #2a1c06 0%,rgba(198,164,122,0.25) 35%,#3a2810 65%,#1a1208 100%);
+}
+.tex.t3{
+  background:repeating-linear-gradient(
+    90deg,#1a1d22,#1a1d22 3px,#23272d 3px,#23272d 7px);
+}
+.tex.t4{
+  background:radial-gradient(ellipse at 35% 35%,#2a2520 0%,#0f0e0c 70%);
+}
+.tex-label{
+  position:absolute;bottom:6px;right:8px;
+  font-size:7px;letter-spacing:0.1em;color:rgba(198,164,122,0.3);
+}
 
-  /* ARROW */
-  .arrow-area {
-    flex: 0 0 80px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .arrow-line {
-    width: 60px;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(200,168,130,0.2), #c8a882, rgba(200,168,130,0.2));
-    position: relative;
-  }
-  .arrow-line::after {
-    content: '';
-    position: absolute;
-    right: -1px;
-    top: -4px;
-    border-top: 4px solid transparent;
-    border-bottom: 4px solid transparent;
-    border-left: 8px solid #c8a882;
-  }
-  .arrow-word {
-    font-size: 8px;
-    letter-spacing: 0.2em;
-    color: #c8a882;
-    text-align: center;
-  }
+/* ═══════════════════════════════════════
+   UI MOOD
+═══════════════════════════════════════ */
+.ui-frame{
+  background:var(--s1);
+  border:1px solid var(--bd);
+  border-radius:3px;overflow:hidden;
+}
+.ui-topbar{
+  padding:8px 12px;
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:8px;
+}
+.ui-dot{width:5px;height:5px;border-radius:50%;background:var(--s5);}
+.ui-brandtxt{
+  font-size:8px;letter-spacing:0.2em;
+  color:var(--muted);margin-left:2px;
+}
+.ui-body{display:flex;height:180px;}
+.ui-sidebar{
+  width:72px;
+  background:var(--s2);
+  border-right:1px solid var(--bd);
+  padding:12px 0;
+  flex-shrink:0;
+}
+.ui-nav{
+  padding:7px 12px;
+  font-size:7px;letter-spacing:0.1em;
+  color:var(--dim);
+  display:flex;align-items:center;gap:6px;
+}
+.ui-nav.act{color:var(--gold);background:rgba(198,164,122,0.07);}
+.ui-nav-icon{
+  width:10px;height:10px;
+  border:1px solid currentColor;
+  border-radius:1px;
+  opacity:0.7;
+  flex-shrink:0;
+}
+.ui-main{flex:1;padding:12px;}
+.ui-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;}
+.ui-kpi{
+  background:var(--s3);
+  border-radius:2px;padding:7px 8px;
+}
+.ui-kpi-lbl{font-size:6px;letter-spacing:0.1em;color:var(--dim);margin-bottom:3px;}
+.ui-kpi-val{font-size:12px;font-weight:100;color:var(--text);}
+.ui-kpi-diff{font-size:6px;color:#6dba8e;margin-top:2px;}
+.ui-chart-wrap{
+  background:var(--s3);
+  border-radius:2px;height:60px;
+  position:relative;overflow:hidden;
+  display:flex;align-items:flex-end;
+  gap:2px;padding:6px 8px;
+}
+.ui-bar{
+  flex:1;border-radius:1px 1px 0 0;
+  background:rgba(198,164,122,0.3);
+}
 
-  /* RIGHT — Cygnus世界 */
-  .cygnus-world {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+/* ═══════════════════════════════════════
+   PRODUCT UNIVERSE
+═══════════════════════════════════════ */
+.universe-wrap{
+  display:flex;flex-direction:column;align-items:center;
+}
+.uni-diagram{
+  position:relative;
+  width:300px;height:300px;
+  margin:0 auto;
+}
+.uni-ring{
+  position:absolute;border-radius:50%;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+}
+.uni-ring.r1{
+  width:120px;height:120px;
+  border:1px solid rgba(198,164,122,0.2);
+}
+.uni-ring.r2{
+  width:210px;height:210px;
+  border:1px dashed rgba(198,164,122,0.1);
+}
+.uni-ring.r3{
+  width:290px;height:290px;
+  border:1px solid rgba(232,228,220,0.04);
+}
+.uni-center{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:90px;height:90px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(198,164,122,0.1) 0%,rgba(198,164,122,0.02) 80%);
+  border:1px solid rgba(198,164,122,0.45);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2px;text-align:center;
+  box-shadow:0 0 32px rgba(198,164,122,0.07);
+}
+.uc-brand{font-size:11px;font-weight:400;letter-spacing:0.15em;color:var(--gold);}
+.uc-sub{
+  font-size:6px;font-weight:200;
+  letter-spacing:0.07em;color:var(--muted);
+  line-height:1.5;
+}
+.uni-node{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;
+  align-items:center;gap:4px;
+}
+.un-circle{
+  width:50px;height:50px;border-radius:50%;
+  border:1px solid var(--gbd);
+  background:rgba(198,164,122,0.05);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:1px;
+  transition:background 0.2s,border-color 0.2s;
+  cursor:default;
+}
+.uni-node:hover .un-circle{
+  background:rgba(198,164,122,0.12);
+  border-color:rgba(198,164,122,0.5);
+}
+.un-name{font-size:8px;font-weight:400;letter-spacing:0.1em;color:var(--gold);}
+.un-layer{font-size:6px;font-weight:200;letter-spacing:0.06em;color:var(--dim);}
+.un-desc{
+  font-size:7px;font-weight:200;letter-spacing:0.03em;
+  color:var(--muted);white-space:nowrap;text-align:center;
+  line-height:1.4;
+}
 
-  .orbit-diagram {
-    position: relative;
-    width: 260px;
-    height: 260px;
-  }
+/* ═══════════════════════════════════════
+   HUMAN & LIFESTYLE
+═══════════════════════════════════════ */
+.ls-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:100px 100px;
+  gap:5px;
+}
+.ls{border-radius:2px;overflow:hidden;position:relative;}
+.ls.tall{grid-row:span 2;}
+.ls.la{background:linear-gradient(160deg,#1e1510 0%,#120d08 100%);}
+.ls.lb{background:linear-gradient(160deg,#111318 0%,#1a1d22 100%);}
+.ls.lc{background:linear-gradient(160deg,#1a1408 0%,#100d06 100%);}
+.ls.ld{background:linear-gradient(160deg,#0a0a0a 0%,#1a1510 100%);}
+.ls::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 30%,rgba(198,164,122,0.06) 0%,transparent 70%);
+}
+/* Decorative silhouettes */
+.ls-inner{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0.15;
+}
 
-  /* 軌道リング */
-  .orbit-ring {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid rgba(200,168,130,0.15);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  .orbit-ring.r1 { width: 120px; height: 120px; }
-  .orbit-ring.r2 { width: 200px; height: 200px; border-style: dashed; border-color: rgba(200,168,130,0.1); }
-  .orbit-ring.r3 { width: 260px; height: 260px; border-color: rgba(200,168,130,0.06); }
+/* ═══════════════════════════════════════
+   MOTION
+═══════════════════════════════════════ */
+.motion-items{display:flex;gap:16px;margin-bottom:20px;}
+.motion-item{flex:1;text-align:center;}
+.motion-demo{
+  height:30px;
+  background:var(--s2);
+  border:1px solid var(--bd);
+  border-radius:2px;
+  margin-bottom:7px;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.md-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--gold);opacity:0.5;
+}
+.motion-lbl{font-size:7px;letter-spacing:0.2em;color:var(--muted);}
+.motion-desc{
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:11px;font-weight:200;
+  color:var(--muted);letter-spacing:0.04em;line-height:1.9;
+}
 
-  /* 中心 — スタイリストID */
-  .center-node {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(200,168,130,0.18) 0%, rgba(200,168,130,0.05) 70%);
-    border: 1px solid rgba(200,168,130,0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    box-shadow: 0 0 24px rgba(200,168,130,0.12);
-  }
-  .center-node .cn-label {
-    font-size: 7px;
-    letter-spacing: 0.15em;
-    color: rgba(200,168,130,0.7);
-    text-transform: uppercase;
-  }
-  .center-node .cn-main {
-    font-size: 9px;
-    font-weight: 400;
-    letter-spacing: 0.1em;
-    color: #c8a882;
-    text-align: center;
-    line-height: 1.3;
-  }
+/* ═══════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════ */
+.type-name{
+  font-size:8px;letter-spacing:0.25em;
+  text-transform:uppercase;color:var(--gold);
+  margin-bottom:10px;
+}
+.type-large{
+  font-size:clamp(28px,3vw,38px);font-weight:200;
+  letter-spacing:0.1em;color:var(--text);
+  line-height:1.2;margin-bottom:8px;
+}
+.type-abc{
+  font-size:10px;font-weight:300;letter-spacing:0.1em;
+  color:var(--muted);margin-bottom:3px;
+}
+.type-num{font-size:10px;font-weight:100;letter-spacing:0.12em;color:var(--dim);}
+.type-specimen{margin-bottom:28px;}
 
-  /* 軌道上のノード */
-  .orbit-node {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    transform: translate(-50%, -50%);
-  }
-  .orbit-node .on-dot {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1px solid rgba(200,168,130,0.4);
-    background: rgba(200,168,130,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 8px;
-    letter-spacing: 0.1em;
-    color: #c8a882;
-    font-weight: 300;
-  }
-  .orbit-node .on-dot.future {
-    border-color: rgba(200,168,130,0.15);
-    background: transparent;
-    color: rgba(200,168,130,0.3);
-  }
-  .orbit-node .on-label {
-    font-size: 8px;
-    letter-spacing: 0.08em;
-    color: rgba(232,228,220,0.5);
-    white-space: nowrap;
-  }
-  .orbit-node .on-label.future { color: rgba(232,228,220,0.2); }
+/* ═══════════════════════════════════════
+   BOTTOM STRIP
+═══════════════════════════════════════ */
+.btm-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  border-top:1px solid var(--bd);
+}
+.bg-cell{
+  padding:36px 32px;
+  border-right:1px solid var(--bd);
+}
+.bg-cell:last-child{border-right:none;}
 
-  /* 外周ノード（統合対象） */
-  .outer-node {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    transform: translate(-50%, -50%);
-  }
-  .outer-node .oun-dot {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 1px solid rgba(232,228,220,0.12);
-    background: rgba(232,228,220,0.03);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .outer-node .oun-label {
-    font-size: 7px;
-    letter-spacing: 0.05em;
-    color: rgba(232,228,220,0.3);
-    white-space: nowrap;
-  }
+.phil-item{
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:12px;font-weight:200;
+  color:var(--muted);letter-spacing:0.04em;line-height:2;
+  border-left:1px solid var(--gbd);
+  padding-left:12px;margin-bottom:12px;
+}
+.phil-item:last-child{margin-bottom:0;}
 
-  /* ── Bottom — 3つの価値提案 ── */
-  .values {
-    width: 100%;
-    max-width: 900px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 48px;
-  }
-  .value-card {
-    border: 1px solid rgba(200,168,130,0.15);
-    border-radius: 3px;
-    padding: 20px 18px;
-    background: rgba(200,168,130,0.04);
-  }
-  .value-num {
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    color: rgba(200,168,130,0.5);
-    margin-bottom: 10px;
-  }
-  .value-title {
-    font-size: clamp(12px, 1.5vw, 14px);
-    font-weight: 300;
-    letter-spacing: 0.06em;
-    color: #e8e4dc;
-    margin-bottom: 8px;
-    line-height: 1.5;
-  }
-  .value-title em { font-style: normal; color: #c8a882; }
-  .value-body {
-    font-size: clamp(10px, 1.2vw, 11px);
-    font-weight: 200;
-    letter-spacing: 0.04em;
-    color: rgba(232,228,220,0.45);
-    line-height: 1.8;
-  }
+.kw-tags{display:flex;flex-wrap:wrap;gap:7px;}
+.kw-tag{
+  font-size:8px;letter-spacing:0.15em;
+  text-transform:uppercase;
+  padding:4px 10px;
+  border:1px solid var(--gbd);
+  border-radius:1px;color:var(--gold);
+}
+.kw-tag.hi{background:rgba(198,164,122,0.1);}
 
-  /* ── Footer ── */
-  .footer {
-    text-align: center;
-  }
-  .footer-copy {
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    color: rgba(232,228,220,0.2);
-  }
-  .footer-copy em { font-style: normal; color: rgba(200,168,130,0.4); }
+.nf-item{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:11px;font-weight:200;
+  color:rgba(232,228,220,0.3);
+  letter-spacing:0.03em;margin-bottom:10px;
+}
+.nf-x{font-size:10px;color:rgba(200,80,80,0.45);flex-shrink:0;}
 
-  /* ── Responsive ── */
-  @media (max-width: 640px) {
-    .diagram { flex-direction: column; gap: 24px; }
-    .arrow-area { transform: rotate(90deg); }
-    .values { grid-template-columns: 1fr; }
-    .orbit-diagram { width: 220px; height: 220px; }
-    .orbit-ring.r1 { width: 100px; height: 100px; }
-    .orbit-ring.r2 { width: 166px; height: 166px; }
-    .orbit-ring.r3 { width: 220px; height: 220px; }
-  }
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+.footer{
+  background:var(--s1);
+  border-top:1px solid var(--bd);
+  padding:56px 10%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.ft-logo{display:flex;align-items:center;gap:14px;}
+.ft-name{font-weight:200;font-size:22px;letter-spacing:0.4em;}
+.ft-right{text-align:right;}
+.ft-en{font-size:11px;letter-spacing:0.18em;color:var(--gold);margin-bottom:6px;}
+.ft-jp{
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:10px;font-weight:200;color:var(--muted);
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media(max-width:768px){
+  .bible-grid{grid-template-columns:1fr;}
+  .bc.s2,.bc.s3{grid-column:span 1;}
+  .btm-grid{grid-template-columns:1fr 1fr;}
+  .footer{flex-direction:column;gap:24px;text-align:center;}
+  .ft-right{text-align:center;}
+  .hero{padding:80px 6%;}
+  .bc{padding:28px 20px;}
+}
 </style>
 </head>
 <body>
 
-<!-- ── HEADER ── -->
-<div class="header">
-  <div class="header-logo">
-    <svg width="28" height="28" viewBox="0 0 80 80" fill="none">
-      <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="3" opacity="0.9"/>
-      <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="3" opacity="0.5"/>
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <div class="hero-logo">
+    <!-- Swan mark -->
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Outer wing arc -->
+      <path d="M10 38 C10 38 6 28 10 18 C14 8 24 4 32 8 C38 11 40 18 36 24 C33 28 27 28 24 24" stroke="#C6A47A" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <!-- Neck -->
+      <path d="M24 24 C21 20 20 14 23 10" stroke="#C6A47A" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <!-- Head -->
+      <circle cx="25" cy="8" r="2.5" stroke="#C6A47A" stroke-width="1.2" fill="none"/>
+      <!-- Body / tail -->
+      <path d="M10 38 C14 42 20 44 26 42 C32 40 36 36 34 30 C32 26 27 28 24 24" stroke="#C6A47A" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <!-- Tail feathers -->
+      <path d="M34 30 C38 28 42 30 40 36" stroke="#C6A47A" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.6"/>
     </svg>
-    <div class="header-logo-text">
-      <div class="brand">CYGNUS</div>
-      <div class="sub">STYLIST OS</div>
-    </div>
+    <div class="hero-logo-name">CYGNUS</div>
   </div>
-  <div class="header-tagline">技術者が<em>主役</em>の世界へ</div>
-  <div class="header-sub">スタイリストIDを軸に、分断されたすべてをひとつに</div>
-</div>
+  <div class="hero-tagline-en">Your craft belongs to you.</div>
+  <div class="hero-tagline-jp">積み上げた技術は、あなたのものになる。</div>
 
-<!-- ── DIAGRAM ── -->
-<div class="diagram">
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    <div class="hero-scroll-txt">SCROLL</div>
+  </div>
+</section>
 
-  <!-- LEFT: 現在の世界 -->
-  <div class="side">
-    <div class="side-label">// 現在の世界</div>
+<!-- ═══════════════ ROW 1 ═══════════════ -->
+<div class="bible-grid">
 
-    <div class="silo-box">
-      <div class="silo-icon red">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <rect x="1" y="3" width="12" height="9" rx="1.5" stroke="rgba(220,80,80,0.7)" stroke-width="1.1"/>
-          <path d="M4 3V2C4 1.4 4.4 1 5 1H9C9.6 1 10 1.4 10 2V3" stroke="rgba(220,80,80,0.7)" stroke-width="1.1"/>
-        </svg>
-      </div>
-      <div>
-        <div class="silo-name">ホットペッパービューティ</div>
-        <div class="silo-desc">掲載料・成果報酬で売上を吸収</div>
-      </div>
-    </div>
-
-    <div class="silo-box dim">
-      <div class="silo-icon gray">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="rgba(150,150,150,0.6)" stroke-width="1.1"/>
-          <line x1="2" y1="6" x2="12" y2="6" stroke="rgba(150,150,150,0.6)" stroke-width="1"/>
-        </svg>
-      </div>
-      <div>
-        <div class="silo-name">POSレジ</div>
-        <div class="silo-desc">データは店舗に閉じている</div>
-      </div>
-    </div>
-
-    <div class="silo-box dim">
-      <div class="silo-icon blue">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <rect x="1" y="2" width="12" height="10" rx="1.5" stroke="rgba(80,130,220,0.6)" stroke-width="1.1"/>
-          <polyline points="1,5.5 7,8 13,5.5" stroke="rgba(80,130,220,0.6)" stroke-width="1"/>
-        </svg>
-      </div>
-      <div>
-        <div class="silo-name">予約システム</div>
-        <div class="silo-desc">顧客情報は職場の所有物</div>
-      </div>
-    </div>
-
-    <div class="silo-box dim">
-      <div class="silo-icon green">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M7 1L9.5 5H12.5L10 7.5L11 11L7 9L3 11L4 7.5L1.5 5H4.5Z" stroke="rgba(80,180,120,0.6)" stroke-width="1" fill="none"/>
-        </svg>
-      </div>
-      <div>
-        <div class="silo-name">在庫・発注</div>
-        <div class="silo-desc">アナログ管理、DX未着手</div>
-      </div>
-    </div>
-
-    <div class="stylist-trapped">
-      <div class="t-label">// Stylist</div>
-      <div class="t-name">スタイリスト</div>
-      <div class="t-sub">プラットフォームに依存、転職で資産ゼロに</div>
+  <!-- CYGNUS WORLD -->
+  <div class="bc">
+    <div class="cell-title">Cygnus World</div>
+    <div class="cell-sub">静かな工房のような、集中と信頼の世界。</div>
+    <div class="world-grid">
+      <div class="wi wa"><div class="wi-label">Salon</div></div>
+      <div class="wi wb"><div class="wi-label">Craft</div></div>
+      <div class="wi wc"><div class="wi-label">Tool</div></div>
+      <div class="wi wd"><div class="wi-label">Studio</div></div>
+      <div class="wi we"><div class="wi-label">Space</div></div>
+      <div class="wi wf"><div class="wi-label">Light</div></div>
     </div>
   </div>
 
-  <!-- ARROW -->
-  <div class="arrow-area">
-    <div class="arrow-line"></div>
-    <div class="arrow-word">CYGNUS</div>
+  <!-- COLOR PALETTE -->
+  <div class="bc">
+    <div class="cell-title">Color Palette</div>
+    <div class="cell-sub">&nbsp;</div>
+
+    <div class="palette-group">
+      <div class="pg-label">Base</div>
+      <div class="swatches" style="margin-bottom:20px;">
+        <div class="sw" style="background:#0A0A0A;border:1px solid rgba(255,255,255,0.06);">
+          <div class="sw-hex">#0A0A0A</div>
+        </div>
+        <div class="sw" style="background:#111318;">
+          <div class="sw-hex">#111318</div>
+        </div>
+        <div class="sw" style="background:#1A1D22;">
+          <div class="sw-hex">#1A1D22</div>
+        </div>
+        <div class="sw" style="background:#23272D;">
+          <div class="sw-hex">#23272D</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="palette-group">
+      <div class="pg-label">Text</div>
+      <div class="swatches" style="margin-bottom:20px;">
+        <div class="sw" style="background:#E8E4DC;flex:2;">
+          <div class="sw-hex" style="color:#555;">#E8E4DC</div>
+        </div>
+        <div class="sw" style="background:#B8B3A6;flex:2;">
+          <div class="sw-hex" style="color:#555;">#B8B3A6</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="palette-group">
+      <div class="pg-label">Accent</div>
+      <div class="swatches" style="margin-bottom:20px;">
+        <div class="sw" style="background:#C6A47A;flex:2;">
+          <div class="sw-hex" style="color:#3a2810;">#C6A47A</div>
+        </div>
+        <div class="sw" style="background:#DBB98B;flex:2;">
+          <div class="sw-hex" style="color:#3a2810;">#DBB98B</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="palette-group">
+      <div class="pg-label">Support</div>
+      <div class="swatches">
+        <div class="sw" style="background:#23272D;"><div class="sw-hex">#23272D</div></div>
+        <div class="sw" style="background:#2F333A;"><div class="sw-hex">#2F333A</div></div>
+        <div class="sw" style="background:#3E4249;"><div class="sw-hex">#3E4249</div></div>
+        <div class="sw" style="background:#E0DDD6;"><div class="sw-hex" style="color:#555;">#E0DDD6</div></div>
+      </div>
+    </div>
   </div>
 
-  <!-- RIGHT: Cygnus世界 -->
-  <div class="cygnus-world">
-    <div class="side-label" style="margin-bottom:12px;">// Cygnus の世界</div>
-
-    <div class="orbit-diagram">
-      <!-- 軌道リング -->
-      <div class="orbit-ring r3"></div>
-      <div class="orbit-ring r2"></div>
-      <div class="orbit-ring r1"></div>
-
-      <!-- 中心: スタイリストID -->
-      <div class="center-node">
-        <svg width="16" height="16" viewBox="0 0 80 80" fill="none">
-          <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/>
-          <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/>
-        </svg>
-        <div class="cn-label">Stylist ID</div>
-        <div class="cn-main">技術者の<br>唯一の軸</div>
-      </div>
-
-      <!-- 第1軌道: Cygnusプロダクト -->
-      <!-- LOOP: 上 -->
-      <div class="orbit-node" style="top:8%;left:50%;">
-        <div class="on-dot">LOOP</div>
-        <div class="on-label">在庫・売上管理</div>
-      </div>
-      <!-- RESERVE: 右 -->
-      <div class="orbit-node" style="top:50%;left:92%;">
-        <div class="on-dot">RSV</div>
-        <div class="on-label">予約・顧客管理</div>
-      </div>
-      <!-- ?: 下 -->
-      <div class="orbit-node" style="top:92%;left:50%;">
-        <div class="on-dot future">+</div>
-        <div class="on-label future">次のサービス</div>
-      </div>
-      <!-- ?: 左 -->
-      <div class="orbit-node" style="top:50%;left:8%;">
-        <div class="on-dot future">+</div>
-        <div class="on-label future">次のサービス</div>
-      </div>
-
-      <!-- 第2軌道: 外部連携 -->
-      <!-- POS: 右上 -->
-      <div class="outer-node" style="top:18%;left:78%;">
-        <div class="oun-dot">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="rgba(232,228,220,0.3)" stroke-width="1.1"/>
-            <line x1="2" y1="6" x2="12" y2="6" stroke="rgba(232,228,220,0.3)" stroke-width="1"/>
-          </svg>
-        </div>
-        <div class="oun-label">POS</div>
-      </div>
-      <!-- SNS: 右下 -->
-      <div class="outer-node" style="top:78%;left:82%;">
-        <div class="oun-dot">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <circle cx="7" cy="7" r="5" stroke="rgba(232,228,220,0.3)" stroke-width="1.1"/>
-            <line x1="7" y1="2" x2="7" y2="12" stroke="rgba(232,228,220,0.3)" stroke-width="0.8"/>
-            <line x1="2" y1="7" x2="12" y2="7" stroke="rgba(232,228,220,0.3)" stroke-width="0.8"/>
-          </svg>
-        </div>
-        <div class="oun-label">SNS</div>
-      </div>
-      <!-- 実績: 左下 -->
-      <div class="outer-node" style="top:80%;left:20%;">
-        <div class="oun-dot">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <polyline points="1,11 4,7 7,9 10,4 13,6" stroke="rgba(232,228,220,0.3)" stroke-width="1.1" fill="none"/>
-          </svg>
-        </div>
-        <div class="oun-label">実績</div>
-      </div>
-      <!-- 資格: 左上 -->
-      <div class="outer-node" style="top:20%;left:18%;">
-        <div class="oun-dot">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <circle cx="7" cy="6" r="3.5" stroke="rgba(232,228,220,0.3)" stroke-width="1.1"/>
-            <path d="M4 9.5L3 13L7 11L11 13L10 9.5" stroke="rgba(232,228,220,0.3)" stroke-width="1" fill="none"/>
-          </svg>
-        </div>
-        <div class="oun-label">資格・技術</div>
-      </div>
+  <!-- MATERIAL & TEXTURE -->
+  <div class="bc">
+    <div class="cell-title">Material &amp; Texture</div>
+    <div class="cell-sub">&nbsp;</div>
+    <div class="tex-grid">
+      <div class="tex t1"><div class="tex-label">Stone</div></div>
+      <div class="tex t2"><div class="tex-label">Gold</div></div>
+      <div class="tex t3"><div class="tex-label">Metal</div></div>
+      <div class="tex t4"><div class="tex-label">Dark</div></div>
     </div>
   </div>
 
 </div>
 
-<!-- ── VALUE CARDS ── -->
-<div class="values">
+<!-- ═══════════════ ROW 2 ═══════════════ -->
+<div class="bible-grid">
 
-  <div class="value-card">
-    <div class="value-num">// 01</div>
-    <div class="value-title">技術者の資産を<br><em>技術者の手に</em></div>
-    <div class="value-body">
-      顧客履歴・売上実績・技術評価を<br>
-      スタイリストIDに紐づけることで、<br>
-      転職・独立しても資産がゼロになならない。
+  <!-- UI MOOD -->
+  <div class="bc">
+    <div class="cell-title">UI Mood</div>
+    <div class="cell-sub">&nbsp;</div>
+    <div class="ui-frame">
+      <div class="ui-topbar">
+        <svg width="14" height="14" viewBox="0 0 52 52" fill="none">
+          <path d="M10 38 C10 38 6 28 10 18 C14 8 24 4 32 8 C38 11 40 18 36 24 C33 28 27 28 24 24" stroke="#C6A47A" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M24 24 C21 20 20 14 23 10" stroke="#C6A47A" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <circle cx="25" cy="8" r="2.5" stroke="#C6A47A" stroke-width="1.5" fill="none"/>
+          <path d="M10 38 C14 42 20 44 26 42 C32 40 36 36 34 30 C32 26 27 28 24 24" stroke="#C6A47A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="ui-brandtxt">CYGNUS LOOP</div>
+      </div>
+      <div class="ui-body">
+        <div class="ui-sidebar">
+          <div class="ui-nav act">
+            <div class="ui-nav-icon"></div>Home
+          </div>
+          <div class="ui-nav">
+            <div class="ui-nav-icon"></div>売上
+          </div>
+          <div class="ui-nav">
+            <div class="ui-nav-icon"></div>在庫
+          </div>
+          <div class="ui-nav">
+            <div class="ui-nav-icon"></div>顧客
+          </div>
+          <div class="ui-nav">
+            <div class="ui-nav-icon"></div>Staff
+          </div>
+          <div class="ui-nav">
+            <div class="ui-nav-icon"></div>AI
+          </div>
+          <div class="ui-nav">
+            <div class="ui-nav-icon"></div>設定
+          </div>
+        </div>
+        <div class="ui-main">
+          <div class="ui-kpis">
+            <div class="ui-kpi">
+              <div class="ui-kpi-lbl">今日の売上</div>
+              <div class="ui-kpi-val">¥1,234,567</div>
+              <div class="ui-kpi-diff">+12.3%</div>
+            </div>
+            <div class="ui-kpi">
+              <div class="ui-kpi-lbl">予数</div>
+              <div class="ui-kpi-val">87</div>
+              <div class="ui-kpi-diff">+8.1%</div>
+            </div>
+            <div class="ui-kpi">
+              <div class="ui-kpi-lbl">平均単価</div>
+              <div class="ui-kpi-val">¥14,219</div>
+              <div class="ui-kpi-diff">+9.4%</div>
+            </div>
+          </div>
+          <div class="ui-chart-wrap">
+            <div class="ui-bar" style="height:40%;"></div>
+            <div class="ui-bar" style="height:60%;"></div>
+            <div class="ui-bar" style="height:35%;"></div>
+            <div class="ui-bar" style="height:75%;"></div>
+            <div class="ui-bar" style="height:50%;"></div>
+            <div class="ui-bar" style="height:85%;background:rgba(198,164,122,0.55);"></div>
+            <div class="ui-bar" style="height:65%;"></div>
+            <div class="ui-bar" style="height:90%;background:rgba(198,164,122,0.55);"></div>
+            <div class="ui-bar" style="height:70%;"></div>
+            <div class="ui-bar" style="height:55%;"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="value-card">
-    <div class="value-num">// 02</div>
-    <div class="value-title">プラットフォームへの<br><em>依存から解放</em></div>
-    <div class="value-body">
-      集客・予約・決済をCygnusが統合することで、<br>
-      掲載料や成果報酬による売上の流出を止め、<br>
-      技術者が適正な報酬を受け取れる構造へ。
+  <!-- PRODUCT UNIVERSE -->
+  <div class="bc">
+    <div class="cell-title">Product Universe</div>
+    <div class="cell-sub">Cygnusは、技術者の人生を支えるOS。</div>
+
+    <div class="universe-wrap">
+      <div class="uni-diagram">
+        <div class="uni-ring r3"></div>
+        <div class="uni-ring r2"></div>
+        <div class="uni-ring r1"></div>
+
+        <!-- CENTER -->
+        <div class="uni-center">
+          <svg width="14" height="14" viewBox="0 0 52 52" fill="none">
+            <path d="M10 38 C10 38 6 28 10 18 C14 8 24 4 32 8 C38 11 40 18 36 24 C33 28 27 28 24 24" stroke="#C6A47A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M24 24 C21 20 20 14 23 10" stroke="#C6A47A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <circle cx="25" cy="8" r="3" stroke="#C6A47A" stroke-width="2" fill="none"/>
+            <path d="M10 38 C14 42 20 44 26 42 C32 40 36 36 34 30 C32 26 27 28 24 24" stroke="#C6A47A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="uc-brand">CYGNUS</div>
+          <div class="uc-sub">Craft Identity<br>Infrastructure</div>
+        </div>
+
+        <!-- IDENTITY — top (0°) -->
+        <div class="uni-node" style="top:7%;left:50%;">
+          <div class="un-circle">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="5" r="2.5" stroke="#C6A47A" stroke-width="1"/>
+              <path d="M2 13C2 10.2 4.2 8 7 8C9.8 8 12 10.2 12 13" stroke="#C6A47A" stroke-width="1" stroke-linecap="round" fill="none"/>
+            </svg>
+            <div class="un-name">ID</div>
+            <div class="un-layer">Identity</div>
+          </div>
+          <div class="un-desc">技術者の人生を資産化</div>
+        </div>
+
+        <!-- STUDIO — top-right (60°) -->
+        <div class="uni-node" style="top:22%;left:85%;">
+          <div class="un-circle">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="3" width="10" height="9" rx="1.5" stroke="#C6A47A" stroke-width="1" fill="none"/>
+              <path d="M5 7h4M5 9h2" stroke="#C6A47A" stroke-width="0.8" stroke-linecap="round"/>
+            </svg>
+            <div class="un-name">STUDIO</div>
+            <div class="un-layer">Craft Archive</div>
+          </div>
+          <div class="un-desc">技術を作品として残す</div>
+        </div>
+
+        <!-- AI — bottom-right (120°) -->
+        <div class="uni-node" style="top:72%;left:85%;">
+          <div class="un-circle">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="4" stroke="#C6A47A" stroke-width="1" fill="none"/>
+              <circle cx="7" cy="7" r="1.5" stroke="#C6A47A" stroke-width="0.8" fill="none"/>
+              <line x1="7" y1="3" x2="7" y2="1" stroke="#C6A47A" stroke-width="0.8"/>
+              <line x1="7" y1="11" x2="7" y2="13" stroke="#C6A47A" stroke-width="0.8"/>
+              <line x1="3" y1="7" x2="1" y2="7" stroke="#C6A47A" stroke-width="0.8"/>
+              <line x1="11" y1="7" x2="13" y2="7" stroke="#C6A47A" stroke-width="0.8"/>
+            </svg>
+            <div class="un-name">AI</div>
+            <div class="un-layer">Intelligence</div>
+          </div>
+          <div class="un-desc">技術者の思考を支援する</div>
+        </div>
+
+        <!-- ACADEMY — bottom (180°) -->
+        <div class="uni-node" style="top:91%;left:50%;">
+          <div class="un-circle">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 2L13 5L7 8L1 5Z" stroke="#C6A47A" stroke-width="1" fill="none" stroke-linejoin="round"/>
+              <path d="M4 6.5V10C4 10 5.5 12 7 12C8.5 12 10 10 10 10V6.5" stroke="#C6A47A" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div class="un-name">ACADEMY</div>
+            <div class="un-layer">Learning</div>
+          </div>
+          <div class="un-desc">学びと成長をサポート</div>
+        </div>
+
+        <!-- LOOP — bottom-left (240°) -->
+        <div class="uni-node" style="top:72%;left:15%;">
+          <div class="un-circle">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="4" width="10" height="7" rx="1" stroke="#C6A47A" stroke-width="1" fill="none"/>
+              <line x1="5" y1="2" x2="5" y2="4" stroke="#C6A47A" stroke-width="1" stroke-linecap="round"/>
+              <line x1="9" y1="2" x2="9" y2="4" stroke="#C6A47A" stroke-width="1" stroke-linecap="round"/>
+              <line x1="4" y1="8" x2="10" y2="8" stroke="#C6A47A" stroke-width="0.8" stroke-linecap="round"/>
+            </svg>
+            <div class="un-name">LOOP</div>
+            <div class="un-layer">Operations</div>
+          </div>
+          <div class="un-desc">技術に集中できる環境を整える</div>
+        </div>
+
+        <!-- RESERVE — top-left (300°) -->
+        <div class="uni-node" style="top:22%;left:15%;">
+          <div class="un-circle">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="5" stroke="#C6A47A" stroke-width="1" fill="none"/>
+              <path d="M7 4v3l2 2" stroke="#C6A47A" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+            <div class="un-name">RESERVE</div>
+            <div class="un-layer">Relationship</div>
+          </div>
+          <div class="un-desc">予約と関係性の入口に</div>
+        </div>
+
+      </div>
     </div>
   </div>
 
-  <div class="value-card">
-    <div class="value-num">// 03</div>
-    <div class="value-title">分断されたDXを<br><em>ひとつに</em></div>
-    <div class="value-body">
-      POS・予約・在庫・売上がバラバラに存在する<br>
-      現状を、Cygnusがひとつのプラットフォームに<br>
-      統合。まず<em>LOOP</em>から始まる。
+  <!-- HUMAN & LIFESTYLE -->
+  <div class="bc">
+    <div class="cell-title">Human &amp; Lifestyle</div>
+    <div class="cell-sub">&nbsp;</div>
+    <div class="ls-grid">
+      <div class="ls la tall">
+        <div class="ls-inner">
+          <svg width="60" height="80" viewBox="0 0 60 80" fill="none">
+            <circle cx="30" cy="18" r="10" stroke="#C6A47A" stroke-width="1" fill="none"/>
+            <path d="M10 70C10 55 18 45 30 45C42 45 50 55 50 70" stroke="#C6A47A" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ls lb">
+        <div class="ls-inner">
+          <svg width="50" height="40" viewBox="0 0 50 40" fill="none">
+            <path d="M5 30C5 30 15 10 25 15C35 20 45 5 45 5" stroke="#C6A47A" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ls lc">
+        <div class="ls-inner">
+          <svg width="50" height="40" viewBox="0 0 50 40" fill="none">
+            <rect x="10" y="8" width="30" height="24" rx="2" stroke="#C6A47A" stroke-width="1" fill="none"/>
+            <line x1="10" y1="16" x2="40" y2="16" stroke="#C6A47A" stroke-width="0.8"/>
+          </svg>
+        </div>
+      </div>
     </div>
   </div>
 
 </div>
 
-<!-- ── FOOTER ── -->
-<div class="footer">
-  <div class="footer-copy">
-    <em>CYGNUS</em> &nbsp;—&nbsp; Stylist OS &nbsp;·&nbsp; 2026
+<!-- ═══════════════ ROW 3 ═══════════════ -->
+<div class="bible-grid">
+
+  <!-- MOTION PRINCIPLE -->
+  <div class="bc">
+    <div class="cell-title">Motion Principle</div>
+    <div class="cell-sub">&nbsp;</div>
+    <div class="motion-items">
+      <div class="motion-item">
+        <div class="motion-demo"><div class="md-dot" style="opacity:0.3;"></div></div>
+        <div class="motion-lbl">FADE</div>
+      </div>
+      <div class="motion-item">
+        <div class="motion-demo"><div class="md-dot" style="transform:translateX(-6px);"></div></div>
+        <div class="motion-lbl">SLIDE</div>
+      </div>
+      <div class="motion-item">
+        <div class="motion-demo">
+          <svg width="28" height="10" viewBox="0 0 28 10" fill="none">
+            <path d="M2 8C4 8 6 2 8 2C10 2 12 8 14 6C16 4 18 2 26 2" stroke="#C6A47A" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+          </svg>
+        </div>
+        <div class="motion-lbl">SMOOTH</div>
+      </div>
+      <div class="motion-item">
+        <div class="motion-demo">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="1" stroke="#C6A47A" stroke-width="1" opacity="0.6"/>
+            <circle cx="8" cy="8" r="2" stroke="#C6A47A" stroke-width="0.8" opacity="0.6"/>
+          </svg>
+        </div>
+        <div class="motion-lbl">FOCUS</div>
+      </div>
+    </div>
+    <div class="motion-desc">急がない、静かに、呼吸するような動き。</div>
   </div>
+
+  <!-- TYPOGRAPHY -->
+  <div class="bc s2">
+    <div class="cell-title">Typography</div>
+    <div class="cell-sub">&nbsp;</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+      <div class="type-specimen">
+        <div class="type-name">Josefin Sans — Display</div>
+        <div class="type-large">Aa</div>
+        <div class="type-abc">ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
+        <div class="type-abc">abcdefghijklmnopqrstuvwxyz</div>
+        <div class="type-num">0123456789</div>
+      </div>
+      <div class="type-specimen">
+        <div class="type-name">Noto Sans JP — Body</div>
+        <div class="type-large" style="font-family:'Noto Sans JP',sans-serif;font-weight:200;">あ</div>
+        <div class="type-abc" style="font-family:'Noto Sans JP',sans-serif;font-weight:200;letter-spacing:0.05em;">あいうえお　アイウエオ　漢字</div>
+        <div class="type-num" style="font-family:'Noto Sans JP',sans-serif;">0123456789</div>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+<!-- ═══════════════ BOTTOM STRIP ═══════════════ -->
+<div class="btm-grid">
+
+  <!-- PHILOSOPHY -->
+  <div class="bg-cell">
+    <div class="cell-title" style="margin-bottom:20px;">Philosophy</div>
+    <div class="phil-item">注目ではなく、信頼を積み上げる。</div>
+    <div class="phil-item">技術は消費されるべきではない。</div>
+    <div class="phil-item">良い仕事には、静けさが必要だ。</div>
+  </div>
+
+  <!-- KEYWORDS -->
+  <div class="bg-cell">
+    <div class="cell-title" style="margin-bottom:20px;">Keywords</div>
+    <div class="kw-tags">
+      <div class="kw-tag">Quiet</div>
+      <div class="kw-tag hi">Craft</div>
+      <div class="kw-tag hi">· Precision</div>
+      <div class="kw-tag">Focused</div>
+      <div class="kw-tag">Warm Dark</div>
+      <div class="kw-tag">Timeless</div>
+      <div class="kw-tag">Human</div>
+      <div class="kw-tag">Architectural</div>
+    </div>
+  </div>
+
+  <!-- NOT FOR -->
+  <div class="bg-cell">
+    <div class="cell-title" style="margin-bottom:20px;">Not For</div>
+    <div class="nf-item"><span class="nf-x">×</span> 派手なUI</div>
+    <div class="nf-item"><span class="nf-x">×</span> SNS映え</div>
+    <div class="nf-item"><span class="nf-x">×</span> ネオン</div>
+    <div class="nf-item"><span class="nf-x">×</span> 数字の圧</div>
+    <div class="nf-item"><span class="nf-x">×</span> AIっぽさ</div>
+    <div class="nf-item"><span class="nf-x">×</span> HUSTLE文化</div>
+  </div>
+
+  <!-- TAGLINE CLOSER -->
+  <div class="bg-cell" style="background:var(--s1);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:16px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="32" height="32" viewBox="0 0 52 52" fill="none">
+        <path d="M10 38 C10 38 6 28 10 18 C14 8 24 4 32 8 C38 11 40 18 36 24 C33 28 27 28 24 24" stroke="#C6A47A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M24 24 C21 20 20 14 23 10" stroke="#C6A47A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="25" cy="8" r="2.5" stroke="#C6A47A" stroke-width="1.2" fill="none"/>
+        <path d="M10 38 C14 42 20 44 26 42 C32 40 36 36 34 30 C32 26 27 28 24 24" stroke="#C6A47A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M34 30 C38 28 42 30 40 36" stroke="#C6A47A" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+      <div style="font-weight:200;font-size:18px;letter-spacing:0.35em;">CYGNUS</div>
+    </div>
+    <div style="font-size:11px;letter-spacing:0.18em;color:var(--gold);">Your craft belongs to you.</div>
+    <div style="font-family:'Noto Sans JP',sans-serif;font-size:10px;font-weight:200;color:var(--muted);line-height:1.8;">
+      積み上げた技術は、<br>あなたのものになる。
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+  <div class="ft-logo">
+    <svg width="36" height="36" viewBox="0 0 52 52" fill="none">
+      <path d="M10 38 C10 38 6 28 10 18 C14 8 24 4 32 8 C38 11 40 18 36 24 C33 28 27 28 24 24" stroke="#C6A47A" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M24 24 C21 20 20 14 23 10" stroke="#C6A47A" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <circle cx="25" cy="8" r="2.5" stroke="#C6A47A" stroke-width="1.2" fill="none"/>
+      <path d="M10 38 C14 42 20 44 26 42 C32 40 36 36 34 30 C32 26 27 28 24 24" stroke="#C6A47A" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M34 30 C38 28 42 30 40 36" stroke="#C6A47A" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5"/>
+    </svg>
+    <div class="ft-name">CYGNUS</div>
+  </div>
+  <div class="ft-right">
+    <div class="ft-en">Your craft belongs to you.</div>
+    <div class="ft-jp">積み上げた技術は、あなたのものになる。</div>
+  </div>
+</footer>
 
 </body>
 </html>
