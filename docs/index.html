@@ -973,6 +973,7 @@ html, body {
 
     <div class="staff-card" style="cursor:pointer;" onclick="goToStaffSales('高橋 美咲')"><div class="staff-av">高</div><div class="staff-info"><div class="staff-name">高橋 美咲</div><div class="staff-role">スタイリスト · 5名担当</div></div><div class="staff-sales"><span>¥</span>72,300</div></div>
     <div class="staff-card" style="cursor:pointer;" onclick="goToStaffSales('青木 なつき')"><div class="staff-av">青</div><div class="staff-info"><div class="staff-name">青木 なつき</div><div class="staff-role">スタイリスト · 4名担当</div></div><div class="staff-sales"><span>¥</span>57,600</div></div>
+    <div class="staff-card" style="cursor:pointer;" onclick="goToStaffSales('中村 りな')"><div class="staff-av">中</div><div class="staff-info"><div class="staff-name">中村 りな</div><div class="staff-role">スタイリスト · 3名担当</div></div><div class="staff-sales"><span>¥</span>41,800</div></div>
   </div>
   <div class="bottom-nav">
     <div class="nav-item active" onclick="goTo('dashboard')"><svg class="nav-icon" viewBox="0 0 22 22" fill="none"><rect x="2" y="2" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/><rect x="12" y="2" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/><rect x="2" y="12" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/><rect x="12" y="12" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/></svg><div class="nav-label">ホーム</div></div>
@@ -1231,9 +1232,9 @@ html, body {
         </div>
       </div>
       <div class="section-title"><div class="st-text"><svg width="12" height="12" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> スタッフ売上</div><div class="st-link">詳細 →</div></div>
-      <div id="storeStaffRanking"><div class="staff-row"><div class="rank gold">1</div><div class="staff-av">高</div><div class="rank-info"><div class="rank-name">高橋 美咲</div><div class="rank-meta">5名 · 技術 ¥61,100</div></div><div class="rank-right"><div class="rank-sales"><span>¥</span>72,300</div><div class="rank-pct">37%</div></div></div>
-      <div class="staff-row"><div class="rank">2</div><div class="staff-av">青</div><div class="rank-info"><div class="rank-name">青木 なつき</div><div class="rank-meta">4名 · 技術 ¥49,800</div></div><div class="rank-right"><div class="rank-sales"><span>¥</span>57,600</div><div class="rank-pct">30%</div></div></div>
-      <div class="staff-row"><div class="rank">3</div><div class="staff-av">中</div><div class="rank-info"><div class="rank-name">中村 りな</div><div class="rank-meta">3名 · 技術 ¥36,300</div></div><div class="rank-right"><div class="rank-sales"><span>¥</span>41,800</div><div class="rank-pct">21%</div></div></div></div>
+      <div id="storeStaffRanking"><div class="staff-row" style="cursor:pointer;" onclick="goToStaffSales('高橋 美咲')"><div class="rank gold">1</div><div class="staff-av">高</div><div class="rank-info"><div class="rank-name">高橋 美咲</div><div class="rank-meta">5名 · 技術 ¥61,100</div></div><div class="rank-right"><div class="rank-sales"><span>¥</span>72,300</div><div class="rank-pct">37%</div></div></div>
+      <div class="staff-row" style="cursor:pointer;" onclick="goToStaffSales('青木 なつき')"><div class="rank">2</div><div class="staff-av">青</div><div class="rank-info"><div class="rank-name">青木 なつき</div><div class="rank-meta">4名 · 技術 ¥49,800</div></div><div class="rank-right"><div class="rank-sales"><span>¥</span>57,600</div><div class="rank-pct">30%</div></div></div>
+      <div class="staff-row" style="cursor:pointer;" onclick="goToStaffSales('中村 りな')"><div class="rank">3</div><div class="staff-av">中</div><div class="rank-info"><div class="rank-name">中村 りな</div><div class="rank-meta">3名 · 技術 ¥36,300</div></div><div class="rank-right"><div class="rank-sales"><span>¥</span>41,800</div><div class="rank-pct">21%</div></div></div></div>
     </div>
 
     <!-- STAFF -->
@@ -2730,7 +2731,7 @@ function renderStoreView(storeName) {
     var ranks = ['gold','',''];
     rankEl.innerHTML = d.staffRanking.map(function(s, i) {
       var initial = s.name.charAt(0);
-      return '<div class="staff-row">'
+      return '<div class="staff-row" style="cursor:pointer;" onclick="goToStaffSales(\'' + s.name + '\')">'
         + '<div class="rank ' + (ranks[i]||'') + '">' + (i+1) + '</div>'
         + '<div class="staff-av">' + initial + '</div>'
         + '<div class="rank-info"><div class="rank-name">' + s.name + '</div><div class="rank-meta">' + s.meta + '</div></div>'
