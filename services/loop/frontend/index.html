@@ -2376,6 +2376,10 @@ function openOrder(product, qty, price, dealer) {
 }
 
 function confirmOrder() {
+  var product = document.getElementById('modalProduct').textContent;
+  var dealer  = document.getElementById('modalDealer').textContent;
+  var qty     = document.getElementById('modalQty').textContent;
+
   var inner = document.getElementById('orderModalInner');
 
   // 現在の高さをロック（コンテンツ切替で縮まないよう固定）
