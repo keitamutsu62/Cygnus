@@ -2056,6 +2056,33 @@ html, body {
   </div>
 </div>
 
+<!-- ===== MENU EDIT MODAL ===== -->
+<div class="modal" id="menuEditModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);" id="menuEditTitle">メニューを編集</div>
+      <div id="menuEditBadge" style="font-size:9px;letter-spacing:0.12em;font-family:'Josefin Sans',sans-serif;color:var(--muted);padding:3px 8px;border:1px solid var(--border);border-radius:2px;">施術</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="field">
+        <div class="field-label">メニュー名</div>
+        <input class="field-input" type="text" id="menuEditName" placeholder="例：カット + カラー"/>
+      </div>
+      <div class="field">
+        <div class="field-label">金額（税込）</div>
+        <div style="position:relative;">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;">¥</span>
+          <input class="field-input" type="number" id="menuEditPrice" placeholder="0" style="padding-left:28px;"/>
+        </div>
+      </div>
+    </div>
+    <button class="btn-confirm" style="margin-top:20px;" onclick="saveMenuEdit()">保存する</button>
+    <button class="btn-cancel" style="margin-top:8px;" onclick="closeModal('menuEditModal')">キャンセル</button>
+    <button id="menuEditDeleteBtn" style="width:100%;padding:12px;background:transparent;border:none;font-size:11px;letter-spacing:0.12em;color:var(--alert);cursor:pointer;margin-top:4px;font-family:'Josefin Sans',sans-serif;" onclick="deleteMenuEntry()">このメニューを削除</button>
+  </div>
+</div>
+
 <!-- NOTIFICATION PANEL -->
 <div class="modal" id="notifPanel">
   <div class="modal-inner" id="notifPanelInner" style="max-height:70vh;overflow-y:auto;">
@@ -4190,7 +4217,7 @@ function renderMenuMaster() {
         + '<div class="menu-master-name">' + item.name + '</div>'
         + '<div class="menu-master-price">¥' + item.price.toLocaleString() + '</div>'
         + '</div>'
-        + '<div class="menu-master-edit">編集</div>'
+        + '<div class="menu-master-edit" onclick="openMenuEdit(\'' + type + '\',' + i + ')">編集</div>'
         + '</div>';
     }).join('');
   }
@@ -4214,6 +4241,64 @@ function switchMenuTab(tab) {
 }
 
 document.addEventListener('DOMContentLoaded', renderMenuMaster);
+
+// ═══════════════════════════════════════════
+// 共通トースト
+// ═══════════════════════════════════════════
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(function() { toast.style.display = 'none'; }, 2500);
+}
+
+// ═══════════════════════════════════════════
+// メニュー編集
+// ═══════════════════════════════════════════
+var _menuEditState = { type: 'menu', idx: -1 };
+
+function openMenuEdit(type, idx) {
+  var list = type === 'menu' ? checkoutMenuList : checkoutRetailList;
+  var item = list[idx];
+  if (!item) return;
+
+  _menuEditState.type = type;
+  _menuEditState.idx  = idx;
+
+  document.getElementById('menuEditTitle').textContent = type === 'menu' ? 'メニューを編集' : '物販商品を編集';
+  document.getElementById('menuEditBadge').textContent = type === 'menu' ? '施術' : '物販';
+  document.getElementById('menuEditName').value  = item.name;
+  document.getElementById('menuEditPrice').value = item.price;
+  openModal('menuEditModal');
+}
+
+function saveMenuEdit() {
+  var name  = document.getElementById('menuEditName').value.trim();
+  var price = parseInt(document.getElementById('menuEditPrice').value, 10);
+  if (!name || isNaN(price) || price < 0) {
+    alert('メニュー名と金額を正しく入力してください');
+    return;
+  }
+  var list = _menuEditState.type === 'menu' ? checkoutMenuList : checkoutRetailList;
+  list[_menuEditState.idx] = { name: name, price: price };
+  closeModal('menuEditModal');
+  renderMenuMaster();
+  // 現在表示中のタブを維持
+  switchMenuTab(_menuEditState.type);
+  showToast('変更を保存しました');
+}
+
+function deleteMenuEntry() {
+  var list = _menuEditState.type === 'menu' ? checkoutMenuList : checkoutRetailList;
+  var item = list[_menuEditState.idx];
+  if (!item) return;
+  if (!confirm('「' + item.name + '」を削除しますか？')) return;
+  list.splice(_menuEditState.idx, 1);
+  closeModal('menuEditModal');
+  renderMenuMaster();
+  switchMenuTab(_menuEditState.type);
+  showToast('削除しました');
+}
 
 </script>
 </body>
