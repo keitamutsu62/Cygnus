@@ -641,8 +641,8 @@ html, body {
   display: none;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 16px;
-  padding: 20px 0;
 }
 
 .check-circle {
@@ -2364,32 +2364,36 @@ function openOrder(product, qty, price, dealer) {
 
   // コンテンツリセット
   document.getElementById('orderContent').style.display = 'block';
-  document.getElementById('confirmCheck').style.display = 'none';
-  document.getElementById('orderModalInner').style.transform = '';
-  document.getElementById('orderModalInner').style.transition = '';
+  var confirmCheckEl = document.getElementById('confirmCheck');
+  confirmCheckEl.style.display = 'none';
+  confirmCheckEl.style.height = '';
+  var orderInner = document.getElementById('orderModalInner');
+  orderInner.style.transform = '';
+  orderInner.style.transition = '';
+  orderInner.style.height = '';
   document.getElementById('orderModal').classList.add('open');
   setupSwipeToClose(document.getElementById('orderModalInner'), 'orderModal');
 }
 
 function confirmOrder() {
-  const product = document.getElementById('modalProduct').textContent;
-  const dealer = document.getElementById('modalDealer').textContent;
-  const qty = document.getElementById('modalQty').textContent;
+  var inner = document.getElementById('orderModalInner');
+
+  // 現在の高さをロック（コンテンツ切替で縮まないよう固定）
+  inner.style.height = inner.offsetHeight + 'px';
 
   // orderContentを非表示
   document.getElementById('orderContent').style.display = 'none';
 
   // チェックマークを毎回新しく生成（CSSアニメーションを確実に再生するため）
-  const checkEl = document.getElementById('confirmCheck');
-  checkEl.innerHTML = `
-    <div class="check-circle">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <polyline class="check-svg" points="6,14 12,20 22,9" stroke="#6dba8e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="check-text">送信完了</div>
-  `;
+  var checkEl = document.getElementById('confirmCheck');
+  checkEl.innerHTML =
+    '<div class="check-circle">'
+    + '<svg width="28" height="28" viewBox="0 0 28 28" fill="none">'
+    + '<polyline class="check-svg" points="6,14 12,20 22,9" stroke="#6dba8e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '</svg></div>'
+    + '<div class="check-text">送信完了</div>';
   checkEl.style.display = 'flex';
+  checkEl.style.height = '100%';
 
   // 2秒後にスライドダウンでクローズ
   setTimeout(() => {
@@ -2402,8 +2406,10 @@ function confirmOrder() {
       modal.classList.remove('open');
       inner.style.transform = '';
       inner.style.transition = '';
+      inner.style.height = '';  // 高さロック解除
       document.getElementById('orderContent').style.display = 'block';
       checkEl.style.display = 'none';
+      checkEl.style.height = '';
       var source = window._orderSource || 'dashboard';
       if (source === 'dashboard') {
         moveAlertToOrder(product, qty, dealer);
