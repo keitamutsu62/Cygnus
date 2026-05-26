@@ -971,8 +971,8 @@ html, body {
       <div class="st-link" onclick="goTo('sales')">詳細 →</div>
     </div>
 
-    <div class="staff-card"><div class="staff-av">田</div><div class="staff-info"><div class="staff-name">田中 彩花</div><div class="staff-role">スタイリスト · 5名担当</div></div><div class="staff-sales"><span>¥</span>68,000</div></div>
-    <div class="staff-card"><div class="staff-av">鈴</div><div class="staff-info"><div class="staff-name">鈴木 健太</div><div class="staff-role">スタイリスト · 4名担当</div></div><div class="staff-sales"><span>¥</span>54,200</div></div>
+    <div class="staff-card" style="cursor:pointer;" onclick="goToStaffSales('田中 彩花')"><div class="staff-av">田</div><div class="staff-info"><div class="staff-name">田中 彩花</div><div class="staff-role">スタイリスト · 5名担当</div></div><div class="staff-sales"><span>¥</span>68,000</div></div>
+    <div class="staff-card" style="cursor:pointer;" onclick="goToStaffSales('鈴木 健太')"><div class="staff-av">鈴</div><div class="staff-info"><div class="staff-name">鈴木 健太</div><div class="staff-role">スタイリスト · 4名担当</div></div><div class="staff-sales"><span>¥</span>54,200</div></div>
   </div>
   <div class="bottom-nav">
     <div class="nav-item active" onclick="goTo('dashboard')"><svg class="nav-icon" viewBox="0 0 22 22" fill="none"><rect x="2" y="2" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/><rect x="12" y="2" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/><rect x="2" y="12" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/><rect x="12" y="12" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/></svg><div class="nav-label">ホーム</div></div>
@@ -2675,6 +2675,16 @@ function selectStore(name) {
   // ページトップへ
   var sc = document.querySelector('#screen-sales .scroll');
   if (sc) sc.scrollTop = 0;
+}
+
+function goToStaffSales(staffName) {
+  goTo('sales');
+  setTimeout(function() {
+    switchView('staff');
+    selectStaff(staffName);
+    var sc = document.querySelector('#screen-sales .scroll');
+    if (sc) sc.scrollTop = 0;
+  }, 320);
 }
 
 function goToStoreTab(storeName) {
