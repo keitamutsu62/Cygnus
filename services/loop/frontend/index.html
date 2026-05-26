@@ -794,6 +794,28 @@ html, body {
 .picker-item:active { background: rgba(198,164,122,0.05); }
 .picker-item-name { font-size: 13px; color: var(--text); }
 .picker-item-price { font-family: 'Josefin Sans', sans-serif; font-weight: 100; font-size: 13px; color: var(--gold); }
+
+/* ── MENU MASTER SCREEN ── */
+.menu-master-tabs { display:flex; gap:8px; padding:0 20px 16px; flex-shrink:0; }
+.menu-master-tab-btn { flex:1; padding:9px; text-align:center; font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; background:transparent; border:1px solid var(--border); border-radius:2px; color:var(--muted); cursor:pointer; transition:all 0.15s; }
+.menu-master-tab-btn.active { border-color:var(--gold-border); color:var(--gold); background:var(--gold-dim); }
+.menu-master-row { display:flex; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); gap:12px; }
+.menu-master-num { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:10px; color:var(--muted); width:20px; flex-shrink:0; }
+.menu-master-info { flex:1; min-width:0; }
+.menu-master-name { font-size:13px; color:var(--text); margin-bottom:3px; }
+.menu-master-price { font-size:11px; color:var(--gold); font-family:'Josefin Sans',sans-serif; font-weight:100; }
+.menu-master-edit { font-family:'Josefin Sans',sans-serif; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); cursor:pointer; padding:4px 8px; border:1px solid var(--border); border-radius:2px; }
+.menu-master-add { display:flex; align-items:center; gap:10px; padding:16px 20px; color:var(--gold); font-size:13px; cursor:pointer; border-top:1px solid var(--border); }
+.menu-master-hint { margin:16px 20px 0; padding:10px 14px; background:rgba(109,186,142,0.06); border:1px solid rgba(109,186,142,0.15); border-radius:2px; font-size:11px; color:rgba(109,186,142,0.8); line-height:1.6; }
+
+/* ── CHECKOUT LOADING ── */
+.co-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:64px 0; gap:14px; }
+.co-loading-spinner { width:20px; height:20px; border:1.5px solid rgba(198,164,122,0.15); border-top-color:var(--gold); border-radius:50%; animation:coSpin 0.7s linear infinite; }
+@keyframes coSpin { to { transform:rotate(360deg); } }
+.co-loading-text { font-family:'Josefin Sans',sans-serif; font-weight:100; font-size:9px; letter-spacing:0.22em; text-transform:uppercase; color:var(--muted); }
+.co-store-ctx { display:flex; align-items:center; gap:8px; margin-bottom:4px; padding:9px 12px; background:rgba(109,186,142,0.05); border:1px solid rgba(109,186,142,0.12); border-radius:2px; }
+.co-store-ctx-dot { width:5px; height:5px; border-radius:50%; background:var(--green); flex-shrink:0; }
+.co-store-ctx-text { font-family:'Josefin Sans',sans-serif; font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:rgba(109,186,142,0.8); }
 </style>
 </head>
 <body>
@@ -1421,6 +1443,16 @@ html, body {
       </div>
     </div>
 
+    <!-- メニュー管理 -->
+    <div class="setting-group-label"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> メニュー管理</div>
+    <div class="setting-group" style="margin-bottom:20px;">
+      <div class="setting-row" onclick="goTo('menu-master')" style="cursor:pointer;">
+        <div class="s-icon ic-gold"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="10" rx="1.5" stroke="#c8a882" stroke-width="1.1"/><line x1="4" y1="5" x2="10" y2="5" stroke="#c8a882" stroke-width="1" stroke-linecap="round"/><line x1="4" y1="7.5" x2="10" y2="7.5" stroke="#c8a882" stroke-width="1" stroke-linecap="round"/><line x1="4" y1="10" x2="7" y2="10" stroke="#c8a882" stroke-width="1" stroke-linecap="round"/></svg></div>
+        <div class="s-info"><div class="s-label">メニュー設定</div><div class="s-value">施術 10件 · 物販 6件 · 東松戸店</div></div>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
     <div class="setting-group-label"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> POS連携</div>
     <div class="setting-group">
       <div class="setting-row"><div class="s-icon ic-green"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="9" rx="1.5" stroke="#6dba8e" stroke-width="1.1"/><path d="M4 3V2C4 1.4 4.4 1 5 1H9C9.6 1 10 1.4 10 2V3" stroke="#6dba8e" stroke-width="1.1"/></svg></div><div class="s-info"><div class="s-label">スマレジ</div><div class="s-value">Store ID: 00123 · 接続済み</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="s-badge s-connected">接続中</div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
@@ -1462,6 +1494,37 @@ html, body {
     <div class="nav-item" onclick="goTo('inventory')"><svg class="nav-icon" viewBox="0 0 22 22" fill="none"><rect x="2" y="5" width="18" height="14" rx="1.5" stroke="white" stroke-width="1.5"/><line x1="7" y1="2" x2="7" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="2" x2="15" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="13" x2="16" y2="13" stroke="white" stroke-width="1" stroke-linecap="round"/></svg><div class="nav-label">在庫</div></div>
     <div class="nav-item" onclick="goTo('sales')"><svg class="nav-icon" viewBox="0 0 22 22" fill="none"><polyline points="2,16 7,10 11,13 16,7 20,9" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="2" y1="19" x2="20" y2="19" stroke="white" stroke-width="1" stroke-linecap="round" opacity="0.4"/></svg><div class="nav-label">売上</div></div>
     <div class="nav-item active" onclick="goTo('settings')"><svg class="nav-icon" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="4" stroke="#c8a882" stroke-width="1.5"/><path d="M3 19C3 15.7 6.6 13 11 13C15.4 13 19 15.7 19 19" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/></svg><div class="nav-label">設定</div></div>
+  </div>
+</div>
+
+<!-- ===== MENU MASTER ===== -->
+<div class="screen" id="screen-menu-master">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div onclick="goTo('settings')" style="cursor:pointer;opacity:0.6;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polyline points="13,4 7,10 13,16" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:400;">メニュー設定</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:1px;">hair Lanish 東松戸店</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-master-hint">
+    <svg style="vertical-align:middle;margin-right:4px;" width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#6dba8e" stroke-width="1"/><line x1="5" y1="3.5" x2="5" y2="5.5" stroke="#6dba8e" stroke-width="1" stroke-linecap="round"/><circle cx="5" cy="7" r="0.5" fill="#6dba8e"/></svg>
+    ここで登録したメニューは会計入力に使用されます
+  </div>
+
+  <div class="menu-master-tabs" style="margin-top:16px;">
+    <button class="menu-master-tab-btn active" id="mmTabMenu" onclick="switchMenuTab('menu')">施術メニュー</button>
+    <button class="menu-master-tab-btn" id="mmTabRetail" onclick="switchMenuTab('retail')">物販</button>
+  </div>
+
+  <div class="scroll" style="padding-top:0;">
+    <div id="mmMenuPanel"><!-- JS描画 --></div>
+    <div id="mmRetailPanel" style="display:none;"><!-- JS描画 --></div>
+    <div style="height:20px;"></div>
   </div>
 </div>
 
@@ -1907,8 +1970,20 @@ html, body {
     <div style="width:18px;"></div>
   </div>
 
+  <!-- ローディング -->
+  <div class="co-loading" id="coLoading" style="display:none;">
+    <div class="co-loading-spinner"></div>
+    <div class="co-loading-text">Loading menu data...</div>
+  </div>
+
   <!-- 通常入力フォーム -->
-  <div class="scroll" id="coForm">
+  <div class="scroll" id="coForm" style="display:none;">
+
+    <!-- 店舗コンテキスト -->
+    <div class="co-store-ctx" id="coStoreCtx">
+      <div class="co-store-ctx-dot"></div>
+      <div class="co-store-ctx-text" id="coStoreCtxText">東松戸店のメニューを読み込み済み · 施術 10件 / 物販 6件</div>
+    </div>
 
     <!-- 担当スタッフ -->
     <div class="co-section">
@@ -3922,22 +3997,7 @@ function openCheckout() {
   _coState.items = [];
   _coState.payment = 'cash';
 
-  // スタッフ表示
-  var staffInfo = allStaff.find(function(s) { return s.name === currentUser.name; });
-  var coStaffName = document.getElementById('coStaffName');
-  var coStaffRow  = document.getElementById('coStaffRow');
-  if (coStaffName) coStaffName.textContent = currentUser.name;
-  if (coStaffRow && staffInfo) {
-    coStaffRow.querySelector('div:last-child').textContent = staffInfo.store + ' · ' + staffInfo.role;
-  }
-
-  // フォームリセット
-  renderCoItems();
-  updateCoTotal();
-  selectCoPayment('cash');
-  document.getElementById('coForm').style.display = 'block';
-  document.getElementById('coSuccess').classList.remove('show');
-
+  // 画面遷移
   var prev = document.getElementById('screen-' + current);
   var next = document.getElementById('screen-checkout');
   prev.classList.remove('active');
@@ -3946,6 +4006,36 @@ function openCheckout() {
   next.classList.add('active');
   current = 'checkout';
   updateFab();
+
+  // ローディング表示
+  document.getElementById('coLoading').style.display = 'flex';
+  document.getElementById('coForm').style.display = 'none';
+  document.getElementById('coSuccess').classList.remove('show');
+
+  // メニューデータ取得を模擬（APIコール想定）
+  setTimeout(function() {
+    var staffInfo = allStaff.find(function(s) { return s.name === currentUser.name; });
+    var storeName = staffInfo ? staffInfo.store : '東松戸店';
+
+    // スタッフ表示
+    var coStaffName = document.getElementById('coStaffName');
+    var coStaffRow  = document.getElementById('coStaffRow');
+    if (coStaffName) coStaffName.textContent = currentUser.name;
+    if (coStaffRow && staffInfo) {
+      coStaffRow.querySelector('div:last-child').textContent = storeName + ' · ' + staffInfo.role;
+    }
+
+    // 店舗コンテキスト更新
+    var ctx = document.getElementById('coStoreCtxText');
+    if (ctx) ctx.textContent = storeName + 'のメニューを読み込み済み · 施術 ' + checkoutMenuList.length + '件 / 物販 ' + checkoutRetailList.length + '件';
+
+    renderCoItems();
+    updateCoTotal();
+    selectCoPayment('cash');
+
+    document.getElementById('coLoading').style.display = 'none';
+    document.getElementById('coForm').style.display = 'block';
+  }, 500);
 }
 
 function closeCheckout() {
@@ -4005,11 +4095,18 @@ function updateCoTotal() {
 function openPickerModal(type) {
   _coState.pickerType = type;
   var list = type === 'menu' ? checkoutMenuList : checkoutRetailList;
-  var title = type === 'menu' ? 'メニューを選択' : '物販を選択';
-  document.getElementById('pickerModalTitle').textContent = title;
-  document.getElementById('pickerModalList').innerHTML = list.map(function(item) {
-    return '<div class="picker-item" onclick="addCoItem(\'' + item.name + '\',' + item.price + ',\'' + type + '\')">'
+  var staffInfo = allStaff.find(function(s) { return s.name === currentUser.name; });
+  var storeName = staffInfo ? staffInfo.store : '東松戸店';
+  var typeLabel = type === 'menu' ? '施術メニュー' : '物販';
+  var titleEl = document.getElementById('pickerModalTitle');
+  titleEl.innerHTML = '<span style="opacity:0.55;">' + storeName + ' · </span>' + typeLabel
+    + '<span style="font-size:9px;letter-spacing:0.1em;color:var(--muted);margin-left:8px;">(' + list.length + '件)</span>';
+  document.getElementById('pickerModalList').innerHTML = list.map(function(item, i) {
+    return '<div class="picker-item" onclick="addCoItem(\'' + item.name.replace(/'/g, "\\'") + '\',' + item.price + ',\'' + type + '\')">'
+      + '<div style="display:flex;align-items:center;gap:10px;flex:1;">'
+      + '<span style="font-family:\'Josefin Sans\',sans-serif;font-size:10px;color:var(--muted);width:16px;">' + (i + 1) + '</span>'
       + '<div class="picker-item-name">' + item.name + '</div>'
+      + '</div>'
       + '<div class="picker-item-price">¥' + item.price.toLocaleString() + '</div>'
       + '</div>';
   }).join('');
@@ -4076,6 +4173,47 @@ function completeCheckout() {
     if (typeof updateSalesCard === 'function') updateSalesCard();
   }, 2200);
 }
+
+// ═══════════════════════════════════════════
+// メニュー管理画面
+// ═══════════════════════════════════════════
+function renderMenuMaster() {
+  var menuPanel   = document.getElementById('mmMenuPanel');
+  var retailPanel = document.getElementById('mmRetailPanel');
+  if (!menuPanel || !retailPanel) return;
+
+  function makeRows(list, type) {
+    return list.map(function(item, i) {
+      return '<div class="menu-master-row">'
+        + '<div class="menu-master-num">' + (i + 1) + '</div>'
+        + '<div class="menu-master-info">'
+        + '<div class="menu-master-name">' + item.name + '</div>'
+        + '<div class="menu-master-price">¥' + item.price.toLocaleString() + '</div>'
+        + '</div>'
+        + '<div class="menu-master-edit">編集</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  menuPanel.innerHTML = makeRows(checkoutMenuList, 'menu')
+    + '<div class="menu-master-add" onclick="alert(\'バックエンド接続後に登録できます\')">'
+    + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="7" y1="2" x2="7" y2="12" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    + 'メニューを追加</div>';
+
+  retailPanel.innerHTML = makeRows(checkoutRetailList, 'retail')
+    + '<div class="menu-master-add" onclick="alert(\'バックエンド接続後に登録できます\')">'
+    + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="7" y1="2" x2="7" y2="12" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    + '物販商品を追加</div>';
+}
+
+function switchMenuTab(tab) {
+  document.getElementById('mmTabMenu').classList.toggle('active', tab === 'menu');
+  document.getElementById('mmTabRetail').classList.toggle('active', tab === 'retail');
+  document.getElementById('mmMenuPanel').style.display   = tab === 'menu'   ? 'block' : 'none';
+  document.getElementById('mmRetailPanel').style.display = tab === 'retail' ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', renderMenuMaster);
 
 </script>
 </body>
