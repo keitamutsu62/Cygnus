@@ -1897,18 +1897,6 @@ html, body {
   </div>
 </div>
 
-<!-- ===== FAB: 会計入力 ===== -->
-<button class="fab hidden" id="fabCheckout" onclick="openCheckout()">
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-    <path d="M7 4C7 4 5 6 5 9C5 12 7 14 7 14" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
-    <path d="M15 4C15 4 17 6 17 9C17 12 15 14 15 14" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
-    <line x1="4" y1="9" x2="18" y2="9" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
-    <line x1="11" y1="14" x2="11" y2="19" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
-    <line x1="8" y1="19" x2="14" y2="19" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
-  </svg>
-  <div class="fab-label">会計</div>
-</button>
-
 <!-- ===== CHECKOUT ===== -->
 <div class="screen" id="screen-checkout">
   <div class="top-bar">
@@ -2170,6 +2158,17 @@ html, body {
 </div>
 </div>
 
+<!-- ===== FAB: 会計入力 (.appの外に置きposition:fixedを確実に動作させる) ===== -->
+<button class="fab hidden" id="fabCheckout" onclick="openCheckout()">
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+    <path d="M7 4C7 4 5 6 5 9C5 12 7 14 7 14" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M15 4C15 4 17 6 17 9C17 12 15 14 15 14" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="4" y1="9" x2="18" y2="9" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="11" y1="14" x2="11" y2="19" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="8" y1="19" x2="14" y2="19" stroke="#1a1816" stroke-width="1.6" stroke-linecap="round"/>
+  </svg>
+  <div class="fab-label">会計</div>
+</button>
 
 <script>
 let current = 'login';
@@ -3883,6 +3882,8 @@ goTo = function(id) {
   _origGoTo(id);
   updateFab();
 };
+
+document.addEventListener('DOMContentLoaded', updateFab);
 
 // ═══════════════════════════════════════════
 // 会計データ
