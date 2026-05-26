@@ -1239,21 +1239,16 @@ html, body {
 
     <!-- STAFF -->
     <div class="view-panel" id="staffView">
-      <!-- スタッフ選択UI（社長・店長のみ表示 / スタッフは自分のみ） -->
-      <div style="background:var(--surface);border:1px solid var(--gold-border);border-radius:2px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleStaffPicker(this)">
+      <!-- スタッフ選択UI -->
+      <div id="staffPickerToggle" style="background:var(--surface);border:1px solid var(--gold-border);border-radius:2px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleStaffPicker(this)">
         <div style="font-size:12px;color:var(--muted);">表示中のスタッフ</div>
         <div style="display:flex;align-items:center;gap:6px;">
           <span style="color:var(--gold);font-size:13px;font-family:'Josefin Sans',sans-serif;font-weight:100;" id="selectedStaff">高橋 美咲</span>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,4 6,8 10,4" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg id="staffPickerChevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,4 6,8 10,4" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
       </div>
-      <!-- スタッフ選択リスト -->
-      <div id="staffPicker" style="display:none;background:var(--surface);border:1px solid var(--gold-border);border-radius:2px;margin-bottom:12px;overflow:hidden;">
-        <div onclick="selectStaff('高橋 美咲')" style="padding:12px 16px;font-size:13px;color:var(--gold);border-bottom:1px solid var(--border);cursor:pointer;">高橋 美咲 <span style="font-size:11px;color:var(--muted);">（自分）</span></div>
-        <div onclick="selectStaff('青木 なつき')" style="padding:12px 16px;font-size:13px;color:var(--text);border-bottom:1px solid var(--border);cursor:pointer;">青木 なつき</div>
-        <div onclick="selectStaff('中村 りな')" style="padding:12px 16px;font-size:13px;color:var(--text);border-bottom:1px solid var(--border);cursor:pointer;">中村 りな</div>
-        <div onclick="selectStaff('松田 ゆか')" style="padding:12px 16px;font-size:13px;color:var(--text);cursor:pointer;">松田 ゆか</div>
-      </div>
+      <!-- スタッフ選択リスト（動的生成） -->
+      <div id="staffPicker" style="display:none;background:var(--surface);border:1px solid var(--gold-border);border-radius:2px;margin-bottom:12px;overflow:hidden;"></div>
       <div class="my-header"><div class="my-name">本日の売上</div><div class="my-sales"><span>¥</span><span id="staffSales">72,300</span></div><div class="my-stats"><div class="my-stat"><div class="my-stat-label">担当客数</div><div class="my-stat-value" id="staffClients">5名</div></div><div class="my-stat"><div class="my-stat-label">客単価</div><div class="my-stat-value" id="staffUnit">¥14,460</div></div><div class="my-stat"><div class="my-stat-label">物販</div><div class="my-stat-value" id="staffGoods">¥11,200</div></div></div></div>
       <div class="section-title"><div class="st-text"><svg width="12" height="12" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> メニュー別内訳</div></div>
       <div id="menuItems">
@@ -2312,6 +2307,7 @@ document.querySelectorAll('.tab').forEach(t => {
 });
 
 function toggleStaffPicker(el) {
+  if (currentUser.role === 'スタッフ') return;
   const picker = document.getElementById('staffPicker');
   picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
 }
@@ -2351,8 +2347,143 @@ const staffData = {
     ],
     ai1: '接客スコアがチーム内で<span style="color:var(--gold);font-weight:400;">トップクラス</span>です。顧客満足度アンケートの評価が高水準です。',
     ai2: '施術メニューの幅を広げることが成長のカギ。カラー技術の習得でさらなる客単価向上が期待できます。'
+  },
+  // 新船橋店
+  '中村 優子': { sales: '72,400', clients: '5名', unit: '¥14,480', goods: '¥10,400',
+    menus: [
+      { name: 'カット + カラー', count: '2件', amount: '23,100', bar: '70%' },
+      { name: 'ストレートパーマ', count: '1件', amount: '22,000', bar: '65%' },
+      { name: 'カット + ナチュラルパーマ', count: '1件', amount: '11,550', bar: '35%' },
+      { name: 'カットのみ', count: '1件', amount: '4,950', bar: '15%' },
+    ],
+    ai1: '縮毛・ストレートメニューが<span style="color:var(--gold);font-weight:400;">特に高評価</span>です。リピーター率は店舗内でトップです。',
+    ai2: 'カラーメニューへの誘導強化で客単価のさらなる向上が見込めます。'
+  },
+  '伊藤 拓海': { sales: '61,800', clients: '4名', unit: '¥15,450', goods: '¥9,800',
+    menus: [
+      { name: 'カット + 3Dデジタルパーマ', count: '2件', amount: '30,800', bar: '75%' },
+      { name: 'バレイヤージュカラー', count: '1件', amount: '14,300', bar: '45%' },
+      { name: 'カットのみ', count: '1件', amount: '4,950', bar: '15%' },
+    ],
+    ai1: '客単価が店舗内で<span style="color:var(--gold);font-weight:400;">最も高い</span>スタイリストです。高単価メニューへの誘導力が際立っています。',
+    ai2: '担当客数を増やすことが次の目標。新規集客施策との連携が効果的です。'
+  },
+  '佐々木 花': { sales: '35,000', clients: '3名', unit: '¥11,667', goods: '¥6,200',
+    menus: [
+      { name: 'カット + カラー', count: '2件', amount: '23,100', bar: '65%' },
+      { name: 'カットのみ', count: '1件', amount: '4,950', bar: '15%' },
+    ],
+    ai1: '接客の丁寧さへの評価が<span style="color:var(--gold);font-weight:400;">高水準</span>です。新規顧客のリピート率が伸びています。',
+    ai2: '高単価メニュー（パーマ・縮毛矯正）の技術習得でさらなる成長が期待できます。'
+  },
+  // 柏の葉キャンパス店
+  '小林 真司': { sales: '70,200', clients: '5名', unit: '¥14,040', goods: '¥12,200',
+    menus: [
+      { name: 'カット + カラー', count: '2件', amount: '23,100', bar: '70%' },
+      { name: 'カット + 3Dデジタルパーマ', count: '1件', amount: '15,400', bar: '45%' },
+      { name: 'バレイヤージュカラー', count: '1件', amount: '14,300', bar: '40%' },
+      { name: 'カットのみ', count: '1件', amount: '4,950', bar: '15%' },
+    ],
+    ai1: '物販売上が店舗内で<span style="color:var(--gold);font-weight:400;">1位</span>です。施術後の提案力が高く、ヘアケア商品の購入につながっています。',
+    ai2: 'カラー・パーマの技術バランスが優れています。若手スタッフへの技術共有が期待されます。'
+  },
+  '加藤 さくら': { sales: '54,000', clients: '4名', unit: '¥13,500', goods: '¥8,600',
+    menus: [
+      { name: 'カット + カラー', count: '3件', amount: '34,650', bar: '80%' },
+      { name: 'カットのみ', count: '1件', amount: '4,950', bar: '15%' },
+    ],
+    ai1: 'カラー施術の指名率がチーム内で<span style="color:var(--gold);font-weight:400;">最高</span>です。安定した技術が顧客の信頼を得ています。',
+    ai2: 'パーマ・縮毛矯正メニューの習得でメニュー幅を広げることが次のステップです。'
+  },
+  '山田 健': { sales: '44,000', clients: '3名', unit: '¥14,667', goods: '¥7,400',
+    menus: [
+      { name: 'カット + ナチュラルパーマ', count: '2件', amount: '23,100', bar: '70%' },
+      { name: 'カット + カラー', count: '1件', amount: '11,550', bar: '35%' },
+    ],
+    ai1: 'パーマ施術の評価が<span style="color:var(--gold);font-weight:400;">高水準</span>です。担当客のリピート周期が短く、顧客満足度の高さがうかがえます。',
+    ai2: 'カラーの施術数を増やすことで売上の底上げが見込めます。'
+  },
+  // 流山店
+  '渡辺 愛': { sales: '44,200', clients: '3名', unit: '¥14,733', goods: '¥8,200',
+    menus: [
+      { name: 'カット + カラー', count: '2件', amount: '23,100', bar: '75%' },
+      { name: 'カットのみ', count: '1件', amount: '4,950', bar: '20%' },
+    ],
+    ai1: '店舗売上の<span style="color:var(--gold);font-weight:400;">39%</span>を一人で担うエース。安定した技術と高い接客力が強みです。',
+    ai2: '高単価メニューへの誘導を強化することで、さらなる客単価アップが見込めます。'
+  },
+  '松本 太郎': { sales: '38,600', clients: '3名', unit: '¥12,867', goods: '¥6,400',
+    menus: [
+      { name: 'カット + 3Dデジタルパーマ', count: '1件', amount: '15,400', bar: '55%' },
+      { name: 'カット + カラー', count: '1件', amount: '11,550', bar: '40%' },
+      { name: 'カットのみ', count: '1件', amount: '4,950', bar: '15%' },
+    ],
+    ai1: 'デジタルパーマの仕上がり評価が<span style="color:var(--gold);font-weight:400;">高評価</span>を継続。技術の安定感が際立っています。',
+    ai2: '物販提案を意識することで客単価の向上が期待できます。'
+  },
+  '木村 舞': { sales: '29,600', clients: '2名', unit: '¥14,800', goods: '¥4,800',
+    menus: [
+      { name: 'バレイヤージュカラー', count: '1件', amount: '14,300', bar: '65%' },
+      { name: 'カット + カラー', count: '1件', amount: '11,550', bar: '50%' },
+    ],
+    ai1: 'バレイヤージュカラーの<span style="color:var(--gold);font-weight:400;">高い技術力</span>が評価されています。客単価は店舗内でトップです。',
+    ai2: '担当客数の増加が課題。SNS発信との連携で新規集客につなげることが期待されます。'
   }
 };
+
+// ログイン中のユーザー（デモ用）
+var currentUser = { name: '高橋 美咲', role: 'オーナー' };
+
+// 全スタッフ一覧（店舗・役職付き）
+var allStaff = [
+  { name: '高橋 美咲',  store: '東松戸店',        role: 'オーナー' },
+  { name: '青木 なつき', store: '東松戸店',        role: 'スタッフ' },
+  { name: '中村 りな',  store: '東松戸店',        role: 'スタッフ' },
+  { name: '松田 ゆか',  store: '東松戸店',        role: 'スタッフ' },
+  { name: '中村 優子',  store: '新船橋店',        role: '店長' },
+  { name: '伊藤 拓海',  store: '新船橋店',        role: 'スタッフ' },
+  { name: '佐々木 花',  store: '新船橋店',        role: 'スタッフ' },
+  { name: '小林 真司',  store: '柏の葉キャンパス店', role: '店長' },
+  { name: '加藤 さくら', store: '柏の葉キャンパス店', role: 'スタッフ' },
+  { name: '山田 健',   store: '柏の葉キャンパス店', role: 'スタッフ' },
+  { name: '渡辺 愛',   store: '流山店',          role: '店長' },
+  { name: '松本 太郎',  store: '流山店',          role: 'スタッフ' },
+  { name: '木村 舞',   store: '流山店',          role: 'スタッフ' },
+];
+
+function renderStaffPicker() {
+  var toggle = document.getElementById('staffPickerToggle');
+  var chevron = document.getElementById('staffPickerChevron');
+  var picker = document.getElementById('staffPicker');
+  if (!picker) return;
+
+  // 役職がスタッフ → ピッカー無効
+  if (currentUser.role === 'スタッフ') {
+    if (toggle) { toggle.style.cursor = 'default'; toggle.onclick = null; }
+    if (chevron) chevron.style.display = 'none';
+    return;
+  }
+
+  // 店舗でグループ化して全スタッフを表示
+  var stores = [];
+  var storeMap = {};
+  allStaff.forEach(function(s) {
+    if (!storeMap[s.store]) { storeMap[s.store] = []; stores.push(s.store); }
+    storeMap[s.store].push(s);
+  });
+
+  var html = '';
+  stores.forEach(function(store) {
+    html += '<div style="padding:8px 16px 4px;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);background:rgba(200,168,130,0.05);">' + store + '</div>';
+    storeMap[store].forEach(function(s) {
+      var isSelf = s.name === currentUser.name;
+      html += '<div onclick="selectStaff(\'' + s.name + '\')" style="padding:10px 16px 10px 20px;font-size:13px;color:' + (isSelf ? 'var(--gold)' : 'var(--text)') + ';border-bottom:1px solid var(--border);cursor:pointer;">'
+        + s.name + (isSelf ? ' <span style="font-size:11px;color:var(--muted);">（自分）</span>' : '')
+        + '</div>';
+    });
+  });
+  picker.innerHTML = html;
+}
 
 function selectStaff(name) {
   document.getElementById('selectedStaff').textContent = name;
@@ -2756,6 +2887,7 @@ function selectStore(name) {
 }
 
 function goToStaffSales(staffName) {
+  if (currentUser.role === 'スタッフ' && staffName !== currentUser.name) return;
   goTo('sales');
   setTimeout(function() {
     switchView('staff');
@@ -3098,6 +3230,7 @@ switchPeriod = function(el, period) {
 window._currentView = 'all';
 document.addEventListener('DOMContentLoaded', function() {
   renderCompareTable('all');
+  renderStaffPicker();
 });
 
 
