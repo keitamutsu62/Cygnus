@@ -157,7 +157,7 @@ func (u *AuthUsecase) Invite(ctx context.Context, in InviteInput) error {
 		}
 	}
 
-	// 招待トークン生成（72時間有効）
+	// 招待トークン生成（24時間有効）
 	token, err := generateToken()
 	if err != nil {
 		return fmt.Errorf("Invite: generate token: %w", err)
@@ -169,7 +169,7 @@ func (u *AuthUsecase) Invite(ctx context.Context, in InviteInput) error {
 		Token:            token,
 		Role:             in.Role,
 		Status:           model.InvitationPending,
-		ExpiresAt:        time.Now().Add(72 * time.Hour),
+		ExpiresAt:        time.Now().Add(24 * time.Hour),
 	}
 	if err := u.invitationRepo.Create(ctx, inv); err != nil {
 		return fmt.Errorf("Invite: create invitation: %w", err)
