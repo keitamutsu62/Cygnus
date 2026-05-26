@@ -3078,6 +3078,9 @@ switchView = function(view) {
   }
   // 現在のviewを記憶
   window._currentView = view;
+  // switchViewは期間タブを今日にリセットするため、KPI数値も今日データに揃える
+  var firstTab = document.querySelector('#screen-sales .period-tab');
+  if (firstTab) _origSwitchPeriod(firstTab, 'today');
 };
 
 // switchPeriodのcompare表示時もデータ更新
