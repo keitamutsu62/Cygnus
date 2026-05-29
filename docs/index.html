@@ -2183,6 +2183,10 @@ html, body {
           <input class="field-input" type="number" id="menuEditPrice" placeholder="0" style="padding-left:28px;"/>
         </div>
       </div>
+      <div class="field">
+        <div class="field-label">備考</div>
+        <input class="field-input" type="text" id="menuEditNote" placeholder="例：〇〇クーポンを適用など"/>
+      </div>
     </div>
     <button class="btn-confirm" style="margin-top:20px;" onclick="saveMenuEdit()">保存する</button>
     <button class="btn-cancel" style="margin-top:8px;" onclick="closeModal('menuEditModal')">キャンセル</button>
@@ -2339,6 +2343,15 @@ html, body {
       </div>
       <div onclick="selectInvStore('流山店', true)" style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:2px;cursor:pointer;">
         <span style="font-size:14px;font-weight:400;color:var(--text);">流山店</span>
+      </div>
+      <div onclick="selectInvStore('柏たなか店', true)" style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:2px;cursor:pointer;">
+        <span style="font-size:14px;font-weight:400;color:var(--text);">柏たなか店</span>
+      </div>
+      <div onclick="selectInvStore('三郷中央店', true)" style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:2px;cursor:pointer;">
+        <span style="font-size:14px;font-weight:400;color:var(--text);">三郷中央店</span>
+      </div>
+      <div onclick="selectInvStore('hair Lanish +', true)" style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:2px;cursor:pointer;">
+        <span style="font-size:14px;font-weight:400;color:var(--text);">hair Lanish +</span>
       </div>
     </div>
     <button class="btn-cancel" style="margin-top:16px;" onclick="closeModal('invStoreModal')">キャンセル</button>
@@ -4692,6 +4705,7 @@ function openMenuEdit(type, idx) {
   document.getElementById('menuEditBadge').textContent = type === 'menu' ? '施術' : '物販';
   document.getElementById('menuEditName').value  = item.name;
   document.getElementById('menuEditPrice').value = item.price;
+  document.getElementById('menuEditNote').value  = item.note || '';
   openModal('menuEditModal');
 }
 
@@ -4702,8 +4716,9 @@ function saveMenuEdit() {
     alert('メニュー名と金額を正しく入力してください');
     return;
   }
+  var note  = document.getElementById('menuEditNote').value.trim();
   var list = _menuEditState.type === 'menu' ? checkoutMenuList : checkoutRetailList;
-  list[_menuEditState.idx] = { name: name, price: price };
+  list[_menuEditState.idx] = { name: name, price: price, note: note };
   closeModal('menuEditModal');
   renderMenuMaster();
   // 現在表示中のタブを維持
