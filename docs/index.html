@@ -1462,12 +1462,7 @@ html, body {
     </div>
 
     <div class="setting-group-label"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> ディーラー登録</div>
-    <div class="setting-group">
-      <div class="dealer-row"><div class="d-num">1</div><div class="d-info"><div class="d-name">ミルボン東京ディーラー</div><div class="d-method">LINE · @milbon_tokyo</div></div><div class="s-badge s-connected">有効</div></div>
-      <div class="dealer-row"><div class="d-num">2</div><div class="d-info"><div class="d-name">東京美容ディーラー</div><div class="d-method">メール · order@tokyo-beauty.co.jp</div></div><div class="s-badge s-connected">有効</div></div>
-      <div class="dealer-row"><div class="d-num">3</div><div class="d-info"><div class="d-name">ケラスターゼ正規代理店</div><div class="d-method">LINE · @kerastase_jp</div></div><div class="s-badge s-connected">有効</div></div>
-      <div class="dealer-add"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="7" y1="2" x2="7" y2="12" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/></svg><div class="dealer-add-text">ディーラーを追加</div></div>
-    </div>
+    <div class="setting-group" id="dealerList"><!-- JS描画 --></div>
 
     <div class="setting-group-label"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> 通知設定</div>
     <div class="setting-group">
@@ -1747,6 +1742,51 @@ html, body {
     <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;">役職を変更</div>
     <div id="rolePickerList"></div>
     <button class="btn-cancel" style="margin-top:12px;" onclick="closeModal('rolePickerModal')">キャンセル</button>
+  </div>
+</div>
+
+<!-- ===== DEALER DETAIL MODAL ===== -->
+<div class="modal" id="dealerDetailModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;">ディーラー詳細</div>
+    <div style="display:flex;flex-direction:column;gap:0;margin-bottom:20px;">
+      <div class="setting-row" style="padding:12px 0;"><div class="s-info"><div class="s-label">ディーラー名</div><div class="s-value" id="ddName"></div></div></div>
+      <div class="setting-row" style="padding:12px 0;"><div class="s-info"><div class="s-label">連絡方法</div><div class="s-value" id="ddMethod"></div></div></div>
+      <div class="setting-row" style="padding:12px 0;"><div class="s-info"><div class="s-label">連絡先</div><div class="s-value" id="ddContact"></div></div></div>
+      <div class="setting-row" style="padding:12px 0;cursor:pointer;" onclick="toggleDealerStatus()">
+        <div class="s-info"><div class="s-label">ステータス</div><div class="s-value" id="ddStatus"></div></div>
+        <div id="ddStatusBadge" class="s-badge s-connected">有効</div>
+      </div>
+    </div>
+    <button class="btn-confirm" onclick="closeModal('dealerDetailModal')">閉じる</button>
+  </div>
+</div>
+
+<!-- ===== ADD DEALER MODAL ===== -->
+<div class="modal" id="addDealerModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;">ディーラーを追加</div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="field">
+        <div class="field-label">ディーラー名</div>
+        <input class="field-input" type="text" id="addDealerName" placeholder="例：ミルボン東京ディーラー"/>
+      </div>
+      <div class="field">
+        <div class="field-label">連絡方法</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="co-pay-btn active" id="addDealerMethodLine" onclick="selectDealerMethod('LINE')">LINE</button>
+          <button class="co-pay-btn" id="addDealerMethodEmail" onclick="selectDealerMethod('メール')">メール</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label" id="addDealerContactLabel">LINE ID</div>
+        <input class="field-input" type="text" id="addDealerContact" placeholder="@milbon_tokyo"/>
+      </div>
+    </div>
+    <button class="btn-confirm" style="margin-top:20px;" onclick="saveNewDealer()">登録する</button>
+    <button class="btn-cancel" style="margin-top:8px;" onclick="closeModal('addDealerModal')">キャンセル</button>
   </div>
 </div>
 
@@ -2361,6 +2401,9 @@ function goTo(id) {
   // ダッシュボードに戻った時に売上カードを再描画
   if (id === 'dashboard' && typeof updateSalesCard === 'function' && typeof salesHistory !== 'undefined') {
     try { updateSalesCard(); } catch(e) {}
+  }
+  if (id === 'settings') {
+    if (typeof renderDealerList === 'function') renderDealerList();
   }
   if (id === 'inventory') {
     // 自店舗表示に戻す
@@ -3344,6 +3387,85 @@ function selectRole(role) {
   if (roleEl) roleEl.textContent = role;
   if (subEl)  subEl.textContent = _staffDetailCurrent.store + ' · ' + role;
   closeModal('rolePickerModal');
+}
+
+// ═══════════════════════════════════════════
+// ディーラー管理
+// ═══════════════════════════════════════════
+var dealerList = [
+  { id: 1, name: 'ミルボン東京ディーラー',   method: 'LINE',  contact: '@milbon_tokyo',           active: true },
+  { id: 2, name: '東京美容ディーラー',       method: 'メール', contact: 'order@tokyo-beauty.co.jp', active: true },
+  { id: 3, name: 'ケラスターゼ正規代理店',   method: 'LINE',  contact: '@kerastase_jp',            active: true },
+];
+var _dealerDetailCurrent = null;
+var _addDealerMethod = 'LINE';
+
+function renderDealerList() {
+  var el = document.getElementById('dealerList');
+  if (!el) return;
+  el.innerHTML = dealerList.map(function(d, i) {
+    return '<div class="dealer-row" onclick="openDealerDetail(' + d.id + ')">'
+      + '<div class="d-num">' + (i + 1) + '</div>'
+      + '<div class="d-info"><div class="d-name">' + d.name + '</div><div class="d-method">' + d.method + ' · ' + d.contact + '</div></div>'
+      + '<div class="s-badge ' + (d.active ? 's-connected' : 's-warning') + '">' + (d.active ? '有効' : '無効') + '</div>'
+      + '</div>';
+  }).join('')
+  + '<div class="dealer-add" onclick="openAddDealer()">'
+  + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="7" y1="2" x2="7" y2="12" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round"/></svg>'
+  + '<div class="dealer-add-text">ディーラーを追加</div></div>';
+}
+
+function openDealerDetail(id) {
+  var d = dealerList.find(function(x) { return x.id === id; });
+  if (!d) return;
+  _dealerDetailCurrent = d;
+  document.getElementById('ddName').textContent    = d.name;
+  document.getElementById('ddMethod').textContent  = d.method;
+  document.getElementById('ddContact').textContent = d.contact;
+  document.getElementById('ddStatus').textContent  = d.active ? '有効' : '無効';
+  var badge = document.getElementById('ddStatusBadge');
+  badge.textContent  = d.active ? '有効 → 無効にする' : '無効 → 有効にする';
+  badge.className    = 's-badge ' + (d.active ? 's-connected' : 's-warning');
+  openModal('dealerDetailModal');
+}
+
+function toggleDealerStatus() {
+  if (!_dealerDetailCurrent) return;
+  _dealerDetailCurrent.active = !_dealerDetailCurrent.active;
+  document.getElementById('ddStatus').textContent = _dealerDetailCurrent.active ? '有効' : '無効';
+  var badge = document.getElementById('ddStatusBadge');
+  badge.textContent = _dealerDetailCurrent.active ? '有効 → 無効にする' : '無効 → 有効にする';
+  badge.className   = 's-badge ' + (_dealerDetailCurrent.active ? 's-connected' : 's-warning');
+  renderDealerList();
+}
+
+function openAddDealer() {
+  _addDealerMethod = 'LINE';
+  document.getElementById('addDealerName').value    = '';
+  document.getElementById('addDealerContact').value = '';
+  document.getElementById('addDealerMethodLine').classList.add('active');
+  document.getElementById('addDealerMethodEmail').classList.remove('active');
+  document.getElementById('addDealerContactLabel').textContent = 'LINE ID';
+  document.getElementById('addDealerContact').placeholder = '@example';
+  openModal('addDealerModal');
+}
+
+function selectDealerMethod(method) {
+  _addDealerMethod = method;
+  document.getElementById('addDealerMethodLine').classList.toggle('active', method === 'LINE');
+  document.getElementById('addDealerMethodEmail').classList.toggle('active', method === 'メール');
+  document.getElementById('addDealerContactLabel').textContent = method === 'LINE' ? 'LINE ID' : 'メールアドレス';
+  document.getElementById('addDealerContact').placeholder = method === 'LINE' ? '@example' : 'order@example.com';
+}
+
+function saveNewDealer() {
+  var name    = document.getElementById('addDealerName').value.trim();
+  var contact = document.getElementById('addDealerContact').value.trim();
+  if (!name || !contact) { alert('ディーラー名と連絡先を入力してください'); return; }
+  var newId = dealerList.length ? Math.max.apply(null, dealerList.map(function(d) { return d.id; })) + 1 : 1;
+  dealerList.push({ id: newId, name: name, method: _addDealerMethod, contact: contact, active: true });
+  renderDealerList();
+  closeModal('addDealerModal');
 }
 
 function goToStoreTab(storeName) {
