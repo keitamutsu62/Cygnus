@@ -29,8 +29,11 @@ func (h *InventoryHandler) List(c echo.Context) error {
 		storeID = id
 	}
 	if storeID == 0 {
-		// store_id 未指定時はサロンIDをそのまま使う（1店舗運用向け暫定）
-		storeID = claims.SalonID
+		if claims.StoreID != nil {
+			storeID = *claims.StoreID
+		} else {
+			return echo.NewHTTPError(http.StatusBadRequest, "store_id is required")
+		}
 	}
 
 	items, err := h.uc.List(c.Request().Context(), storeID)

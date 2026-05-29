@@ -47,6 +47,7 @@ type UpdateMenuInput struct {
 	Name     string
 	Price    uint32
 	Duration *uint16
+	IsActive *bool
 }
 
 func (u *MenuUsecase) Update(ctx context.Context, in UpdateMenuInput) (*model.Menu, error) {
@@ -57,9 +58,18 @@ func (u *MenuUsecase) Update(ctx context.Context, in UpdateMenuInput) (*model.Me
 	if m.SalonID != in.SalonID {
 		return nil, apierror.ErrForbidden
 	}
-	m.Name = in.Name
-	m.Price = in.Price
-	m.Duration = in.Duration
+	if in.Name != "" {
+		m.Name = in.Name
+	}
+	if in.Price > 0 {
+		m.Price = in.Price
+	}
+	if in.Duration != nil {
+		m.Duration = in.Duration
+	}
+	if in.IsActive != nil {
+		m.IsActive = *in.IsActive
+	}
 	if err := u.repo.Update(ctx, m); err != nil {
 		return nil, fmt.Errorf("MenuUsecase.Update: %w", err)
 	}

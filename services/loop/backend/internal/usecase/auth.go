@@ -284,6 +284,9 @@ func (u *AuthUsecase) generateJWT(s *model.Staff) (string, error) {
 		"role":     s.Role,
 		"exp":      time.Now().Add(24 * time.Hour).Unix(),
 	}
+	if s.StoreID != nil {
+		claims["store_id"] = *s.StoreID
+	}
 	if s.CygnusAccountID != nil {
 		claims["cygnus_account_id"] = *s.CygnusAccountID
 	}

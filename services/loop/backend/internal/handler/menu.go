@@ -63,6 +63,7 @@ func (h *MenuHandler) Update(c echo.Context) error {
 		Name     string  `json:"name"`
 		Price    uint32  `json:"price"`
 		Duration *uint16 `json:"duration"`
+		IsActive *bool   `json:"is_active"`
 	}
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
@@ -73,6 +74,7 @@ func (h *MenuHandler) Update(c echo.Context) error {
 		Name:     req.Name,
 		Price:    req.Price,
 		Duration: req.Duration,
+		IsActive: req.IsActive,
 	})
 	if err != nil {
 		if errors.Is(err, apierror.ErrNotFound) {

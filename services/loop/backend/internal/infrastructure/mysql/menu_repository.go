@@ -45,8 +45,8 @@ func (r *MenuRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*
 
 func (r *MenuRepository) Update(ctx context.Context, m *model.Menu) error {
 	_, err := r.db.ExecContext(ctx,
-		`UPDATE menus SET name=?, price=?, duration=? WHERE id=? AND salon_id=?`,
-		m.Name, m.Price, m.Duration, m.ID, m.SalonID)
+		`UPDATE menus SET name=?, price=?, duration=?, is_active=? WHERE id=? AND salon_id=?`,
+		m.Name, m.Price, m.Duration, m.IsActive, m.ID, m.SalonID)
 	return err
 }
 

@@ -12,6 +12,7 @@ type Claims struct {
 	StaffID         uint64  `json:"staff_id"`
 	CygnusAccountID *uint64 `json:"cygnus_account_id,omitempty"`
 	SalonID         uint64  `json:"salon_id"`
+	StoreID         *uint64 `json:"store_id,omitempty"`
 	Role            string  `json:"role"`
 }
 
@@ -49,6 +50,10 @@ func JWT(secret string) echo.MiddlewareFunc {
 			if v, ok := mc["cygnus_account_id"]; ok && v != nil {
 				id := uint64(v.(float64))
 				claims.CygnusAccountID = &id
+			}
+			if v, ok := mc["store_id"]; ok && v != nil {
+				id := uint64(v.(float64))
+				claims.StoreID = &id
 			}
 			c.Set(claimsKey, claims)
 			return next(c)
