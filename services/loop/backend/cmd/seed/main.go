@@ -17,6 +17,8 @@ import (
 
 var ctx = context.Background()
 
+const salonName = "Hair SALON test"
+
 func main() {
 	cfg := config.Load()
 	db, err := mysql.New(cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
@@ -26,7 +28,7 @@ func main() {
 
 	// 冪等チェック
 	var count int
-	db.QueryRowContext(ctx, `SELECT COUNT(*) FROM salons WHERE name = 'Hair Studio LUNA'`).Scan(&count)
+	db.QueryRowContext(ctx, `SELECT COUNT(*) FROM salons WHERE name = ?`, salonName).Scan(&count)
 	if count > 0 {
 		log.Println("デモデータは既に存在します。スキップします。")
 		return
@@ -50,20 +52,25 @@ func main() {
 	}
 
 	// ─── プラン ───────────────────────────────────────────────
-	planID := exec("plan", `INSERT INTO plans (name, max_staff_count) VALUES ('ベーシック', 20)`)
+	planID := exec("plan", `INSERT INTO plans (name, max_staff_count) VALUES ('ベーシック', 100)`)
 
 	// ─── サロン ───────────────────────────────────────────────
-	salonID := exec("salon", `INSERT INTO salons (name) VALUES ('Hair Studio LUNA')`)
+	salonID := exec("salon", `INSERT INTO salons (name) VALUES (?)`, salonName)
 	exec("subscription", `INSERT INTO subscriptions (salon_id, plan_id, status) VALUES (?, ?, 'active')`, salonID, planID)
 
-	// ─── 店舗 ─────────────────────────────────────────────────
+	// ─── 店舗（8店舗）────────────────────────────────────────
+	storeDefs := []struct{ name, addr string }{
+		{"柏の葉キャンパス店", "千葉県柏市若柴178-4"},
+		{"柏店",             "千葉県柏市柏1-2-3"},
+		{"松戸店",            "千葉県松戸市松戸1-1-1"},
+		{"船橋店",            "千葉県船橋市本町2-3-4"},
+		{"流山おおたかの森店",  "千葉県流山市おおたかの森3-4-5"},
+		{"八潮店",            "埼玉県八潮市中央4-5-6"},
+		{"六丁店",            "埼玉県草加市六丁目5-6-7"},
+		{"北千住店",           "東京都足立区千住2-3-4"},
+	}
 	storeIDs := map[string]int64{}
-	for _, s := range []struct{ name, addr string }{
-		{"LUNA 柏本店",     "千葉県柏市柏1-1-1"},
-		{"LUNA 柏たなか店",  "千葉県柏市田中1-2-3"},
-		{"LUNA 三郷中央店",  "埼玉県三郷市中央4-5-6"},
-		{"hair Lanish +", "千葉県流山市おおたかの森7-8-9"},
-	} {
+	for _, s := range storeDefs {
 		id := exec("store:"+s.name,
 			`INSERT INTO stores (salon_id, name, address) VALUES (?, ?, ?)`,
 			salonID, s.name, s.addr)
@@ -73,25 +80,84 @@ func main() {
 			id)
 	}
 
-	// ─── スタッフ ─────────────────────────────────────────────
+	// ─── スタッフ（オーナー1 + 店長8 + スタッフ各3 = 33名）──
 	type staffRow struct{ name, initials, email, role, store string }
-	staffDefs := []staffRow{
-		{"山田 健一", "YK", "owner@luna.com",    "owner", "LUNA 柏本店"},
-		{"田中 彩花", "TA", "tanaka@luna.com",   "admin", "LUNA 柏たなか店"},
-		{"林 大輝",   "HD", "hayashi@luna.com",  "staff", "LUNA 柏たなか店"},
-		{"坂本 ひな", "SH", "sakamoto@luna.com", "staff", "LUNA 柏たなか店"},
-		{"吉田 沙織", "YS", "yoshida@luna.com",  "admin", "LUNA 三郷中央店"},
-		{"岡田 蓮",   "OR", "okada@luna.com",    "staff", "LUNA 三郷中央店"},
-		{"石井 奈々", "IN", "ishii@luna.com",    "admin", "hair Lanish +"},
-		{"前田 陸",   "MR", "maeda@luna.com",    "staff", "hair Lanish +"},
+
+	// オーナー（柏の葉キャンパス店所属）
+	ownerDefs := []staffRow{
+		{"山田 健一", "YK", "owner@salon-test.com", "owner", "柏の葉キャンパス店"},
 	}
+
+	// 店長（各店舗1名）
+	adminDefs := []staffRow{
+		{"田中 彩花", "TA", "mgr.kashiwanoha@salon-test.com",  "admin", "柏の葉キャンパス店"},
+		{"林 大輝",   "HD", "mgr.kashiwa@salon-test.com",      "admin", "柏店"},
+		{"吉田 沙織", "YS", "mgr.matsudo@salon-test.com",      "admin", "松戸店"},
+		{"石井 奈々", "IN", "mgr.funabashi@salon-test.com",    "admin", "船橋店"},
+		{"渡辺 翔",   "WS", "mgr.nagareyama@salon-test.com",   "admin", "流山おおたかの森店"},
+		{"佐藤 みく", "SM", "mgr.yashio@salon-test.com",       "admin", "八潮店"},
+		{"中村 健太", "NK", "mgr.rokkucho@salon-test.com",     "admin", "六丁店"},
+		{"伊藤 あかり","IA", "mgr.kitasenju@salon-test.com",   "admin", "北千住店"},
+	}
+
+	// スタッフ（各店舗3名）
+	staffNames := map[string][]staffRow{
+		"柏の葉キャンパス店": {
+			{"坂本 ひな",  "SH", "st01.kashiwanoha@salon-test.com", "staff", "柏の葉キャンパス店"},
+			{"岡田 蓮",    "OR", "st02.kashiwanoha@salon-test.com", "staff", "柏の葉キャンパス店"},
+			{"前田 陸",    "MR", "st03.kashiwanoha@salon-test.com", "staff", "柏の葉キャンパス店"},
+		},
+		"柏店": {
+			{"高橋 さくら", "TS", "st01.kashiwa@salon-test.com", "staff", "柏店"},
+			{"小林 莉子",   "KR", "st02.kashiwa@salon-test.com", "staff", "柏店"},
+			{"加藤 ゆい",   "KY", "st03.kashiwa@salon-test.com", "staff", "柏店"},
+		},
+		"松戸店": {
+			{"鈴木 陽子",  "SY", "st01.matsudo@salon-test.com", "staff", "松戸店"},
+			{"佐々木 葵",  "SA", "st02.matsudo@salon-test.com", "staff", "松戸店"},
+			{"村田 あおい", "MA", "st03.matsudo@salon-test.com", "staff", "松戸店"},
+		},
+		"船橋店": {
+			{"西村 みく",  "NM", "st01.funabashi@salon-test.com", "staff", "船橋店"},
+			{"橋本 光",    "HH", "st02.funabashi@salon-test.com", "staff", "船橋店"},
+			{"清水 桃花",  "SM2", "st03.funabashi@salon-test.com", "staff", "船橋店"},
+		},
+		"流山おおたかの森店": {
+			{"山本 凛",   "YR", "st01.nagareyama@salon-test.com", "staff", "流山おおたかの森店"},
+			{"長谷川 花", "HH2","st02.nagareyama@salon-test.com", "staff", "流山おおたかの森店"},
+			{"野口 夏",   "NG", "st03.nagareyama@salon-test.com", "staff", "流山おおたかの森店"},
+		},
+		"八潮店": {
+			{"藤田 悠",   "FY", "st01.yashio@salon-test.com", "staff", "八潮店"},
+			{"井上 彩",   "IH", "st02.yashio@salon-test.com", "staff", "八潮店"},
+			{"松本 春香", "MH", "st03.yashio@salon-test.com", "staff", "八潮店"},
+		},
+		"六丁店": {
+			{"木村 咲",   "KS", "st01.rokkucho@salon-test.com", "staff", "六丁店"},
+			{"斎藤 りん", "SR", "st02.rokkucho@salon-test.com", "staff", "六丁店"},
+			{"福田 奈緒", "FN", "st03.rokkucho@salon-test.com", "staff", "六丁店"},
+		},
+		"北千住店": {
+			{"池田 七海",  "IN2", "st01.kitasenju@salon-test.com", "staff", "北千住店"},
+			{"浜田 亜美",  "HA",  "st02.kitasenju@salon-test.com", "staff", "北千住店"},
+			{"近藤 ゆか",  "KG",  "st03.kitasenju@salon-test.com", "staff", "北千住店"},
+		},
+	}
+
 	staffIDs := map[string]int64{}
-	for _, s := range staffDefs {
-		id := exec("staff:"+s.name,
-			`INSERT INTO staffs (salon_id, store_id, name, email, password_hash, role, avatar_initials)
-			 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-			salonID, storeIDs[s.store], s.name, s.email, hash("demo1234"), s.role, s.initials)
-		staffIDs[s.name] = id
+	insertStaff := func(defs []staffRow) {
+		for _, s := range defs {
+			id := exec("staff:"+s.name,
+				`INSERT INTO staffs (salon_id, store_id, name, email, password_hash, role, avatar_initials)
+				 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+				salonID, storeIDs[s.store], s.name, s.email, hash("demo1234"), s.role, s.initials)
+			staffIDs[s.name] = id
+		}
+	}
+	insertStaff(ownerDefs)
+	insertStaff(adminDefs)
+	for _, defs := range staffNames {
+		insertStaff(defs)
 	}
 
 	// ─── 顧客 ─────────────────────────────────────────────────
@@ -104,16 +170,17 @@ func main() {
 		{"中村 千春",   "090-6666-7777"},
 		{"小林 莉子",   "090-7777-8888"},
 		{"加藤 ゆい",   "090-8888-9999"},
+		{"松田 れな",   "090-9999-1111"},
+		{"山口 ひより", "090-1234-5678"},
 	} {
 		exec("customer:"+c.name, `INSERT INTO customers (salon_id, name, phone) VALUES (?, ?, ?)`, salonID, c.name, c.phone)
 	}
 
 	// ─── メニュー ─────────────────────────────────────────────
-	type menuDef struct {
+	for _, m := range []struct {
 		name string
 		price, dur int
-	}
-	for _, m := range []menuDef{
+	}{
 		{"カット",       5500,  60},
 		{"カラー",       8800,  90},
 		{"パーマ",      11000, 120},
@@ -135,24 +202,28 @@ func main() {
 		size                             int
 	}
 	matList := []matDef{
-		{"ミルボン オルディーブ N",            "MILBON",   "カラー",                  "本", "g",  80},
-		{"ナプラ N.カラー SB",               "napla",    "カラー",                  "本", "g",  80},
-		{"ウエラ コレストン",                  "WELLA",    "カラー",                  "本", "g",  60},
-		{"ミルボン ジェミールフラン シャンプー",  "MILBON",   "シャンプー・トリートメント", "本", "ml", 500},
-		{"ナプラ ケアテクト HB トリートメント",  "napla",    "シャンプー・トリートメント", "本", "ml", 250},
-		{"アリミノ スパイスネオ フリーズキープ", "ARIMINO",  "スタイリング",             "缶", "",  0},
-		{"ミルボン ニゼル ドレシア",            "MILBON",   "スタイリング",             "本", "ml", 85},
+		{"ミルボン オルディーブ N",            "MILBON",  "カラー",                  "本", "g",  80},
+		{"ナプラ N.カラー SB",               "napla",   "カラー",                  "本", "g",  80},
+		{"ウエラ コレストン",                  "WELLA",   "カラー",                  "本", "g",  60},
+		{"ミルボン ジェミールフラン シャンプー",  "MILBON",  "シャンプー・トリートメント", "本", "ml", 500},
+		{"ナプラ ケアテクト HB トリートメント",  "napla",   "シャンプー・トリートメント", "本", "ml", 250},
+		{"アリミノ スパイスネオ フリーズキープ", "ARIMINO", "スタイリング",             "缶", "",   0},
+		{"ミルボン ニゼル ドレシア",            "MILBON",  "スタイリング",             "本", "ml", 85},
 	}
 
-	allStoreIDs := []int64{storeIDs["LUNA 柏本店"], storeIDs["LUNA 柏たなか店"], storeIDs["LUNA 三郷中央店"], storeIDs["hair Lanish +"]}
+	allStoreIDs := make([]int64, len(storeDefs))
+	for i, s := range storeDefs {
+		allStoreIDs[i] = storeIDs[s.name]
+	}
+
 	quantities := [][]int{
-		{3,  8, 12,  5},
-		{2,  5,  7,  3},
-		{6, 10, 15,  8},
-		{4,  6,  8,  5},
-		{2,  4,  6,  3},
-		{1,  3,  4,  2},
-		{5,  7, 10,  6},
+		{3,  8, 12,  5,  7,  4,  6,  9},
+		{2,  5,  7,  3,  6,  2,  4,  5},
+		{6, 10, 15,  8, 12,  5,  9, 11},
+		{4,  6,  8,  5,  7,  3,  5,  8},
+		{2,  4,  6,  3,  5,  2,  4,  6},
+		{1,  3,  4,  2,  3,  1,  2,  4},
+		{5,  7, 10,  6,  8,  4,  7,  9},
 	}
 	thresholds := []int{5, 5, 8, 4, 3, 2, 4}
 
@@ -205,11 +276,16 @@ func main() {
 	rng := rand.New(rand.NewSource(42))
 	today := time.Now()
 
-	staffsForStore := map[int64][]string{
-		storeIDs["LUNA 柏本店"]:    {"山田 健一"},
-		storeIDs["LUNA 柏たなか店"]: {"田中 彩花", "林 大輝", "坂本 ひな"},
-		storeIDs["LUNA 三郷中央店"]: {"吉田 沙織", "岡田 蓮"},
-		storeIDs["hair Lanish +"]: {"石井 奈々", "前田 陸"},
+	// 店舗ごとの担当スタッフ（店長 + 一般スタッフ）
+	staffsForStore := map[int64][]string{}
+	for _, s := range adminDefs {
+		staffsForStore[storeIDs[s.store]] = append(staffsForStore[storeIDs[s.store]], s.name)
+	}
+	for storeName, defs := range staffNames {
+		sID := storeIDs[storeName]
+		for _, s := range defs {
+			staffsForStore[sID] = append(staffsForStore[sID], s.name)
+		}
 	}
 
 	for daysAgo := 60; daysAgo >= 0; daysAgo-- {
@@ -255,6 +331,6 @@ func main() {
 	}
 
 	fmt.Println("✓ デモデータ投入完了！")
-	fmt.Println("  ログイン: owner@luna.com / demo1234")
-	fmt.Println("  サロン:   Hair Studio LUNA（4店舗・8スタッフ）")
+	fmt.Printf("  ログイン: owner@salon-test.com / demo1234\n")
+	fmt.Printf("  サロン:   %s（8店舗・33スタッフ）\n", salonName)
 }
