@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import { apiFetch, api } from '../lib/api'
 import { getClaims, logout } from '../lib/auth'
@@ -322,7 +322,9 @@ function FieldInput({
 type SubPage = 'staff' | 'menus' | 'stores' | 'profile' | null
 
 export default function SettingsPage() {
-  const [sub, setSub] = useState<SubPage>(null)
+  const location = useLocation()
+  const initSub = (location.state as any)?.sub as SubPage | undefined
+  const [sub, setSub] = useState<SubPage>(initSub ?? null)
 
   function back() { setSub(null) }
 

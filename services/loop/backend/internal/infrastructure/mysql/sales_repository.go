@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/model"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/repository"
 )
 
 type SalesRepository struct{ db *sqlx.DB }
@@ -98,4 +99,36 @@ func (r *SalesRepository) FindStaffDailySales(ctx context.Context, staffID uint6
 		return nil, fmt.Errorf("SalesRepository.FindStaffDailySales: %w", err)
 	}
 	return list, nil
+}
+
+func (r *SalesRepository) FindAllStaffDailySalesByStore(ctx context.Context, storeID uint64, date string) ([]*repository.StaffSalesSummary, error) {
+	var rows []struct {
+		StaffID        uint64  `db:"staff_id"`
+		Name           string  `db:"name"`
+		AvatarInitials *string `db:"avatar_initials"`
+		TotalSales     uint32  `db:"total_sales"`
+		ClientCount    uint32  `db:"client_count"`
+	}
+	err := r.db.SelectContext(ctx, &rows, `
+		SELECT s.id AS staff_id, s.name, s.avatar_initials,
+		       COALESCE(sd.total_sales, 0)  AS total_sales,
+		       COALESCE(sd.client_count, 0) AS client_count
+		FROM staffs s
+		LEFT JOIN staff_daily_sales sd ON sd.staff_id = s.id AND sd.date = ?
+		WHERE s.store_id = ?
+		ORDER BY total_sales DESC`, date, storeID)
+	if err != nil {
+		return nil, fmt.Errorf("SalesRepository.FindAllStaffDailySalesByStore: %w", err)
+	}
+	result := make([]*repository.StaffSalesSummary, len(rows))
+	for i, row := range rows {
+		result[i] = &repository.StaffSalesSummary{
+			StaffID:        row.StaffID,
+			Name:           row.Name,
+			AvatarInitials: row.AvatarInitials,
+			TotalSales:     row.TotalSales,
+			ClientCount:    row.ClientCount,
+		}
+	}
+	return result, nil
 }

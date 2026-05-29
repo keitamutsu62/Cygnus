@@ -153,6 +153,7 @@ func main() {
 
 	// 売上集計（treatment 作成で自動更新される）
 	api.GET("/sales/store", salesH.GetStoreSales)
+	api.GET("/sales/store/staff", salesH.GetStoreStaffSales)
 	api.GET("/sales/staff", salesH.GetMyStaffSales)
 
 	// 物販記録（会計時に記録 → daily_sales / staff_daily_sales の retail_sales を自動加算）

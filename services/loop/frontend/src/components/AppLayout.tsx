@@ -55,11 +55,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{
-      height: '100dvh',
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
       background: '#1a1816',
       display: 'flex',
       flexDirection: 'column',
-      overflow: 'hidden',
     }}>
       {/* トップバー */}
       <div style={{

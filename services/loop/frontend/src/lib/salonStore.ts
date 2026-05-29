@@ -3,7 +3,7 @@ import { apiFetch } from './api'
 
 export const salonNameAtom = atom<string>('—')
 
-export async function fetchSalonName(set: (v: string) => void) {
+export async function fetchSalonName(_set: (v: string) => void) {
   try {
     const stores = await apiFetch<{ salon_id: number }[]>('/api/v1/stores')
     if (!stores || stores.length === 0) return

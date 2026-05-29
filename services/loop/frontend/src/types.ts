@@ -3,6 +3,8 @@ export type StaffRole = 'owner' | 'admin' | 'staff'
 export type AuthClaims = {
   staff_id: number
   salon_id: number
+  store_id?: number
+  salon_name?: string
   role: StaffRole
   cygnus_account_id?: number
   exp: number
@@ -53,6 +55,14 @@ export type Menu = {
   price: number
   duration_minutes: number | null
   is_active: boolean
+}
+
+export type StaffSalesSummary = {
+  staff_id: number
+  name: string
+  avatar_initials: string | null
+  total_sales: number
+  client_count: number
 }
 
 export const ROLE_LABEL: Record<StaffRole, string> = {

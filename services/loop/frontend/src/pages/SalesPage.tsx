@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import { apiFetch } from '../lib/api'
 import { getClaims } from '../lib/auth'
@@ -189,10 +190,14 @@ function StaffTab({ ym }: { ym: string }) {
 export default function SalesPage() {
   const claims = getClaims()
   const isManager = claims?.role === 'owner' || claims?.role === 'admin'
+  const location = useLocation()
+  const initTab = (location.state as any)?.tab
 
   const now = new Date()
   const [ym, setYm] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
-  const [tab, setTab] = useState<'store' | 'staff'>('store')
+  const [tab, setTab] = useState<'store' | 'staff'>(
+    initTab === 'staff' ? 'staff' : 'store'
+  )
 
   function prevMonth() {
     const [y, m] = ym.split('-').map(Number)

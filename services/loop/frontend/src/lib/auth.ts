@@ -4,7 +4,7 @@ export function getSalonName(): string {
   const token = getToken()
   if (!token) return ''
   const claims = decodeClaims(token)
-  return (claims as AuthClaims & { salon_name?: string })?.salon_name ?? ''
+  return claims?.salon_name ?? ''
 }
 
 export function decodeClaims(token: string): AuthClaims | null {

@@ -43,6 +43,38 @@ func (h *SalesHandler) GetMyStaffSales(c echo.Context) error {
 	return c.JSON(http.StatusOK, list)
 }
 
+// GET /api/v1/sales/store/staff?store_id=10&date=2026-05-29
+func (h *SalesHandler) GetStoreStaffSales(c echo.Context) error {
+	claims := claimsFrom(c)
+
+	var storeID uint64
+	if s := c.QueryParam("store_id"); s != "" {
+		id, err := strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid store_id")
+		}
+		storeID = id
+	}
+	if storeID == 0 {
+		if claims.StoreID != nil {
+			storeID = *claims.StoreID
+		} else {
+			return echo.NewHTTPError(http.StatusBadRequest, "store_id is required")
+		}
+	}
+
+	date := c.QueryParam("date")
+	if date == "" {
+		date = time.Now().Format("2006-01-02")
+	}
+
+	list, err := h.repo.FindAllStaffDailySalesByStore(c.Request().Context(), storeID, date)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, list)
+}
+
 func parseDateRange(c echo.Context) (from, to string) {
 	from = c.QueryParam("from")
 	to = c.QueryParam("to")

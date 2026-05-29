@@ -67,10 +67,10 @@ type CreateOrderInput struct {
 }
 
 type OrderItemInput struct {
-	MaterialID    uint64
-	Quantity      uint32
-	Unit          string
-	EstimatedCost *uint32
+	MaterialID    uint64  `json:"material_id"`
+	Quantity      uint32  `json:"quantity"`
+	Unit          string  `json:"unit"`
+	EstimatedCost *uint32 `json:"estimated_cost,omitempty"`
 }
 
 func (u *DealerUsecase) CreateOrder(ctx context.Context, in CreateOrderInput) (*model.Order, error) {
