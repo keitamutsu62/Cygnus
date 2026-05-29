@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"math/big"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -20,6 +22,8 @@ type AuthUsecase struct {
 	subscriptionRepo repository.SubscriptionRepository
 	staffRepo        repository.StaffRepository
 	invitationRepo   repository.InvitationRepository
+	accountRepo      repository.CygnusAccountRepository
+	membershipRepo   repository.SalonMembershipRepository
 	mailer           Mailer
 	jwtSecret        string
 }
@@ -34,6 +38,8 @@ func NewAuthUsecase(
 	subscriptionRepo repository.SubscriptionRepository,
 	staffRepo repository.StaffRepository,
 	invitationRepo repository.InvitationRepository,
+	accountRepo repository.CygnusAccountRepository,
+	membershipRepo repository.SalonMembershipRepository,
 	mailer Mailer,
 	jwtSecret string,
 ) *AuthUsecase {
@@ -43,12 +49,13 @@ func NewAuthUsecase(
 		subscriptionRepo: subscriptionRepo,
 		staffRepo:        staffRepo,
 		invitationRepo:   invitationRepo,
+		accountRepo:      accountRepo,
+		membershipRepo:   membershipRepo,
 		mailer:           mailer,
 		jwtSecret:        jwtSecret,
 	}
 }
 
-// RegisterInput はオーナーがオンライン契約時に入力する情報
 type RegisterInput struct {
 	SalonName     string
 	OwnerName     string
@@ -56,38 +63,32 @@ type RegisterInput struct {
 	OwnerPassword string
 }
 
-// Register サロン新規登録（オーナーアカウント作成 + サブスクリプション開始）
+// Register サロン新規登録。staffs + cygnus_accounts + salon_memberships を同時に作成する。
 func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (*model.Staff, error) {
-	// メールアドレス重複チェック
 	if existing, _ := u.staffRepo.FindByEmail(ctx, in.OwnerEmail); existing != nil {
 		return nil, apierror.ErrConflict
 	}
 
-	// デフォルトプラン取得（後でプラン選択機能を追加）
 	plan, err := u.planRepo.FindDefault(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Register: find plan: %w", err)
 	}
 
-	// サロン作成
 	salon := &model.Salon{Name: in.SalonName}
 	if err := u.salonRepo.Create(ctx, salon); err != nil {
 		return nil, fmt.Errorf("Register: create salon: %w", err)
 	}
 
-	// サブスクリプション作成
 	sub := &model.Subscription{SalonID: salon.ID, PlanID: plan.ID, Status: model.SubscriptionActive}
 	if err := u.subscriptionRepo.Create(ctx, sub); err != nil {
 		return nil, fmt.Errorf("Register: create subscription: %w", err)
 	}
 
-	// パスワードハッシュ化
 	hash, err := bcrypt.GenerateFromPassword([]byte(in.OwnerPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("Register: hash password: %w", err)
 	}
 
-	// オーナースタッフ作成
 	owner := &model.Staff{
 		SalonID:      salon.ID,
 		Name:         in.OwnerName,
@@ -99,16 +100,43 @@ func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (*model.St
 		return nil, fmt.Errorf("Register: create owner: %w", err)
 	}
 
+	// cygnus_accounts 作成
+	cygnusID, err := u.generateUniqueCygnusID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Register: generate cygnus id: %w", err)
+	}
+	account := &model.CygnusAccount{
+		CygnusID:     cygnusID,
+		Email:        in.OwnerEmail,
+		PasswordHash: string(hash),
+		DisplayName:  in.OwnerName,
+	}
+	if err := u.accountRepo.Create(ctx, account); err != nil {
+		return nil, fmt.Errorf("Register: create cygnus account: %w", err)
+	}
+	if err := u.staffRepo.LinkCygnusAccount(ctx, owner.ID, account.ID); err != nil {
+		return nil, fmt.Errorf("Register: link cygnus account: %w", err)
+	}
+	owner.CygnusAccountID = &account.ID
+
+	membership := &model.SalonMembership{
+		CygnusAccountID: account.ID,
+		SalonID:         salon.ID,
+		Role:            model.StaffRoleOwner,
+		IsActive:        true,
+	}
+	if err := u.membershipRepo.Create(ctx, membership); err != nil {
+		return nil, fmt.Errorf("Register: create membership: %w", err)
+	}
+
 	return owner, nil
 }
 
-// LoginInput はログイン時の入力
 type LoginInput struct {
 	Email    string
 	Password string
 }
 
-// Login メール + パスワード認証、JWT を返す
 func (u *AuthUsecase) Login(ctx context.Context, in LoginInput) (string, error) {
 	staff, err := u.staffRepo.FindByEmail(ctx, in.Email)
 	if err != nil {
@@ -127,7 +155,6 @@ func (u *AuthUsecase) Login(ctx context.Context, in LoginInput) (string, error) 
 	return token, nil
 }
 
-// InviteInput はスタッフ招待時の入力
 type InviteInput struct {
 	SalonID        uint64
 	InviterStaffID uint64
@@ -136,9 +163,7 @@ type InviteInput struct {
 	FrontendURL    string
 }
 
-// Invite スタッフ招待メール送信（人数上限チェックあり）
 func (u *AuthUsecase) Invite(ctx context.Context, in InviteInput) error {
-	// 人数上限チェック
 	sub, err := u.subscriptionRepo.FindBySalonID(ctx, in.SalonID)
 	if err != nil {
 		return fmt.Errorf("Invite: find subscription: %w", err)
@@ -157,7 +182,6 @@ func (u *AuthUsecase) Invite(ctx context.Context, in InviteInput) error {
 		}
 	}
 
-	// 招待トークン生成（24時間有効）
 	token, err := generateToken()
 	if err != nil {
 		return fmt.Errorf("Invite: generate token: %w", err)
@@ -188,14 +212,13 @@ func (u *AuthUsecase) Invite(ctx context.Context, in InviteInput) error {
 	return nil
 }
 
-// AcceptInvitationInput は招待承諾時の入力
 type AcceptInvitationInput struct {
 	Token    string
 	Name     string
 	Password string
 }
 
-// AcceptInvitation 招待トークンを検証してスタッフアカウントを作成
+// AcceptInvitation 招待承諾。staffs + cygnus_accounts + salon_memberships を作成する。
 func (u *AuthUsecase) AcceptInvitation(ctx context.Context, in AcceptInvitationInput) (*model.Staff, error) {
 	inv, err := u.invitationRepo.FindByToken(ctx, in.Token)
 	if err != nil {
@@ -221,6 +244,34 @@ func (u *AuthUsecase) AcceptInvitation(ctx context.Context, in AcceptInvitationI
 		return nil, fmt.Errorf("AcceptInvitation: create staff: %w", err)
 	}
 
+	cygnusID, err := u.generateUniqueCygnusID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("AcceptInvitation: generate cygnus id: %w", err)
+	}
+	account := &model.CygnusAccount{
+		CygnusID:     cygnusID,
+		Email:        inv.Email,
+		PasswordHash: string(hash),
+		DisplayName:  in.Name,
+	}
+	if err := u.accountRepo.Create(ctx, account); err != nil {
+		return nil, fmt.Errorf("AcceptInvitation: create cygnus account: %w", err)
+	}
+	if err := u.staffRepo.LinkCygnusAccount(ctx, staff.ID, account.ID); err != nil {
+		return nil, fmt.Errorf("AcceptInvitation: link cygnus account: %w", err)
+	}
+	staff.CygnusAccountID = &account.ID
+
+	membership := &model.SalonMembership{
+		CygnusAccountID: account.ID,
+		SalonID:         inv.SalonID,
+		Role:            inv.Role,
+		IsActive:        true,
+	}
+	if err := u.membershipRepo.Create(ctx, membership); err != nil {
+		return nil, fmt.Errorf("AcceptInvitation: create membership: %w", err)
+	}
+
 	_ = u.invitationRepo.UpdateStatus(ctx, inv.ID, model.InvitationAccepted)
 
 	return staff, nil
@@ -233,7 +284,34 @@ func (u *AuthUsecase) generateJWT(s *model.Staff) (string, error) {
 		"role":     s.Role,
 		"exp":      time.Now().Add(24 * time.Hour).Unix(),
 	}
+	if s.CygnusAccountID != nil {
+		claims["cygnus_account_id"] = *s.CygnusAccountID
+	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(u.jwtSecret))
+}
+
+// generateUniqueCygnusID CYG-XXXXX 形式のユニークIDを生成する。
+func (u *AuthUsecase) generateUniqueCygnusID(ctx context.Context) (string, error) {
+	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+	for i := 0; i < 10; i++ {
+		b := make([]byte, 5)
+		for j := range b {
+			n, err := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
+			if err != nil {
+				return "", err
+			}
+			b[j] = chars[n.Int64()]
+		}
+		id := "CYG-" + strings.ToUpper(string(b))
+		exists, err := u.accountRepo.ExistsCygnusID(ctx, id)
+		if err != nil {
+			return "", err
+		}
+		if !exists {
+			return id, nil
+		}
+	}
+	return "", fmt.Errorf("failed to generate unique cygnus id after 10 attempts")
 }
 
 func generateToken() (string, error) {

@@ -65,6 +65,13 @@ func (r *StaffRepository) Update(ctx context.Context, s *model.Staff) error {
 	return err
 }
 
+func (r *StaffRepository) LinkCygnusAccount(ctx context.Context, staffID, cygnusAccountID uint64) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE staffs SET cygnus_account_id = ? WHERE id = ?`,
+		cygnusAccountID, staffID)
+	return err
+}
+
 type InvitationRepository struct{ db *sqlx.DB }
 
 func NewInvitationRepository(db *sqlx.DB) *InvitationRepository {

@@ -8,16 +8,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Claims struct {
-	StaffID         uint64  `json:"staff_id"`
-	CygnusAccountID *uint64 `json:"cygnus_account_id,omitempty"`
-	SalonID         uint64  `json:"salon_id"`
-	Role            string  `json:"role"`
+type CustomerClaims struct {
+	CustomerID uint64 `json:"customer_id"`
 }
 
-const claimsKey = "claims"
+const claimsKey = "customer_claims"
 
-func JWT(secret string) echo.MiddlewareFunc {
+func CustomerJWT(secret string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			header := c.Request().Header.Get("Authorization")
@@ -41,22 +38,15 @@ func JWT(secret string) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid claims")
 			}
 
-			claims := &Claims{
-				StaffID: uint64(mc["staff_id"].(float64)),
-				SalonID: uint64(mc["salon_id"].(float64)),
-				Role:    mc["role"].(string),
-			}
-			if v, ok := mc["cygnus_account_id"]; ok && v != nil {
-				id := uint64(v.(float64))
-				claims.CygnusAccountID = &id
-			}
-			c.Set(claimsKey, claims)
+			c.Set(claimsKey, &CustomerClaims{
+				CustomerID: uint64(mc["customer_id"].(float64)),
+			})
 			return next(c)
 		}
 	}
 }
 
-func GetClaims(c echo.Context) *Claims {
-	v, _ := c.Get(claimsKey).(*Claims)
+func GetCustomerClaims(c echo.Context) *CustomerClaims {
+	v, _ := c.Get(claimsKey).(*CustomerClaims)
 	return v
 }

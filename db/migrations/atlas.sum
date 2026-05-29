@@ -1,4 +1,5 @@
-h1:hWz6YEndvSFD9pXKXRfjX0WIQCNzBlHbQf6nGFfP6x4=
+h1:R39aXtDmJG7giyHOvBj0XPY+IDcX2+jzzNRO5lAV3dM=
 20260523092305_create_initial_schema.sql h1:dHlCYplYL90Yn82t31dQjiQz/bm2Mj9DbvJdFXDcZrg=
 20260523093305_add_full_schema.sql h1:O/WyrfhEnngr9y3ohVWaNVpBsM/AOhNrZ5tHZTGsceY=
 20260525020627_add_billing_and_invitations.sql h1:M3kaScuh+wdx+uxttsoodqCgLpyPvyT/hTr8SUKbY58=
+20260529000000_add_cygnus_id_schema.sql h1:PFefJp4MsmcbJwzcSLki3zisc2Bu3E9mwfkVMDHPEWY=

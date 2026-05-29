@@ -3,16 +3,17 @@ package model
 import "time"
 
 type Staff struct {
-	ID             uint64    `db:"id"`
-	SalonID        uint64    `db:"salon_id"`
-	StoreID        *uint64   `db:"store_id"`
-	Name           string    `db:"name"`
-	Email          string    `db:"email"`
-	PasswordHash   string    `db:"password_hash"`
-	Role           StaffRole `db:"role"`
-	AvatarInitials *string   `db:"avatar_initials"`
-	CreatedAt      time.Time `db:"created_at"`
-	UpdatedAt      time.Time `db:"updated_at"`
+	ID              uint64   `db:"id"`
+	CygnusAccountID *uint64  `db:"cygnus_account_id"`
+	SalonID         uint64   `db:"salon_id"`
+	StoreID         *uint64  `db:"store_id"`
+	Name            string   `db:"name"`
+	Email           string   `db:"email"`
+	PasswordHash    string   `db:"password_hash"`
+	Role            StaffRole `db:"role"`
+	AvatarInitials  *string  `db:"avatar_initials"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
 }
 
 type StaffRole string

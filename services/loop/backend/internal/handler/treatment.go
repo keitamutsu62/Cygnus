@@ -1,0 +1,84 @@
+package handler
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/model"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/usecase"
+	"github.com/labstack/echo/v4"
+)
+
+type TreatmentHandler struct {
+	uc *usecase.TreatmentUsecase
+}
+
+func NewTreatmentHandler(uc *usecase.TreatmentUsecase) *TreatmentHandler {
+	return &TreatmentHandler{uc: uc}
+}
+
+// POST /api/v1/treatments
+func (h *TreatmentHandler) Create(c echo.Context) error {
+	claims := claimsFrom(c)
+
+	var req struct {
+		CustomerID      uint64                   `json:"customer_id"`
+		StoreID         *uint64                  `json:"store_id"`
+		MenuID          *uint64                  `json:"menu_id"`
+		MenuName        string                   `json:"menu_name"`
+		Price           uint32                   `json:"price"`
+		DurationMinutes *uint16                  `json:"duration_minutes"`
+		Source          model.TreatmentSource    `json:"source"`
+		AppointmentID   *uint64                  `json:"appointment_id"`
+		PerformedAt     string                   `json:"performed_at"` // RFC3339
+		Notes           *string                  `json:"notes"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+	if req.CustomerID == 0 || req.MenuName == "" || req.PerformedAt == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "customer_id, menu_name, performed_at are required")
+	}
+
+	t, err := h.uc.Create(c.Request().Context(), usecase.CreateTreatmentInput{
+		StaffID:         claims.StaffID,
+		CustomerID:      req.CustomerID,
+		SalonID:         claims.SalonID,
+		StoreID:         req.StoreID,
+		MenuID:          req.MenuID,
+		MenuName:        req.MenuName,
+		Price:           req.Price,
+		DurationMinutes: req.DurationMinutes,
+		Source:          req.Source,
+		AppointmentID:   req.AppointmentID,
+		PerformedAt:     req.PerformedAt,
+		Notes:           req.Notes,
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusCreated, t)
+}
+
+// GET /api/v1/treatments?scope=mine&limit=20&offset=0
+func (h *TreatmentHandler) List(c echo.Context) error {
+	claims := claimsFrom(c)
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	offset, _ := strconv.Atoi(c.QueryParam("offset"))
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+
+	scope := c.QueryParam("scope")
+	var list any
+	var err error
+	if scope == "mine" {
+		list, err = h.uc.ListByStaff(c.Request().Context(), claims.StaffID, limit, offset)
+	} else {
+		list, err = h.uc.ListBySalon(c.Request().Context(), claims.SalonID, limit, offset)
+	}
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, list)
+}

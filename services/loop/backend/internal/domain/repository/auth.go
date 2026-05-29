@@ -28,6 +28,7 @@ type StaffRepository interface {
 	FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Staff, error)
 	CountBySalonID(ctx context.Context, salonID uint64) (int, error)
 	Update(ctx context.Context, s *model.Staff) error
+	LinkCygnusAccount(ctx context.Context, staffID, cygnusAccountID uint64) error
 }
 
 type InvitationRepository interface {
