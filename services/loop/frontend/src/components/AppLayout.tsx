@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { getSalonName } from '../lib/auth'
 
 const NAV = [
   {
@@ -50,6 +51,7 @@ const NAV = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const salonName = getSalonName()
 
   return (
     <div style={{
@@ -79,7 +81,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div style={{ fontSize: 12, color: 'rgba(232,228,220,0.55)', fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>
-          Hair Studio LUNA
+          {salonName}
         </div>
       </div>
 

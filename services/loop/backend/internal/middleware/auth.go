@@ -12,6 +12,7 @@ type Claims struct {
 	StaffID         uint64  `json:"staff_id"`
 	CygnusAccountID *uint64 `json:"cygnus_account_id,omitempty"`
 	SalonID         uint64  `json:"salon_id"`
+	SalonName       string  `json:"salon_name"`
 	StoreID         *uint64 `json:"store_id,omitempty"`
 	Role            string  `json:"role"`
 }
@@ -42,10 +43,12 @@ func JWT(secret string) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid claims")
 			}
 
+			salonName, _ := mc["salon_name"].(string)
 			claims := &Claims{
-				StaffID: uint64(mc["staff_id"].(float64)),
-				SalonID: uint64(mc["salon_id"].(float64)),
-				Role:    mc["role"].(string),
+				StaffID:   uint64(mc["staff_id"].(float64)),
+				SalonID:   uint64(mc["salon_id"].(float64)),
+				SalonName: salonName,
+				Role:      mc["role"].(string),
 			}
 			if v, ok := mc["cygnus_account_id"]; ok && v != nil {
 				id := uint64(v.(float64))

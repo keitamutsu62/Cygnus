@@ -147,7 +147,12 @@ func (u *AuthUsecase) Login(ctx context.Context, in LoginInput) (string, error) 
 		return "", apierror.ErrUnauthorized
 	}
 
-	token, err := u.generateJWT(staff)
+	salon, err := u.salonRepo.FindByID(ctx, staff.SalonID)
+	if err != nil {
+		return "", fmt.Errorf("Login: find salon: %w", err)
+	}
+
+	token, err := u.generateJWT(staff, salon.Name)
 	if err != nil {
 		return "", fmt.Errorf("Login: generate jwt: %w", err)
 	}
@@ -277,12 +282,13 @@ func (u *AuthUsecase) AcceptInvitation(ctx context.Context, in AcceptInvitationI
 	return staff, nil
 }
 
-func (u *AuthUsecase) generateJWT(s *model.Staff) (string, error) {
+func (u *AuthUsecase) generateJWT(s *model.Staff, salonName string) (string, error) {
 	claims := jwt.MapClaims{
-		"staff_id": s.ID,
-		"salon_id": s.SalonID,
-		"role":     s.Role,
-		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+		"staff_id":   s.ID,
+		"salon_id":   s.SalonID,
+		"salon_name": salonName,
+		"role":       s.Role,
+		"exp":        time.Now().Add(24 * time.Hour).Unix(),
 	}
 	if s.StoreID != nil {
 		claims["store_id"] = *s.StoreID
