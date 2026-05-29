@@ -1456,10 +1456,7 @@ html, body {
     </div>
 
     <div class="setting-group-label"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> POS連携</div>
-    <div class="setting-group">
-      <div class="setting-row"><div class="s-icon ic-green"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="9" rx="1.5" stroke="#6dba8e" stroke-width="1.1"/><path d="M4 3V2C4 1.4 4.4 1 5 1H9C9.6 1 10 1.4 10 2V3" stroke="#6dba8e" stroke-width="1.1"/></svg></div><div class="s-info"><div class="s-label">スマレジ</div><div class="s-value">Store ID: 00123 · 接続済み</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="s-badge s-connected">接続中</div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
-      <div class="setting-row"><div class="s-icon ic-gray"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="9" rx="1.5" stroke="rgba(232,228,220,0.3)" stroke-width="1.1"/></svg></div><div class="s-info"><div class="s-label" style="color:var(--muted)">Square</div><div class="s-value">未接続</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="s-badge s-warning">未接続</div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
-    </div>
+    <div class="setting-group" id="posStoreList"><!-- JS描画 --></div>
 
     <div class="setting-group-label"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> ディーラー登録</div>
     <div class="setting-group" id="dealerList"><!-- JS描画 --></div>
@@ -1742,6 +1739,42 @@ html, body {
     <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;">役職を変更</div>
     <div id="rolePickerList"></div>
     <button class="btn-cancel" style="margin-top:12px;" onclick="closeModal('rolePickerModal')">キャンセル</button>
+  </div>
+</div>
+
+<!-- ===== POS STORE MODAL ===== -->
+<div class="modal" id="posStoreModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">POS連携</div>
+    <div style="font-size:14px;font-weight:400;color:var(--text);margin-bottom:20px;" id="posStoreName"></div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <!-- スマレジ -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:400;color:var(--text);">スマレジ</div>
+          <div id="posSmaregiBadge" class="s-badge s-warning">未接続</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Store ID</div>
+          <input class="field-input" type="text" id="posSmaregiId" placeholder="例：00123"/>
+        </div>
+        <button class="btn-pos" style="margin-top:10px;" onclick="savePosId('smaregi')">接続する</button>
+      </div>
+      <!-- Square -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:400;color:var(--text);">Square</div>
+          <div id="posSquareBadge" class="s-badge s-warning">未接続</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Location ID</div>
+          <input class="field-input" type="text" id="posSquareId" placeholder="例：LXXXXXXXXXXXXX"/>
+        </div>
+        <button class="btn-pos" style="margin-top:10px;" onclick="savePosId('square')">接続する</button>
+      </div>
+    </div>
+    <button class="btn-confirm" style="margin-top:20px;" onclick="closeModal('posStoreModal')">閉じる</button>
   </div>
 </div>
 
@@ -2430,6 +2463,7 @@ function goTo(id) {
     try { updateSalesCard(); } catch(e) {}
   }
   if (id === 'settings') {
+    if (typeof renderPosStoreList === 'function') renderPosStoreList();
     if (typeof renderDealerList === 'function') renderDealerList();
   }
   if (id === 'inventory') {
@@ -3414,6 +3448,60 @@ function selectRole(role) {
   if (roleEl) roleEl.textContent = role;
   if (subEl)  subEl.textContent = _staffDetailCurrent.store + ' · ' + role;
   closeModal('rolePickerModal');
+}
+
+// ═══════════════════════════════════════════
+// POS連携（店舗ごと）
+// ═══════════════════════════════════════════
+var posData = {};  // { '東松戸店': { smaregi: '00123', square: '' }, ... }
+
+function renderPosStoreList() {
+  var el = document.getElementById('posStoreList');
+  if (!el) return;
+  var stores = [];
+  var seen = {};
+  allStaff.forEach(function(s) { if (!seen[s.store]) { seen[s.store] = true; stores.push(s.store); } });
+
+  el.innerHTML = stores.map(function(store) {
+    var d = posData[store] || {};
+    var smaregiOk = !!d.smaregi;
+    var squareOk  = !!d.square;
+    var bothNone  = !smaregiOk && !squareOk;
+    var sub = bothNone ? '未接続'
+      : [smaregiOk ? 'スマレジ: 接続済み' : '', squareOk ? 'Square: 接続済み' : ''].filter(Boolean).join(' · ');
+    var badgeClass = bothNone ? 's-warning' : 's-connected';
+    var badgeText  = bothNone ? '未接続' : '接続中';
+    return '<div class="setting-row" style="cursor:pointer;" onclick="openPosStoreModal(\'' + store + '\')">'
+      + '<div class="s-info"><div class="s-label">' + store + '</div><div class="s-value">' + sub + '</div></div>'
+      + '<div style="display:flex;align-items:center;gap:8px;"><div class="s-badge ' + badgeClass + '">' + badgeText + '</div>'
+      + '<svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+      + '</div>';
+  }).join('');
+}
+
+function openPosStoreModal(store) {
+  var d = posData[store] || {};
+  document.getElementById('posStoreName').textContent = store;
+  document.getElementById('posSmaregiId').value = d.smaregi || '';
+  document.getElementById('posSquareId').value  = d.square  || '';
+  document.getElementById('posSmaregiBadge').textContent  = d.smaregi ? '接続済み' : '未接続';
+  document.getElementById('posSmaregiBadge').className    = 's-badge ' + (d.smaregi ? 's-connected' : 's-warning');
+  document.getElementById('posSquareBadge').textContent   = d.square  ? '接続済み' : '未接続';
+  document.getElementById('posSquareBadge').className     = 's-badge ' + (d.square  ? 's-connected' : 's-warning');
+  openModal('posStoreModal');
+}
+
+function savePosId(type) {
+  var store = document.getElementById('posStoreName').textContent;
+  var val   = document.getElementById(type === 'smaregi' ? 'posSmaregiId' : 'posSquareId').value.trim();
+  if (!val) { alert('IDを入力してください'); return; }
+  if (!posData[store]) posData[store] = {};
+  posData[store][type] = val;
+  var badge = document.getElementById(type === 'smaregi' ? 'posSmaregiBadge' : 'posSquareBadge');
+  badge.textContent = '接続済み';
+  badge.className   = 's-badge s-connected';
+  renderPosStoreList();
+  showToast('接続しました');
 }
 
 // ═══════════════════════════════════════════
