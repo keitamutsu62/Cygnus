@@ -1757,9 +1757,9 @@ html, body {
         </div>
         <div class="field">
           <div class="field-label">Store ID</div>
-          <input class="field-input" type="text" id="posSmaregiId" placeholder="例：00123"/>
+          <input class="field-input" type="text" inputmode="numeric" id="posSmaregiId" placeholder="例：00123"/>
         </div>
-        <button class="btn-pos" style="margin-top:10px;" onclick="savePosId('smaregi')">接続する</button>
+        <button class="btn-pos" style="margin-top:10px;" id="posSmaregiBtn" onclick="savePosId('smaregi')">接続する</button>
       </div>
       <!-- Square -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:14px 16px;">
@@ -1769,9 +1769,9 @@ html, body {
         </div>
         <div class="field">
           <div class="field-label">Location ID</div>
-          <input class="field-input" type="text" id="posSquareId" placeholder="例：LXXXXXXXXXXXXX"/>
+          <input class="field-input" type="text" inputmode="text" autocapitalize="characters" id="posSquareId" placeholder="例：LXXXXXXXXXXXXX"/>
         </div>
-        <button class="btn-pos" style="margin-top:10px;" onclick="savePosId('square')">接続する</button>
+        <button class="btn-pos" style="margin-top:10px;" id="posSquareBtn" onclick="savePosId('square')">接続する</button>
       </div>
     </div>
     <button class="btn-confirm" style="margin-top:20px;" onclick="closeModal('posStoreModal')">閉じる</button>
@@ -3484,24 +3484,51 @@ function openPosStoreModal(store) {
   document.getElementById('posStoreName').textContent = store;
   document.getElementById('posSmaregiId').value = d.smaregi || '';
   document.getElementById('posSquareId').value  = d.square  || '';
-  document.getElementById('posSmaregiBadge').textContent  = d.smaregi ? '接続済み' : '未接続';
-  document.getElementById('posSmaregiBadge').className    = 's-badge ' + (d.smaregi ? 's-connected' : 's-warning');
-  document.getElementById('posSquareBadge').textContent   = d.square  ? '接続済み' : '未接続';
-  document.getElementById('posSquareBadge').className     = 's-badge ' + (d.square  ? 's-connected' : 's-warning');
+  updatePosWidget('smaregi', !!d.smaregi);
+  updatePosWidget('square',  !!d.square);
   openModal('posStoreModal');
 }
 
+function updatePosWidget(type, connected) {
+  var badgeId = type === 'smaregi' ? 'posSmaregiBadge' : 'posSquareBadge';
+  var btnId   = type === 'smaregi' ? 'posSmaregiBtn'   : 'posSquareBtn';
+  var badge   = document.getElementById(badgeId);
+  var btn     = document.getElementById(btnId);
+  badge.textContent = connected ? '接続済み' : '未接続';
+  badge.className   = 's-badge ' + (connected ? 's-connected' : 's-warning');
+  if (connected) {
+    btn.textContent = '接続解除';
+    btn.style.borderColor = 'rgba(224,112,96,0.4)';
+    btn.style.color       = '#e07060';
+  } else {
+    btn.textContent = '接続する';
+    btn.style.borderColor = '';
+    btn.style.color       = '';
+  }
+}
+
 function savePosId(type) {
-  var store = document.getElementById('posStoreName').textContent;
-  var val   = document.getElementById(type === 'smaregi' ? 'posSmaregiId' : 'posSquareId').value.trim();
-  if (!val) { alert('IDを入力してください'); return; }
-  if (!posData[store]) posData[store] = {};
-  posData[store][type] = val;
-  var badge = document.getElementById(type === 'smaregi' ? 'posSmaregiBadge' : 'posSquareBadge');
-  badge.textContent = '接続済み';
-  badge.className   = 's-badge s-connected';
-  renderPosStoreList();
-  showToast('接続しました');
+  var store     = document.getElementById('posStoreName').textContent;
+  var inputId   = type === 'smaregi' ? 'posSmaregiId' : 'posSquareId';
+  var connected = !!(posData[store] && posData[store][type]);
+
+  if (connected) {
+    // 接続解除
+    posData[store][type] = '';
+    document.getElementById(inputId).value = '';
+    updatePosWidget(type, false);
+    renderPosStoreList();
+    showToast('接続を解除しました');
+  } else {
+    // 接続
+    var val = document.getElementById(inputId).value.trim();
+    if (!val) { alert('IDを入力してください'); return; }
+    if (!posData[store]) posData[store] = {};
+    posData[store][type] = val;
+    updatePosWidget(type, true);
+    renderPosStoreList();
+    showToast('接続しました');
+  }
 }
 
 // ═══════════════════════════════════════════
