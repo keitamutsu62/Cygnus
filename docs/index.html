@@ -3456,6 +3456,8 @@ function toggleDealerStatus() {
 
 function openDealerDeleteConfirm() {
   if (!_dealerDetailCurrent) return;
+  var inner = document.querySelector('#dealerDetailModal .modal-inner');
+  inner.style.minHeight = inner.offsetHeight + 'px';
   document.getElementById('dealerDeleteConfirmText').textContent = '「' + _dealerDetailCurrent.name + '」を削除します。';
   document.getElementById('ddView').style.display = 'none';
   document.getElementById('ddConfirmView').style.display = 'block';
@@ -3464,6 +3466,8 @@ function openDealerDeleteConfirm() {
 function showDealerDetailView() {
   document.getElementById('ddView').style.display = 'block';
   document.getElementById('ddConfirmView').style.display = 'none';
+  var inner = document.querySelector('#dealerDetailModal .modal-inner');
+  inner.style.minHeight = '';
 }
 
 function deleteDealer() {
