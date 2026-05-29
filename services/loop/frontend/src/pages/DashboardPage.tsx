@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
@@ -53,7 +53,10 @@ const OrbitSVG = () => (
 )
 
 // ─── BottomSheet（共通モーダル基盤）──────────────────────────────
-function BottomSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+export interface BottomSheetRef { close: () => void }
+
+const BottomSheet = forwardRef<BottomSheetRef, { onClose: () => void; children: React.ReactNode }>(
+function BottomSheet({ onClose, children }, ref) {
   const [vis, setVis] = useState(false)
   const innerRef = useRef<HTMLDivElement>(null)
 
@@ -103,6 +106,8 @@ function BottomSheet({ onClose, children }: { onClose: () => void; children: Rea
     setTimeout(onClose, 450)
   }
 
+  useImperativeHandle(ref, () => ({ close }))
+
   return createPortal(
     <div
       onClick={e => { if (e.target === e.currentTarget) close() }}
@@ -137,13 +142,14 @@ function BottomSheet({ onClose, children }: { onClose: () => void; children: Rea
     </div>,
     document.body
   )
-}
+})
 
 // ─── 通知パネル ────────────────────────────────────────────────
 type NotifItem = { id: number; borderColor: string; meta: string; title: string; sub: string }
 function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => void }) {
+  const sheetRef = useRef<BottomSheetRef>(null)
   return (
-    <BottomSheet onClose={onClose}>
+    <BottomSheet ref={sheetRef} onClose={onClose}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
         <OrbitSVG />
         <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>通知</div>
@@ -161,7 +167,7 @@ function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => voi
         ))}
       </div>
       <button
-        onClick={onClose}
+        onClick={() => sheetRef.current?.close()}
         style={{
           width: '100%', padding: 13, marginTop: 16,
           background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
@@ -180,6 +186,7 @@ type Dealer   = { id: number; name: string; contact_method: string }
 function OrderModal({ item, storeId, dealers, onClose, onDone }: {
   item: InvAlert; storeId: number; dealers: Dealer[]; onClose: () => void; onDone: (dealerName: string, qty: string) => void
 }) {
+  const sheetRef  = useRef<BottomSheetRef>(null)
   const [dealerId,  setDealerId]  = useState(() => dealers[0]?.id ?? 0)
   const [qty,       setQty]       = useState(String(item.threshold))
   const [loading,   setLoading]   = useState(false)
@@ -213,7 +220,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
   }
 
   return (
-    <BottomSheet onClose={onClose}>
+    <BottomSheet ref={sheetRef} onClose={onClose}>
       {confirmed ? (
         /* チェックアニメーション */
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '20px 0' }}>
@@ -292,7 +299,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
             }}
           >{loading ? '送信中...' : '発注を送信する'}</button>
           <button
-            onClick={onClose}
+            onClick={() => sheetRef.current?.close()}
             style={{
               width: '100%', padding: 13,
               background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
@@ -665,11 +672,14 @@ export default function DashboardPage() {
           <>
             <SectionTitle label="スタッフ売上" sub="· 本日" link="詳細 →" onLink={() => navigate('/sales', { state: { tab: 'staff' } })} />
             {staffList.map(s => (
-              <div key={s.staff_id} style={{
-                background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
-                padding: '12px 16px', marginBottom: 8,
-                display: 'flex', alignItems: 'center', gap: 12,
-              }}>
+              <div key={s.staff_id}
+                onClick={() => navigate('/sales', { state: { tab: 'staff' } })}
+                style={{
+                  background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
+                  padding: '12px 16px', marginBottom: 8,
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  cursor: 'pointer',
+                }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%',
                   background: '#2a2826', border: `1px solid ${border}`,

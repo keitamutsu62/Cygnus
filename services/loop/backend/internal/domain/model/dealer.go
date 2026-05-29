@@ -18,14 +18,14 @@ const (
 )
 
 type Dealer struct {
-	ID            uint64        `db:"id"`
-	SalonID       uint64        `db:"salon_id"`
-	Name          string        `db:"name"`
-	ContactMethod ContactMethod `db:"contact_method"`
-	ContactInfo   string        `db:"contact_info"`
-	Status        DealerStatus  `db:"status"`
-	CreatedAt     time.Time     `db:"created_at"`
-	UpdatedAt     time.Time     `db:"updated_at"`
+	ID            uint64        `db:"id"            json:"id"`
+	SalonID       uint64        `db:"salon_id"      json:"salon_id"`
+	Name          string        `db:"name"          json:"name"`
+	ContactMethod ContactMethod `db:"contact_method" json:"contact_method"`
+	ContactInfo   string        `db:"contact_info"  json:"contact_info"`
+	Status        DealerStatus  `db:"status"        json:"status"`
+	CreatedAt     time.Time     `db:"created_at"    json:"created_at"`
+	UpdatedAt     time.Time     `db:"updated_at"    json:"updated_at"`
 }
 
 type OrderStatus string
@@ -38,15 +38,15 @@ const (
 )
 
 type Order struct {
-	ID                 uint64      `db:"id"`
-	SalonID            uint64      `db:"salon_id"`
-	StoreID            uint64      `db:"store_id"`
-	DealerID           uint64      `db:"dealer_id"`
-	Status             OrderStatus `db:"status"`
-	IsNextMonthInvoice bool        `db:"is_next_month_invoice"`
-	SentAt             *time.Time  `db:"sent_at"`
-	CreatedAt          time.Time   `db:"created_at"`
-	UpdatedAt          time.Time   `db:"updated_at"`
+	ID                 uint64      `db:"id"                   json:"id"`
+	SalonID            uint64      `db:"salon_id"             json:"salon_id"`
+	StoreID            uint64      `db:"store_id"             json:"store_id"`
+	DealerID           uint64      `db:"dealer_id"            json:"dealer_id"`
+	Status             OrderStatus `db:"status"               json:"status"`
+	IsNextMonthInvoice bool        `db:"is_next_month_invoice" json:"is_next_month_invoice"`
+	SentAt             *time.Time  `db:"sent_at"              json:"sent_at"`
+	CreatedAt          time.Time   `db:"created_at"           json:"created_at"`
+	UpdatedAt          time.Time   `db:"updated_at"           json:"updated_at"`
 }
 
 type OrderItem struct {
