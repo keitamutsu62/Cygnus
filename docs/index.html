@@ -1740,6 +1740,16 @@ html, body {
   </div>
 </div>
 
+<!-- ===== ROLE PICKER MODAL ===== -->
+<div class="modal" id="rolePickerModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;">役職を変更</div>
+    <div id="rolePickerList"></div>
+    <button class="btn-cancel" style="margin-top:12px;" onclick="closeModal('rolePickerModal')">キャンセル</button>
+  </div>
+</div>
+
 <!-- ===== MASTER ===== -->
 <div class="screen" id="screen-master">
   <div class="top-bar">
@@ -1954,7 +1964,7 @@ html, body {
     <div class="setting-group">
       <div class="setting-row"><div class="s-info"><div class="s-label">氏名</div><div id="staffDetailInfoName" class="s-value"></div></div></div>
       <div class="setting-row"><div class="s-info"><div class="s-label">所属店舗</div><div id="staffDetailInfoStore" class="s-value"></div></div></div>
-      <div class="setting-row"><div class="s-info"><div class="s-label">役職</div><div id="staffDetailInfoRole" class="s-value"></div></div></div>
+      <div class="setting-row" style="cursor:pointer;" onclick="openRolePicker()"><div class="s-info"><div class="s-label">役職</div><div id="staffDetailInfoRole" class="s-value"></div></div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div class="setting-row"><div class="s-info"><div class="s-label">ステータス</div><div id="staffDetailInfoStatus" class="s-value"></div></div></div>
     </div>
 
@@ -3307,6 +3317,33 @@ function confirmDeleteStaff() {
   closeModal('deleteStaffModal');
   _removeSettingsStaffRow(_staffDetailCurrent.name);
   goTo('settings');
+}
+
+function openRolePicker() {
+  var roles = ['オーナー', '店長', 'スタッフ'];
+  var current = _staffDetailCurrent.role || 'スタッフ';
+  var list = document.getElementById('rolePickerList');
+  list.innerHTML = roles.map(function(r) {
+    var isSelected = r === current;
+    var desc = { 'オーナー': 'サロン全体の管理・スタッフ操作が可能', '店長': '担当店舗の管理・スタッフ操作が可能', 'スタッフ': '自分のデータのみ閲覧・記録可能' }[r];
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 4px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="selectRole(\'' + r + '\')">'
+      + '<div>'
+      + '<div style="font-size:13px;color:' + (isSelected ? 'var(--gold)' : 'var(--text)') + ';">' + r + '</div>'
+      + '<div style="font-size:10px;color:var(--muted);margin-top:2px;">' + desc + '</div>'
+      + '</div>'
+      + (isSelected ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 6,11 12,3" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '')
+      + '</div>';
+  }).join('');
+  openModal('rolePickerModal');
+}
+
+function selectRole(role) {
+  _staffDetailCurrent.role = role;
+  var roleEl = document.getElementById('staffDetailInfoRole');
+  var subEl  = document.getElementById('staffDetailSub');
+  if (roleEl) roleEl.textContent = role;
+  if (subEl)  subEl.textContent = _staffDetailCurrent.store + ' · ' + role;
+  closeModal('rolePickerModal');
 }
 
 function goToStoreTab(storeName) {
