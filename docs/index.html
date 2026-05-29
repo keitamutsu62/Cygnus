@@ -1713,6 +1713,7 @@ html, body {
   <div class="modal-inner" id="deactivateConfirmModalInner">
     <div class="modal-handle"></div>
     <div style="font-size:16px;font-weight:400;color:var(--text);margin-bottom:8px;">無効にしますか？</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">このサロンへのアクセスが停止されます。アカウント自体は削除されず、再度有効化できます。</div>
     <div id="deactivateConfirmText" style="font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:20px;">
       このスタッフはCygnus LOOPにログインできなくなります。
     </div>
@@ -1916,6 +1917,14 @@ html, body {
       <div class="setting-row"><div class="s-info"><div class="s-label">パスワード変更</div></div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div class="setting-row" onclick="goTo('login')"><div class="s-info"><div class="s-label" style="color:var(--alert);">ログアウト</div></div><svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e8e4dc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
+
+    <div class="setting-group-label" style="margin-top:8px;"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> アカウント削除</div>
+    <div class="setting-group" style="margin-bottom:40px;">
+      <div class="setting-row" style="cursor:pointer;" onclick="openModal('deleteStaffModal')">
+        <div class="s-info"><div class="s-label" style="color:var(--alert);">アカウントを削除する</div><div class="s-value">Cygnusアカウントとデータを完全に削除します</div></div>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e07060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1953,11 +1962,7 @@ html, body {
     <div class="setting-group-label" style="margin-top:8px;"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="6" opacity="0.5"/></svg> アカウント操作</div>
     <div class="setting-group" style="margin-bottom:40px;">
       <div id="staffDetailDeactivateRow" class="setting-row" style="cursor:pointer;" onclick="openModal('deactivateConfirmModal')">
-        <div class="s-info"><div class="s-label" style="color:var(--alert);">無効にする</div><div class="s-value">このスタッフのログインを停止します</div></div>
-        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e07060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>
-      </div>
-      <div class="setting-row" style="cursor:pointer;" onclick="openModal('deleteStaffModal')">
-        <div class="s-info"><div class="s-label" style="color:var(--alert);">削除する</div><div class="s-value">アカウントとデータを完全に削除します</div></div>
+        <div class="s-info"><div class="s-label" style="color:var(--alert);">無効にする</div><div class="s-value">このサロンへのアクセスを停止します</div></div>
         <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="6,4 10,8 6,12" stroke="#e07060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>
       </div>
     </div>
