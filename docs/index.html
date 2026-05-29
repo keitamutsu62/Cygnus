@@ -1992,9 +1992,15 @@ html, body {
     <!-- 担当スタッフ -->
     <div class="co-section">
       <div class="co-section-title">担当スタッフ</div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;" id="coStaffRow">
-        <div style="font-size:13px;color:var(--text);" id="coStaffName">高橋 美咲</div>
-        <div style="font-size:10px;letter-spacing:0.1em;color:var(--muted);">東松戸店 · オーナー</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" id="coStaffRow" onclick="openCoStaffPicker()">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="staff-av" style="width:30px;height:30px;font-size:11px;flex-shrink:0;" id="coStaffAvatar"></div>
+          <div>
+            <div style="font-size:13px;color:var(--text);" id="coStaffName">高橋 美咲</div>
+            <div style="font-size:10px;letter-spacing:0.1em;color:var(--muted);" id="coStaffSub">東松戸店 · オーナー</div>
+          </div>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="4,2 8,6 4,10" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
     </div>
 
@@ -4101,13 +4107,9 @@ function openCheckout() {
     var staffInfo = allStaff.find(function(s) { return s.name === currentUser.name; });
     var storeName = staffInfo ? staffInfo.store : '東松戸店';
 
-    // スタッフ表示
-    var coStaffName = document.getElementById('coStaffName');
-    var coStaffRow  = document.getElementById('coStaffRow');
-    if (coStaffName) coStaffName.textContent = currentUser.name;
-    if (coStaffRow && staffInfo) {
-      coStaffRow.querySelector('div:last-child').textContent = storeName + ' · ' + staffInfo.role;
-    }
+    // スタッフ表示（初期値 = ログインユーザー、タップで変更可）
+    _coState.staff = currentUser.name;
+    updateCoStaffDisplay(currentUser.name);
 
     // 店舗コンテキスト更新
     var ctx = document.getElementById('coStoreCtxText');
@@ -4121,6 +4123,74 @@ function openCheckout() {
     document.getElementById('coLoading').style.display = 'none';
     document.getElementById('coForm').style.display = 'block';
   }, 500);
+}
+
+function updateCoStaffDisplay(name) {
+  var s = allStaff.find(function(x) { return x.name === name; });
+  var el = document.getElementById('coStaffName');
+  var sub = document.getElementById('coStaffSub');
+  var av = document.getElementById('coStaffAvatar');
+  if (el) el.textContent = name;
+  if (sub && s) sub.textContent = s.store + ' · ' + s.role;
+  if (av) av.textContent = name.charAt(0);
+}
+
+function openCoStaffPicker() {
+  renderCoStorePicker();
+  document.getElementById('pickerModal').classList.add('show');
+}
+
+function renderCoStorePicker() {
+  var titleEl = document.getElementById('pickerModalTitle');
+  var listEl  = document.getElementById('pickerModalList');
+  if (!titleEl || !listEl) return;
+
+  titleEl.innerHTML = '店舗を選択';
+
+  var stores = [];
+  var seen = {};
+  allStaff.forEach(function(s) { if (!seen[s.store]) { seen[s.store] = true; stores.push(s.store); } });
+
+  var myStore = (allStaff.find(function(s) { return s.name === currentUser.name; }) || {}).store || '';
+
+  listEl.innerHTML = stores.map(function(store) {
+    var count = allStaff.filter(function(s) { return s.store === store; }).length;
+    var hint  = store === myStore ? '<span style="font-size:9px;color:var(--gold);margin-left:6px;letter-spacing:0.08em;">あなたの店舗</span>' : '';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:13px 4px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="renderCoStaffPicker(\'' + store + '\')">'
+      + '<div>'
+      + '<div style="font-size:13px;color:var(--text);">' + store + hint + '</div>'
+      + '<div style="font-size:10px;color:var(--muted);margin-top:2px;">' + count + '名</div>'
+      + '</div>'
+      + '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="4,2 8,6 4,10" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      + '</div>';
+  }).join('');
+}
+
+function renderCoStaffPicker(storeName) {
+  var titleEl = document.getElementById('pickerModalTitle');
+  var listEl  = document.getElementById('pickerModalList');
+  if (!titleEl || !listEl) return;
+
+  titleEl.innerHTML = '<span onclick="renderCoStorePicker()" style="cursor:pointer;color:var(--gold);margin-right:8px;font-size:14px;">←</span>' + storeName;
+
+  var staff = allStaff.filter(function(s) { return s.store === storeName; });
+  listEl.innerHTML = staff.map(function(s) {
+    var isSelected = s.name === _coState.staff;
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="selectCoStaff(\'' + s.name + '\')">'
+      + '<div class="staff-av" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">' + s.name.charAt(0) + '</div>'
+      + '<div style="flex:1;">'
+      + '<div style="font-size:13px;color:var(--text);">' + s.name + '</div>'
+      + '<div style="font-size:10px;color:var(--muted);">' + s.role + '</div>'
+      + '</div>'
+      + (isSelected ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 6,11 12,3" stroke="#c8a882" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function selectCoStaff(name) {
+  _coState.staff = name;
+  updateCoStaffDisplay(name);
+  closeModal('pickerModal');
 }
 
 function closeCheckout() {
