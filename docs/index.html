@@ -2017,6 +2017,18 @@ html, body {
       </div>
     </div>
 
+    <!-- 来店経路 -->
+    <div class="co-section">
+      <div class="co-section-title">来店経路</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <button class="co-pay-btn active" id="coSrcWalkin"     onclick="selectCoSource('walkin')">フリー</button>
+        <button class="co-pay-btn"        id="coSrcReserve"    onclick="selectCoSource('reserve')">RESERVE</button>
+        <button class="co-pay-btn"        id="coSrcHotpepper"  onclick="selectCoSource('hotpepper')">ホットペッパー</button>
+        <button class="co-pay-btn"        id="coSrcLine"       onclick="selectCoSource('line')">LINE</button>
+        <button class="co-pay-btn"        id="coSrcOther"      onclick="selectCoSource('other')">その他</button>
+      </div>
+    </div>
+
     <!-- 施術メニュー -->
     <div class="co-section">
       <div class="co-section-title">施術メニュー</div>
@@ -4095,6 +4107,7 @@ function openCheckout() {
   _coState.items = [];
   _coState.payment = 'cash';
   _coState.shimei = false;
+  _coState.source = 'walkin';
 
   // 画面遷移
   var prev = document.getElementById('screen-' + current);
@@ -4126,6 +4139,7 @@ function openCheckout() {
 
     renderCoItems();
     selectShimei(false);
+    selectCoSource('walkin');
     updateCoTotal();
     selectCoPayment('cash');
 
@@ -4200,6 +4214,15 @@ function selectCoStaff(name) {
   _coState.staff = name;
   updateCoStaffDisplay(name);
   closeModal('pickerModal');
+}
+
+function selectCoSource(v) {
+  _coState.source = v;
+  ['walkin','reserve','hotpepper','line','other'].forEach(function(s) {
+    var id = 'coSrc' + s.charAt(0).toUpperCase() + s.slice(1);
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('active', s === v);
+  });
 }
 
 function closeCheckout() {
@@ -4329,8 +4352,9 @@ function completeCheckout() {
   // 成功画面表示
   document.getElementById('coForm').style.display = 'none';
   document.getElementById('coSuccessAmount').textContent = '¥' + total.toLocaleString();
+  var sourceLabel = { walkin:'フリー', reserve:'RESERVE', hotpepper:'ホットペッパー', line:'LINE', other:'その他' }[_coState.source] || 'フリー';
   document.getElementById('coSuccessSub').innerHTML
-    = _coState.staff + ' · ' + payLabel + '<br>'
+    = _coState.staff + ' · ' + payLabel + ' · ' + sourceLabel + '<br>'
     + _coState.items.length + '件 / 技術 ¥' + techSales.toLocaleString()
     + (goodsSales > 0 ? ' · 物販 ¥' + goodsSales.toLocaleString() : '')
     + (shimeiAmt > 0 ? ' · 指名料 ¥' + shimeiAmt.toLocaleString() : '');
