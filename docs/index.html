@@ -1760,6 +1760,7 @@ html, body {
       </div>
     </div>
     <button class="btn-confirm" onclick="closeModal('dealerDetailModal')">閉じる</button>
+    <button class="btn-cancel" style="margin-top:8px;border-color:rgba(224,112,96,0.4);color:#e07060;" onclick="deleteDealer()">削除する</button>
   </div>
 </div>
 
@@ -3437,6 +3438,13 @@ function toggleDealerStatus() {
   badge.textContent = _dealerDetailCurrent.active ? '有効 → 無効にする' : '無効 → 有効にする';
   badge.className   = 's-badge ' + (_dealerDetailCurrent.active ? 's-connected' : 's-warning');
   renderDealerList();
+}
+
+function deleteDealer() {
+  if (!_dealerDetailCurrent) return;
+  dealerList = dealerList.filter(function(d) { return d.id !== _dealerDetailCurrent.id; });
+  renderDealerList();
+  closeModal('dealerDetailModal');
 }
 
 function openAddDealer() {
