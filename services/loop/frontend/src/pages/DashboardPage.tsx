@@ -131,6 +131,7 @@ function BottomSheet({ onClose, children }, ref) {
           transform: vis ? 'translateY(0)' : 'translateY(100%)',
           transition: 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)',
           maxHeight: '85vh',
+          minHeight: 280,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
         }}
@@ -223,7 +224,10 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
     <BottomSheet ref={sheetRef} onClose={onClose}>
       {confirmed ? (
         /* チェックアニメーション */
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '20px 0' }}>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 16, padding: '60px 0', width: '100%', minHeight: 200,
+        }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
             border: `2px solid ${green}`,
@@ -234,7 +238,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               <polyline points="6,14 12,20 22,9" stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', color: green }}>送信完了</div>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', color: green, whiteSpace: 'nowrap' }}>送信完了</div>
         </div>
       ) : (
         <>
