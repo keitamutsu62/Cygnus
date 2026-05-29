@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AppLayout from '../components/AppLayout'
+import { api } from '../lib/api'
 
 type InventoryItem = {
   id: number
@@ -24,14 +25,6 @@ const STATUS_COLOR: Record<string, string> = {
 }
 
 const FILTERS = ['すべて', '要発注', '注意', '正常', '過剰'] as const
-
-function api(path: string, opts?: RequestInit) {
-  const token = localStorage.getItem('token') ?? ''
-  return fetch(path, {
-    ...opts,
-    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...opts?.headers },
-  })
-}
 
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
