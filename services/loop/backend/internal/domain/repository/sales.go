@@ -15,6 +15,15 @@ type SalesRepository interface {
 	// UpsertDailySales は store 単位の日次売上を加算 upsert する。
 	UpsertDailySales(ctx context.Context, storeID uint64, date string, techAmount uint32) error
 
+	// UpsertRetailDailySales は物販売上を daily_sales / staff_daily_sales の retail_sales に加算する。
+	UpsertRetailDailySales(ctx context.Context, staffID, storeID uint64, date string, amount uint32) error
+
 	FindDailySalesByStore(ctx context.Context, storeID uint64, from, to string) ([]*model.DailySales, error)
 	FindStaffDailySales(ctx context.Context, staffID uint64, from, to string) ([]*model.StaffDailySales, error)
+}
+
+type RetailSaleRepository interface {
+	Create(ctx context.Context, r *model.RetailSale) error
+	FindByStore(ctx context.Context, storeID uint64, from, to string) ([]*model.RetailSale, error)
+	FindByStaff(ctx context.Context, staffID uint64, from, to string) ([]*model.RetailSale, error)
 }

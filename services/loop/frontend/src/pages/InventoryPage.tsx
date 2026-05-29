@@ -95,10 +95,12 @@ export default function InventoryPage() {
       {/* 検索 */}
       <div style={{ padding: '0 20px 12px', position: 'relative' }}>
         <input
-          type="text"
+          type="search"
           placeholder="材料名・ブランドで検索"
           value={search}
           onChange={e => setSearch(e.target.value)}
+          autoCapitalize="none"
+          autoCorrect="off"
           style={{
             width: '100%',
             background: 'rgba(232,228,220,0.04)',

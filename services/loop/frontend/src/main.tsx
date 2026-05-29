@@ -5,6 +5,7 @@ import './index.css'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import AcceptInvitationPage from './pages/AcceptInvitationPage'
+import DashboardPage from './pages/DashboardPage'
 import InventoryPage from './pages/InventoryPage'
 
 createRoot(document.getElementById('root')!).render(
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

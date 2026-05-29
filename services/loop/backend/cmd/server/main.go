@@ -40,6 +40,7 @@ func main() {
 	storeRepo        := mysql.NewStoreRepository(db)
 	bhRepo           := mysql.NewBusinessHoursRepository(db)
 	salesRepo        := mysql.NewSalesRepository(db)
+	retailSaleRepo   := mysql.NewRetailSaleRepository(db)
 	materialRepo     := mysql.NewMaterialRepository(db)
 	dealerRepo       := mysql.NewDealerRepository(db)
 	orderRepo        := mysql.NewOrderRepository(db)
@@ -56,8 +57,9 @@ func main() {
 	customerUC   := usecase.NewCustomerUsecase(customerRepo)
 	appointmentUC := usecase.NewAppointmentUsecase(appointmentRepo)
 	storeUC      := usecase.NewStoreUsecase(storeRepo, bhRepo)
-	materialUC   := usecase.NewMaterialUsecase(materialRepo, invtWriteRepo, storeRepo)
-	dealerUC     := usecase.NewDealerUsecase(dealerRepo, orderRepo)
+	materialUC      := usecase.NewMaterialUsecase(materialRepo, invtWriteRepo, storeRepo)
+	dealerUC        := usecase.NewDealerUsecase(dealerRepo, orderRepo)
+	retailSaleUC    := usecase.NewRetailSaleUsecase(retailSaleRepo, salesRepo)
 
 	// ─── ハンドラ ──────────────────────────────────────────────
 	authH        := handler.NewAuthHandler(authUC, cfg.FrontendURL)
@@ -71,7 +73,8 @@ func main() {
 	storeH       := handler.NewStoreHandler(storeUC)
 	materialH    := handler.NewMaterialHandler(materialUC)
 	dealerH      := handler.NewDealerHandler(dealerUC)
-	salesH       := handler.NewSalesHandler(salesRepo)
+	salesH          := handler.NewSalesHandler(salesRepo)
+	retailSaleH     := handler.NewRetailSaleHandler(retailSaleUC)
 
 	// ─── Echo ─────────────────────────────────────────────────
 	e := echo.New()
@@ -151,6 +154,10 @@ func main() {
 	// 売上集計（treatment 作成で自動更新される）
 	api.GET("/sales/store", salesH.GetStoreSales)
 	api.GET("/sales/staff", salesH.GetMyStaffSales)
+
+	// 物販記録（会計時に記録 → daily_sales / staff_daily_sales の retail_sales を自動加算）
+	api.POST("/retail-sales", retailSaleH.Create)
+	api.GET("/retail-sales", retailSaleH.List)
 
 	// STUDIO
 	api.GET("/studio/profile", studioH.GetMyProfile)

@@ -222,6 +222,9 @@ function Field({
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         required
+        autoCapitalize="none"
+        autoCorrect="off"
+        autoComplete={type === 'email' ? 'email' : type === 'password' ? 'current-password' : 'off'}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{

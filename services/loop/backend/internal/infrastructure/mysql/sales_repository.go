@@ -64,6 +64,31 @@ func (r *SalesRepository) FindDailySalesByStore(ctx context.Context, storeID uin
 	return list, nil
 }
 
+// UpsertRetailDailySales は物販売上を daily_sales / staff_daily_sales の retail_sales に加算する。
+func (r *SalesRepository) UpsertRetailDailySales(ctx context.Context, staffID, storeID uint64, date string, amount uint32) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO daily_sales (store_id, date, total_sales, client_count, tech_sales, retail_sales)
+		VALUES (?, ?, ?, 0, 0, ?)
+		ON DUPLICATE KEY UPDATE
+		  total_sales  = total_sales + VALUES(retail_sales),
+		  retail_sales = retail_sales + VALUES(retail_sales)`,
+		storeID, date, amount, amount)
+	if err != nil {
+		return fmt.Errorf("UpsertRetailDailySales(daily): %w", err)
+	}
+	_, err = r.db.ExecContext(ctx, `
+		INSERT INTO staff_daily_sales (staff_id, store_id, date, total_sales, client_count, unit_price, retail_sales)
+		VALUES (?, ?, ?, ?, 0, 0, ?)
+		ON DUPLICATE KEY UPDATE
+		  total_sales  = total_sales + VALUES(retail_sales),
+		  retail_sales = retail_sales + VALUES(retail_sales)`,
+		staffID, storeID, date, amount, amount)
+	if err != nil {
+		return fmt.Errorf("UpsertRetailDailySales(staff): %w", err)
+	}
+	return nil
+}
+
 func (r *SalesRepository) FindStaffDailySales(ctx context.Context, staffID uint64, from, to string) ([]*model.StaffDailySales, error) {
 	var list []*model.StaffDailySales
 	err := r.db.SelectContext(ctx, &list,

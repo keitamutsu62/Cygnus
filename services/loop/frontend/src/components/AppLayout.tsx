@@ -53,11 +53,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{
-      minHeight: '100dvh',
+      height: '100dvh',
       background: '#1a1816',
       display: 'flex',
       flexDirection: 'column',
-      position: 'relative',
+      overflow: 'hidden',
     }}>
       {/* トップバー */}
       <div style={{
@@ -84,16 +84,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* メインコンテンツ */}
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 72 }}>
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
         {children}
       </div>
 
       {/* ボトムナビ */}
       <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
+        flexShrink: 0,
         display: 'flex',
         background: '#211f1d',
         borderTop: '1px solid rgba(232,228,220,0.1)',
