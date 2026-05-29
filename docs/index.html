@@ -1760,7 +1760,21 @@ html, body {
       </div>
     </div>
     <button class="btn-confirm" onclick="closeModal('dealerDetailModal')">閉じる</button>
-    <button class="btn-cancel" style="margin-top:8px;border-color:rgba(224,112,96,0.4);color:#e07060;" onclick="deleteDealer()">削除する</button>
+    <button class="btn-cancel" style="margin-top:8px;border-color:rgba(224,112,96,0.4);color:#e07060;" onclick="openDealerDeleteConfirm()">削除する</button>
+  </div>
+</div>
+
+<!-- ===== DEALER DELETE CONFIRM MODAL ===== -->
+<div class="modal" id="dealerDeleteConfirmModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <div style="font-size:16px;font-weight:400;color:var(--text);margin-bottom:8px;">削除しますか？</div>
+    <div id="dealerDeleteConfirmText" style="font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:16px;"></div>
+    <div style="padding:12px 14px;background:rgba(224,112,96,0.08);border:1px solid rgba(224,112,96,0.2);border-radius:2px;margin-bottom:20px;">
+      <div style="font-size:12px;color:#e07060;line-height:1.8;">削除したデータは復元できません。</div>
+    </div>
+    <button class="btn-cancel" style="border-color:rgba(224,112,96,0.4);color:#e07060;" onclick="deleteDealer()">削除する</button>
+    <button class="btn-confirm" style="margin-top:8px;" onclick="closeModal('dealerDeleteConfirmModal')">キャンセル</button>
   </div>
 </div>
 
@@ -3440,11 +3454,18 @@ function toggleDealerStatus() {
   renderDealerList();
 }
 
+function openDealerDeleteConfirm() {
+  if (!_dealerDetailCurrent) return;
+  document.getElementById('dealerDeleteConfirmText').textContent = '「' + _dealerDetailCurrent.name + '」を削除します。';
+  closeModal('dealerDetailModal');
+  setTimeout(function() { openModal('dealerDeleteConfirmModal'); }, 300);
+}
+
 function deleteDealer() {
   if (!_dealerDetailCurrent) return;
   dealerList = dealerList.filter(function(d) { return d.id !== _dealerDetailCurrent.id; });
   renderDealerList();
-  closeModal('dealerDetailModal');
+  closeModal('dealerDeleteConfirmModal');
 }
 
 function openAddDealer() {
