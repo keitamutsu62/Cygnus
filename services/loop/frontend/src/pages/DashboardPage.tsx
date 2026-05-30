@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+
 import { useNavigate } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
@@ -57,39 +58,78 @@ export interface BottomSheetRef { close: () => void }
 
 const BottomSheet = forwardRef<BottomSheetRef, { onClose: () => void; children: React.ReactNode }>(
 function BottomSheet({ onClose, children }, ref) {
-  const [vis, setVis] = useState(false)
-  const innerRef = useRef<HTMLDivElement>(null)
+  const panelRef   = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose  // 常に最新の onClose を保持
 
+  // close は DOM を直接操作してアニメーション → React state 依存しない
+  function close() {
+    const panel   = panelRef.current
+    const overlay = overlayRef.current
+    if (panel) {
+      panel.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
+      panel.style.transform  = 'translateY(100%)'
+    }
+    if (overlay) {
+      overlay.style.transition = 'opacity 0.3s ease'
+      overlay.style.opacity    = '0'
+      overlay.style.pointerEvents = 'none'
+    }
+    setTimeout(() => onCloseRef.current(), 450)
+  }
+
+  useImperativeHandle(ref, () => ({ close }), [])
+
+  // 入場アニメーション
   useEffect(() => {
+    const panel   = panelRef.current
+    const overlay = overlayRef.current
+    if (!panel || !overlay) return
+    // 初期状態: パネルは画面外・背景は透明
+    panel.style.transition   = 'none'
+    panel.style.transform    = 'translateY(100%)'
+    overlay.style.transition = 'none'
+    overlay.style.opacity    = '0'
+    // 2フレーム後にアニメーション開始
     const id1 = requestAnimationFrame(() => {
-      const id2 = requestAnimationFrame(() => setVis(true))
+      const id2 = requestAnimationFrame(() => {
+        panel.style.transition   = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
+        panel.style.transform    = 'translateY(0)'
+        overlay.style.transition = 'opacity 0.3s ease'
+        overlay.style.opacity    = '1'
+      })
       return () => cancelAnimationFrame(id2)
     })
     return () => cancelAnimationFrame(id1)
   }, [])
 
+  // スワイプで閉じる
   useEffect(() => {
-    const el = innerRef.current
+    const el = panelRef.current
     if (!el) return
-    let sy = 0, dragging = false
+    let sy = 0, isDragging = false
 
-    const start = (e: TouchEvent) => { sy = e.touches[0].clientY; dragging = true }
+    const start = (e: TouchEvent) => { sy = e.touches[0].clientY; isDragging = true }
     const move  = (e: TouchEvent) => {
-      if (!dragging) return
+      if (!isDragging) return
       const dy = e.touches[0].clientY - sy
-      // スクロール領域の先頭にいる場合だけ引き下げをインターセプト
       if (dy > 0 && el.scrollTop === 0) {
         e.preventDefault()
-        el.style.transform = `translateY(${dy}px)`
         el.style.transition = 'none'
+        el.style.transform  = `translateY(${dy}px)`
       }
     }
     const end = (e: TouchEvent) => {
-      dragging = false
+      isDragging = false
       const dy = e.changedTouches[0].clientY - sy
-      el.style.transition = ''
-      el.style.transform  = ''
-      if (dy > 80 && el.scrollTop === 0) close()
+      if (dy > 80 && el.scrollTop === 0) {
+        close()
+      } else {
+        // 元の位置に戻す
+        el.style.transition = 'transform 0.35s ease'
+        el.style.transform  = 'translateY(0)'
+      }
     }
     el.addEventListener('touchstart', start, { passive: true })
     el.addEventListener('touchmove',  move,  { passive: false })
@@ -101,37 +141,27 @@ function BottomSheet({ onClose, children }, ref) {
     }
   }, [])
 
-  function close() {
-    setVis(false)
-    setTimeout(onClose, 450)
-  }
-
-  useImperativeHandle(ref, () => ({ close }))
-
   return createPortal(
     <div
+      ref={overlayRef}
       onClick={e => { if (e.target === e.currentTarget) close() }}
       style={{
         position: 'fixed', inset: 0, zIndex: 200,
         background: 'rgba(0,0,0,0.7)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        opacity: vis ? 1 : 0,
-        pointerEvents: vis ? 'all' : 'none',
-        transition: 'opacity 0.3s ease',
+        opacity: 0, pointerEvents: 'all',
       }}
     >
       <div
-        ref={innerRef}
+        ref={panelRef}
         style={{
           width: '100%', maxWidth: 480,
           background: '#1a1816',
           borderTop: '1px solid rgba(200,168,130,0.3)',
           borderRadius: '16px 16px 0 0',
           padding: '24px 20px 40px',
-          transform: vis ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)',
+          transform: 'translateY(100%)',
           maxHeight: '85vh',
-          minHeight: 280,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
         }}
@@ -222,39 +252,23 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
 
   return (
     <BottomSheet ref={sheetRef} onClose={onClose}>
-      {confirmed ? (
-        /* チェックアニメーション */
+      {/* フォームと確認アニメーションを重ねて表示 → パネルサイズが変わらない */}
+      <div style={{ position: 'relative' }}>
+
+        {/* ─ フォーム（confirmed 時はフェードアウト） ─ */}
         <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: 16, padding: '60px 0', width: '100%', minHeight: 200,
+          opacity: confirmed ? 0 : 1,
+          transition: 'opacity 0.25s ease',
+          pointerEvents: confirmed ? 'none' : 'all',
         }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            border: `2px solid ${green}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            animation: 'checkPop 0.4s ease both',
-          }}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <polyline points="6,14 12,20 22,9" stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', color: green, whiteSpace: 'nowrap' }}>送信完了</div>
-        </div>
-      ) : (
-        <>
-          {/* 翌月伝票警告 */}
           {showWarn && (
             <div style={{ background: alertDim, border: `1px solid rgba(224,112,96,0.2)`, borderRadius: 2, padding: '10px 12px', marginBottom: 16, fontSize: 12, color: alertC, fontFamily: zen, lineHeight: 1.7 }}>
               あと<strong style={{ margin: '0 4px' }}>{daysLeft}</strong>営業日で翌月伝票になります。このまま発注しますか？
             </div>
           )}
-
           <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
           <div style={{ fontSize: 19, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
-
-          {/* 詳細 */}
           <div style={{ background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {/* 発注数 */}
             <div style={{ paddingBottom: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 12, color: muted }}>発注数</span>
@@ -272,7 +286,6 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                 </div>
               </div>
             </div>
-            {/* 仕入れ先 */}
             <ModalRow label="仕入れ先">
               <select
                 value={dealerId}
@@ -288,7 +301,6 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
             </ModalRow>
             <ModalRow label="送信方法"><span style={{ fontSize: 14, color: '#e8e4dc', fontWeight: 400 }}>LINE</span></ModalRow>
           </div>
-
           <button
             onClick={submit}
             disabled={loading}
@@ -311,8 +323,31 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
             }}
           >キャンセル</button>
-        </>
-      )}
+        </div>
+
+        {/* ─ 完了アニメーション（フォームの上に重ねる） ─ */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 16,
+          opacity: confirmed ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+          pointerEvents: confirmed ? 'all' : 'none',
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            border: `2px solid ${green}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: confirmed ? 'checkPop 0.4s ease both' : 'none',
+          }}>
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <polyline points="6,14 12,20 22,9" stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', color: green }}>送信完了</div>
+        </div>
+
+      </div>
     </BottomSheet>
   )
 }
