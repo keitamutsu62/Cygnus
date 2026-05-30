@@ -59,10 +59,10 @@ const BS_CSS = `
   position: fixed; inset: 0; z-index: 200;
   background: rgba(0,0,0,0.7);
   display: flex; align-items: flex-end; justify-content: center;
-  visibility: hidden; opacity: 0;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
 }
-.bs-overlay.open { visibility: visible; opacity: 1; }
+.bs-overlay.open { opacity: 1; pointer-events: all; }
 .bs-panel {
   width: 100%; max-width: 480px; box-sizing: border-box;
   background: #1a1816;
