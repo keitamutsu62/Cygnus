@@ -53,51 +53,51 @@ const OrbitSVG = () => (
   </svg>
 )
 
-// ─── BottomSheet（共通モーダル基盤）──────────────────────────────
+// ─── BottomSheet CSS（プロトタイプと同一のクラス切り替え方式）──────────────
+const BS_CSS = `
+.bs-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: flex-end; justify-content: center;
+  visibility: hidden; opacity: 0;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.bs-overlay.open { visibility: visible; opacity: 1; }
+.bs-panel {
+  width: 100%; max-width: 480px; box-sizing: border-box;
+  background: #1a1816;
+  border-top: 1px solid rgba(200,168,130,0.3);
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px 40px;
+  transform: translateY(100%);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: 85vh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.bs-overlay.open .bs-panel { transform: translateY(0); }
+`
+
 export interface BottomSheetRef { close: () => void }
 
 const BottomSheet = forwardRef<BottomSheetRef, { onClose: () => void; children: React.ReactNode }>(
 function BottomSheet({ onClose, children }, ref) {
-  const panelRef   = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
+  const panelRef   = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose  // 常に最新の onClose を保持
+  onCloseRef.current = onClose
 
-  // close は DOM を直接操作してアニメーション → React state 依存しない
   function close() {
-    const panel   = panelRef.current
-    const overlay = overlayRef.current
-    if (panel) {
-      panel.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
-      panel.style.transform  = 'translateY(100%)'
-    }
-    if (overlay) {
-      overlay.style.transition = 'opacity 0.3s ease'
-      overlay.style.opacity    = '0'
-      overlay.style.pointerEvents = 'none'
-    }
+    overlayRef.current?.classList.remove('open')
     setTimeout(() => onCloseRef.current(), 450)
   }
 
   useImperativeHandle(ref, () => ({ close }), [])
 
-  // 入場アニメーション
+  // 入場: 2フレーム後に .open を付与 → CSS transition が走る
   useEffect(() => {
-    const panel   = panelRef.current
-    const overlay = overlayRef.current
-    if (!panel || !overlay) return
-    // 初期状態: パネルは画面外・背景は透明
-    panel.style.transition   = 'none'
-    panel.style.transform    = 'translateY(100%)'
-    overlay.style.transition = 'none'
-    overlay.style.opacity    = '0'
-    // 2フレーム後にアニメーション開始
     const id1 = requestAnimationFrame(() => {
       const id2 = requestAnimationFrame(() => {
-        panel.style.transition   = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
-        panel.style.transform    = 'translateY(0)'
-        overlay.style.transition = 'opacity 0.3s ease'
-        overlay.style.opacity    = '1'
+        overlayRef.current?.classList.add('open')
       })
       return () => cancelAnimationFrame(id2)
     })
@@ -110,8 +110,8 @@ function BottomSheet({ onClose, children }, ref) {
     if (!el) return
     let sy = 0, isDragging = false
 
-    const start = (e: TouchEvent) => { sy = e.touches[0].clientY; isDragging = true }
-    const move  = (e: TouchEvent) => {
+    const onStart = (e: TouchEvent) => { sy = e.touches[0].clientY; isDragging = true }
+    const onMove  = (e: TouchEvent) => {
       if (!isDragging) return
       const dy = e.touches[0].clientY - sy
       if (dy > 0 && el.scrollTop === 0) {
@@ -120,57 +120,44 @@ function BottomSheet({ onClose, children }, ref) {
         el.style.transform  = `translateY(${dy}px)`
       }
     }
-    const end = (e: TouchEvent) => {
+    const onEnd = (e: TouchEvent) => {
       isDragging = false
       const dy = e.changedTouches[0].clientY - sy
       if (dy > 80 && el.scrollTop === 0) {
-        close()
+        // 閉じる: inline で closeアニメ → .open 除去
+        el.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
+        el.style.transform  = 'translateY(100%)'
+        overlayRef.current?.classList.remove('open')
+        setTimeout(() => onCloseRef.current(), 450)
       } else {
-        // 元の位置に戻す
+        // 元の位置に戻す → inline style をクリアして CSS (.open) に委ねる
         el.style.transition = 'transform 0.35s ease'
         el.style.transform  = 'translateY(0)'
+        setTimeout(() => { el.style.transition = ''; el.style.transform = '' }, 350)
       }
     }
-    el.addEventListener('touchstart', start, { passive: true })
-    el.addEventListener('touchmove',  move,  { passive: false })
-    el.addEventListener('touchend',   end,   { passive: true })
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove',  onMove,  { passive: false })
+    el.addEventListener('touchend',   onEnd,   { passive: true })
     return () => {
-      el.removeEventListener('touchstart', start)
-      el.removeEventListener('touchmove',  move)
-      el.removeEventListener('touchend',   end)
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove',  onMove)
+      el.removeEventListener('touchend',   onEnd)
     }
   }, [])
 
   return createPortal(
-    <div
-      ref={overlayRef}
-      onClick={e => { if (e.target === e.currentTarget) close() }}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(0,0,0,0.7)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        opacity: 0, pointerEvents: 'all',
-      }}
-    >
-      <div
-        ref={panelRef}
-        style={{
-          width: '100%', maxWidth: 480,
-          background: '#1a1816',
-          borderTop: '1px solid rgba(200,168,130,0.3)',
-          borderRadius: '16px 16px 0 0',
-          padding: '24px 20px 40px',
-          transform: 'translateY(100%)',
-          maxHeight: '85vh',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch' as any,
-        }}
+    <>
+      <style>{BS_CSS}</style>
+      <div ref={overlayRef} className="bs-overlay"
+        onClick={e => { if (e.target === e.currentTarget) close() }}
       >
-        {/* ハンドル */}
-        <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
-        {children}
+        <div ref={panelRef} className="bs-panel">
+          <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
+          {children}
+        </div>
       </div>
-    </div>,
+    </>,
     document.body
   )
 })
@@ -253,7 +240,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
   return (
     <BottomSheet ref={sheetRef} onClose={onClose}>
       {/* フォームと確認アニメーションを重ねて表示 → パネルサイズが変わらない */}
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
 
         {/* ─ フォーム（confirmed 時はフェードアウト） ─ */}
         <div style={{
@@ -344,7 +331,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               <polyline points="6,14 12,20 22,9" stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', color: green }}>送信完了</div>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em', color: green, textAlign: 'center' as const }}>送信完了</div>
         </div>
 
       </div>
