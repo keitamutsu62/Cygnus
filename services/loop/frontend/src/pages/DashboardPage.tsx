@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useNavigate } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
@@ -58,11 +58,9 @@ const BS_CSS = `
 .bs-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200;
   background: rgba(0,0,0,0.7);
-  display: -webkit-flex; display: flex;
-  -webkit-align-items: flex-end; align-items: flex-end;
-  -webkit-justify-content: center; justify-content: center;
+  display: flex; align-items: flex-end; justify-content: center;
   opacity: 0; pointer-events: none;
-  -webkit-transition: opacity 0.3s ease; transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease;
 }
 .bs-overlay.open { opacity: 1; pointer-events: auto; }
 .bs-panel {
@@ -71,16 +69,13 @@ const BS_CSS = `
   border-top: 1px solid rgba(200,168,130,0.3);
   border-radius: 16px 16px 0 0;
   padding: 24px 20px 40px;
-  -webkit-transform: translateY(100%); transform: translateY(100%);
-  -webkit-transition: -webkit-transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(100%);
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   max-height: 85vh; min-height: 280px; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   will-change: transform;
 }
-.bs-overlay.open .bs-panel {
-  -webkit-transform: translateY(0); transform: translateY(0);
-}
+.bs-overlay.open .bs-panel { transform: translateY(0); }
 `
 ;(function injectBsStyles() {
   const existing = document.getElementById('bs-styles')
@@ -91,10 +86,10 @@ const BS_CSS = `
   document.head.appendChild(el)
 })()
 
-export interface BottomSheetRef { close: () => void }
-
-const BottomSheet = forwardRef<BottomSheetRef, { onClose: () => void; children: React.ReactNode }>(
-function BottomSheet({ onClose, children }, ref) {
+function BottomSheet({ onClose, children }: {
+  onClose: () => void
+  children: (close: () => void) => React.ReactNode
+}) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const panelRef   = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
@@ -104,8 +99,6 @@ function BottomSheet({ onClose, children }, ref) {
     overlayRef.current?.classList.remove('open')
     setTimeout(() => onCloseRef.current(), 450)
   }
-
-  useImperativeHandle(ref, () => ({ close }), [])
 
   // 入場: 2フレーム後に .open を付与 → CSS transition が走る
   useEffect(() => {
@@ -138,13 +131,11 @@ function BottomSheet({ onClose, children }, ref) {
       isDragging = false
       const dy = e.changedTouches[0].clientY - sy
       if (dy > 80 && el.scrollTop === 0) {
-        // 閉じる: inline で closeアニメ → .open 除去
         el.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
         el.style.transform  = 'translateY(100%)'
         overlayRef.current?.classList.remove('open')
         setTimeout(() => onCloseRef.current(), 450)
       } else {
-        // 元の位置に戻す → inline style をクリアして CSS (.open) に委ねる
         el.style.transition = 'transform 0.35s ease'
         el.style.transform  = 'translateY(0)'
         setTimeout(() => { el.style.transition = ''; el.style.transform = '' }, 350)
@@ -166,44 +157,47 @@ function BottomSheet({ onClose, children }, ref) {
     >
       <div ref={panelRef} className="bs-panel">
         <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
-        {children}
+        {children(close)}
       </div>
     </div>,
     document.body
   )
-})
+}
 
 // ─── 通知パネル ────────────────────────────────────────────────
 type NotifItem = { id: number; borderColor: string; meta: string; title: string; sub: string }
 function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => void }) {
-  const sheetRef = useRef<BottomSheetRef>(null)
   return (
-    <BottomSheet ref={sheetRef} onClose={onClose}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
-        <OrbitSVG />
-        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>通知</div>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {items.map(n => (
-          <div key={n.id} style={{
-            background: '#211f1d', border: `1px solid ${border}`,
-            borderLeft: `3px solid ${n.borderColor}`, borderRadius: 2, padding: '14px 16px',
-          }}>
-            <div style={{ fontSize: 11, color: muted, fontFamily: josefin, marginBottom: 4 }}>{n.meta}</div>
-            <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{n.title}</div>
-            <div style={{ fontSize: 12, color: muted, fontFamily: josefin, fontWeight: 100, marginTop: 3 }}>{n.sub}</div>
+    <BottomSheet onClose={onClose}>
+      {close => (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
+            <OrbitSVG />
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>通知</div>
           </div>
-        ))}
-      </div>
-      <button
-        onClick={() => sheetRef.current?.close()}
-        style={{
-          width: '100%', padding: 13, marginTop: 16,
-          background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
-          fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em',
-          textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
-        }}
-      >閉じる</button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {items.map(n => (
+              <div key={n.id} style={{
+                background: '#211f1d', border: `1px solid ${border}`,
+                borderLeft: `3px solid ${n.borderColor}`, borderRadius: 2, padding: '14px 16px',
+              }}>
+                <div style={{ fontSize: 11, color: muted, fontFamily: josefin, marginBottom: 4 }}>{n.meta}</div>
+                <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{n.title}</div>
+                <div style={{ fontSize: 12, color: muted, fontFamily: josefin, fontWeight: 100, marginTop: 3 }}>{n.sub}</div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={close}
+            style={{
+              width: '100%', padding: 13, marginTop: 16,
+              background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
+              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em',
+              textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
+            }}
+          >閉じる</button>
+        </>
+      )}
     </BottomSheet>
   )
 }
@@ -215,16 +209,15 @@ type Dealer   = { id: number; name: string; contact_method: string }
 function OrderModal({ item, storeId, dealers, onClose, onDone }: {
   item: InvAlert; storeId: number; dealers: Dealer[]; onClose: () => void; onDone: (dealerName: string, qty: string) => void
 }) {
-  const sheetRef  = useRef<BottomSheetRef>(null)
   const [dealerId,  setDealerId]  = useState(() => dealers[0]?.id ?? 0)
   const [qty,       setQty]       = useState(String(item.threshold))
   const [loading,   setLoading]   = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  const closeRef = useRef<(() => void) | null>(null)
 
-  const daysLeft  = businessDaysToClosing()
-  const showWarn  = daysLeft <= 5
-
-  const dealer = dealers.find(d => d.id === dealerId)
+  const daysLeft = businessDaysToClosing()
+  const showWarn = daysLeft <= 5
+  const dealer   = dealers.find(d => d.id === dealerId)
 
   async function submit() {
     if (!dealerId || !qty || Number(qty) <= 0) return
@@ -240,7 +233,10 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
       })
       if (!res.ok) throw new Error()
       setConfirmed(true)
-      setTimeout(() => { onClose(); onDone(dealer?.name ?? '', qty) }, 2000)
+      setTimeout(() => {
+        onDone(dealer?.name ?? '', qty)
+        closeRef.current?.()
+      }, 2000)
     } catch {
       alert('発注に失敗しました')
     } finally {
@@ -249,109 +245,116 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
   }
 
   return (
-    <BottomSheet ref={sheetRef} onClose={onClose}>
-      {/* フォームと確認アニメーションを重ねて表示 → パネルサイズが変わらない */}
-      <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+    <BottomSheet onClose={onClose}>
+      {close => {
+        closeRef.current = close
+        return (
+          <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
 
-        {/* ─ フォーム（confirmed 時はフェードアウト） ─ */}
-        <div style={{
-          opacity: confirmed ? 0 : 1,
-          transition: 'opacity 0.25s ease',
-          pointerEvents: confirmed ? 'none' : 'all',
-        }}>
-          {showWarn && (
-            <div style={{ background: alertDim, border: `1px solid rgba(224,112,96,0.2)`, borderRadius: 2, padding: '10px 12px', marginBottom: 16, fontSize: 12, color: alertC, fontFamily: zen, lineHeight: 1.7 }}>
-              あと<strong style={{ margin: '0 4px' }}>{daysLeft}</strong>営業日で翌月伝票になります。このまま発注しますか？
-            </div>
-          )}
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
-          <div style={{ fontSize: 19, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
-          <div style={{ background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
-            <div style={{ paddingBottom: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: muted }}>発注数</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <input
-                    type="number" value={qty} min="1"
-                    onChange={e => setQty(e.target.value)}
-                    style={{
-                      width: 80, padding: '4px 8px', textAlign: 'right' as const,
-                      background: 'transparent', border: `1px solid rgba(232,228,220,0.15)`, borderRadius: 2,
-                      color: '#e8e4dc', fontFamily: josefin, fontSize: 16, outline: 'none',
-                    }}
-                  />
-                  <span style={{ fontSize: 12, color: muted }}>{item.stock_unit}</span>
+            {/* ─ フォーム（confirmed 時はフェードアウト） ─ */}
+            <div style={{
+              opacity: confirmed ? 0 : 1,
+              transition: 'opacity 0.25s ease',
+              pointerEvents: confirmed ? 'none' : 'all',
+            }}>
+              {showWarn && (
+                <div style={{ background: alertDim, border: `1px solid rgba(224,112,96,0.2)`, borderRadius: 2, padding: '10px 12px', marginBottom: 16, fontSize: 12, color: alertC, fontFamily: zen, lineHeight: 1.7 }}>
+                  あと<strong style={{ margin: '0 4px' }}>{daysLeft}</strong>営業日で翌月伝票になります。このまま発注しますか？
                 </div>
+              )}
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
+              <div style={{ fontSize: 19, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
+              <div style={{ background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <div style={{ paddingBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: muted }}>発注数</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <input
+                        type="number" value={qty} min="1"
+                        onChange={e => setQty(e.target.value)}
+                        style={{
+                          width: 80, padding: '4px 8px', textAlign: 'right' as const,
+                          background: 'transparent', border: `1px solid rgba(232,228,220,0.15)`, borderRadius: 2,
+                          color: '#e8e4dc', fontFamily: josefin, fontSize: 16, outline: 'none',
+                        }}
+                      />
+                      <span style={{ fontSize: 12, color: muted }}>{item.stock_unit}</span>
+                    </div>
+                  </div>
+                </div>
+                <ModalRow label="仕入れ先">
+                  <select
+                    value={dealerId}
+                    onChange={e => setDealerId(Number(e.target.value))}
+                    style={{
+                      background: 'transparent', border: 'none', outline: 'none',
+                      color: '#e8e4dc', fontFamily: zen, fontSize: 14, textAlign: 'right' as const,
+                      maxWidth: 180,
+                    }}
+                  >
+                    {dealers.map(d => <option key={d.id} value={d.id} style={{ background: '#1a1816' }}>{d.name}</option>)}
+                  </select>
+                </ModalRow>
+                <ModalRow label="送信方法"><span style={{ fontSize: 14, color: '#e8e4dc', fontWeight: 400 }}>LINE</span></ModalRow>
               </div>
-            </div>
-            <ModalRow label="仕入れ先">
-              <select
-                value={dealerId}
-                onChange={e => setDealerId(Number(e.target.value))}
+              <button
+                onClick={submit}
+                disabled={loading}
                 style={{
-                  background: 'transparent', border: 'none', outline: 'none',
-                  color: '#e8e4dc', fontFamily: zen, fontSize: 14, textAlign: 'right' as const,
-                  maxWidth: 180,
+                  width: '100%', padding: 15, marginBottom: 10,
+                  background: loading ? 'rgba(200,168,130,0.3)' : gold,
+                  border: 'none', borderRadius: 2,
+                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.25em',
+                  textTransform: 'uppercase' as const,
+                  color: loading ? muted : '#1a1816',
+                  cursor: loading ? 'default' : 'pointer',
                 }}
-              >
-                {dealers.map(d => <option key={d.id} value={d.id} style={{ background: '#1a1816' }}>{d.name}</option>)}
-              </select>
-            </ModalRow>
-            <ModalRow label="送信方法"><span style={{ fontSize: 14, color: '#e8e4dc', fontWeight: 400 }}>LINE</span></ModalRow>
-          </div>
-          <button
-            onClick={submit}
-            disabled={loading}
-            style={{
-              width: '100%', padding: 15, marginBottom: 10,
-              background: loading ? 'rgba(200,168,130,0.3)' : gold,
-              border: 'none', borderRadius: 2,
-              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.25em',
-              textTransform: 'uppercase' as const,
-              color: loading ? muted : '#1a1816',
-              cursor: loading ? 'default' : 'pointer',
-            }}
-          >{loading ? '送信中...' : '発注を送信する'}</button>
-          <button
-            onClick={() => sheetRef.current?.close()}
-            style={{
-              width: '100%', padding: 13,
-              background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
-              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em',
-              textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
-            }}
-          >キャンセル</button>
-        </div>
+              >{loading ? '送信中...' : '発注を送信する'}</button>
+              <button
+                onClick={close}
+                style={{
+                  width: '100%', padding: 13,
+                  background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
+                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em',
+                  textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
+                }}
+              >キャンセル</button>
+            </div>
 
-        {/* ─ 完了アニメーション（フォームの上に重ねる） ─ */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: 16,
-          opacity: confirmed ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-          pointerEvents: confirmed ? 'auto' : 'none',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            border: `2px solid ${green}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-            animation: confirmed ? 'checkPop 0.4s ease both' : 'none',
-          }}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <polyline points="6,14 12,20 22,9" stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div style={{
-            fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
-            color: green, textAlign: 'center' as const,
-            width: '100%', padding: '0 16px', boxSizing: 'border-box' as const,
-          }}>送信完了</div>
-        </div>
+            {/* ─ 完了アニメーション（フォームの上に重ねる） ─ */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: 16,
+              opacity: confirmed ? 1 : 0,
+              transition: 'opacity 0.3s ease',
+              pointerEvents: confirmed ? 'auto' : 'none',
+            }}>
+              {/* 丸が先に出現、その後チェックマーク */}
+              <div style={{
+                width: 64, height: 64, borderRadius: '50%',
+                border: `2px solid ${green}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+                animation: confirmed ? 'circlePop 0.35s ease both' : 'none',
+              }}>
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none"
+                  style={{ animation: confirmed ? 'checkFade 0.25s ease both 0.3s' : 'none', opacity: confirmed ? undefined : 0 }}
+                >
+                  <polyline points="6,14 12,20 22,9" stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div style={{
+                fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
+                color: green, textAlign: 'center' as const,
+                animation: confirmed ? 'checkFade 0.25s ease both 0.4s' : 'none',
+                opacity: confirmed ? undefined : 0,
+              }}>送信完了</div>
+            </div>
 
-      </div>
+          </div>
+        )
+      }}
     </BottomSheet>
   )
 }
@@ -403,7 +406,6 @@ export default function DashboardPage() {
   const [orderTarget, setOrderTarget] = useState<InvAlert | null>(null)
   const [sentOrders,  setSentOrders]  = useState<{ name: string; qty: string; dealer: string }[]>([])
   const [showNotif,   setShowNotif]   = useState(false)
-  const [toast,       setToast]       = useState<string | null>(null)
 
   const cardRef      = useRef<HTMLDivElement>(null)
   const dayOffsetRef = useRef(0)
@@ -491,11 +493,6 @@ export default function DashboardPage() {
     }
   }, [])
 
-  function showToast(msg: string) {
-    setToast(msg)
-    setTimeout(() => setToast(null), 3000)
-  }
-
   const cur       = salesDays[dayOffset]
   const data      = cur?.data
   const unitPrice = data && data.client_count > 0 ? Math.round(data.total_sales / data.client_count) : 0
@@ -514,8 +511,10 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      {/* checkPop keyframe */}
-      <style>{`@keyframes checkPop{0%{transform:scale(0.6);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}`}</style>
+      <style>{`
+        @keyframes circlePop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+        @keyframes checkFade{0%{opacity:0}100%{opacity:1}}
+      `}</style>
 
       <div style={{ padding: '14px 20px 32px' }}>
 
@@ -746,20 +745,6 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ─── トースト ─── */}
-      {toast && createPortal(
-        <div style={{
-          position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)',
-          background: '#2a2826', border: `1px solid rgba(200,168,130,0.3)`,
-          borderRadius: 4, padding: '10px 20px', zIndex: 300,
-          display: 'flex', flexDirection: 'column', gap: 2, whiteSpace: 'nowrap',
-        }}>
-          <div style={{ fontSize: 9, letterSpacing: '0.2em', color: gold, fontFamily: josefin }}>// 送信完了</div>
-          <div style={{ fontSize: 13, color: '#e8e4dc', fontFamily: zen }}>{toast}</div>
-        </div>,
-        document.body
-      )}
-
       {/* ─── 発注確認モーダル ─── */}
       {orderTarget && storeId && (
         <OrderModal
@@ -771,7 +756,6 @@ export default function DashboardPage() {
             const target = orderTarget
             setInvAlerts(prev => prev.filter(a => a.id !== target.id))
             setSentOrders(prev => [{ name: target.name, qty: qtyStr, dealer: dealerName }, ...prev])
-            showToast(`${target.name} の発注を ${dealerName} に送信しました`)
           }}
         />
       )}
