@@ -250,6 +250,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
         }),
       })
       if (!res.ok) throw new Error()
+      // 成功時は loading をリセットしない（ボタンが「発注を送信する」に戻るのを防ぐ）
       setConfirmed(true)
       setTimeout(() => {
         onDone(dealer?.name ?? '', qty)
@@ -257,7 +258,6 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
       }, 2000)
     } catch {
       alert('発注に失敗しました')
-    } finally {
       setLoading(false)
     }
   }
@@ -317,17 +317,17 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               </div>
               <button
                 onClick={submit}
-                disabled={loading}
+                disabled={loading || confirmed}
                 style={{
                   width: '100%', padding: 15, marginBottom: 10,
-                  background: loading ? 'rgba(200,168,130,0.3)' : gold,
+                  background: (loading || confirmed) ? 'rgba(200,168,130,0.3)' : gold,
                   border: 'none', borderRadius: 2,
                   fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.25em',
                   textTransform: 'uppercase' as const,
-                  color: loading ? muted : '#1a1816',
-                  cursor: loading ? 'default' : 'pointer',
+                  color: (loading || confirmed) ? muted : '#1a1816',
+                  cursor: (loading || confirmed) ? 'default' : 'pointer',
                 }}
-              >{loading ? '送信中...' : '発注を送信する'}</button>
+              >{(loading || confirmed) ? '送信中...' : '発注を送信する'}</button>
               <button
                 onClick={close}
                 style={{
@@ -339,48 +339,47 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               >キャンセル</button>
             </div>
 
-            {/* ─ 完了アニメーション（フォームが消えてから表示） ─ */}
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: 16,
-              background: 'transparent',
-              opacity: confirmed ? 1 : 0,
-              transition: 'opacity 0.15s ease 0.25s',
-              pointerEvents: confirmed ? 'auto' : 'none',
-            }}>
-              {/* 丸: フォーム消えた後にポップイン */}
+            {/* ─ 完了アニメーション（confirmed=true のときだけマウント） ─ */}
+            {confirmed && (
               <div style={{
-                width: 64, height: 64, borderRadius: '50%',
-                background: 'transparent',
-                border: `2px solid ${green}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-                opacity: confirmed ? undefined : 0,
-                animation: confirmed ? 'circlePop 0.35s ease both 0.15s' : 'none',
+                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: 16,
+                background: '#1a1816',
               }}>
-                {/* チェックマーク: 先端から手書き風に描画 */}
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none"
-                  style={{ display: 'block', background: 'transparent', overflow: 'visible' }}
-                >
-                  <polyline
-                    points="6,14 12,20 22,9"
-                    stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                    style={{
-                      strokeDasharray: 24,
-                      strokeDashoffset: 24,
-                      animation: confirmed ? 'drawCheck 0.4s ease both 0.55s' : 'none',
-                    }}
-                  />
-                </svg>
+                {/* 丸: マウント直後からポップイン */}
+                <div style={{
+                  width: 64, height: 64, borderRadius: '50%',
+                  background: 'transparent',
+                  border: `2px solid ${green}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                  opacity: 0,
+                  animation: 'circlePop 0.35s ease both 0.2s',
+                }}>
+                  {/* チェックマーク: 先端から手書き風に描画 */}
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none"
+                    style={{ display: 'block', background: 'transparent', overflow: 'visible' }}
+                  >
+                    <polyline
+                      points="6,14 12,20 22,9"
+                      stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                      style={{
+                        strokeDasharray: 24,
+                        strokeDashoffset: 24,
+                        animation: 'drawCheck 0.4s ease both 0.55s',
+                      }}
+                    />
+                  </svg>
+                </div>
+                <div style={{
+                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
+                  color: green, textAlign: 'center' as const,
+                  opacity: 0,
+                  animation: 'checkFade 0.25s ease both 0.7s',
+                }}>送信完了</div>
               </div>
-              <div style={{
-                fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
-                color: green, textAlign: 'center' as const,
-                opacity: confirmed ? undefined : 0,
-                animation: confirmed ? 'checkFade 0.25s ease both 0.7s' : 'none',
-              }}>送信完了</div>
-            </div>
+            )}
 
           </div>
         )
