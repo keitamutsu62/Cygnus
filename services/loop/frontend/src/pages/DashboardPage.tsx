@@ -96,7 +96,17 @@ function BottomSheet({ onClose, children }: {
   onCloseRef.current = onClose
 
   function close() {
-    overlayRef.current?.classList.remove('open')
+    // オーバーレイはそのまま（フェードさせない）、パネルだけ下にスライド
+    const overlay = overlayRef.current
+    const panel   = panelRef.current
+    if (overlay) {
+      overlay.style.transition    = 'none'
+      overlay.style.pointerEvents = 'none'
+    }
+    if (panel) {
+      panel.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
+      panel.style.transform  = 'translateY(100%)'
+    }
     setTimeout(() => onCloseRef.current(), 450)
   }
 
@@ -131,9 +141,10 @@ function BottomSheet({ onClose, children }: {
       isDragging = false
       const dy = e.changedTouches[0].clientY - sy
       if (dy > 80 && el.scrollTop === 0) {
+        const overlay = overlayRef.current
+        if (overlay) { overlay.style.transition = 'none'; overlay.style.pointerEvents = 'none' }
         el.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
         el.style.transform  = 'translateY(100%)'
-        overlayRef.current?.classList.remove('open')
         setTimeout(() => onCloseRef.current(), 450)
       } else {
         el.style.transition = 'transform 0.35s ease'
@@ -321,34 +332,39 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               >キャンセル</button>
             </div>
 
-            {/* ─ 完了アニメーション（フォームの上に重ねる） ─ */}
+            {/* ─ 完了アニメーション（フォームが消えてから表示） ─ */}
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               gap: 16,
               opacity: confirmed ? 1 : 0,
-              transition: 'opacity 0.3s ease',
+              transition: 'opacity 0.15s ease 0.25s',
               pointerEvents: confirmed ? 'auto' : 'none',
             }}>
-              {/* 丸が先に出現、その後チェックマーク */}
+              {/* 丸: フォーム消えた後にポップイン */}
               <div style={{
                 width: 64, height: 64, borderRadius: '50%',
                 border: `2px solid ${green}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
-                animation: confirmed ? 'circlePop 0.35s ease both' : 'none',
+                opacity: confirmed ? undefined : 0,
+                animation: confirmed ? 'circlePop 0.35s ease both 0.15s' : 'none',
               }}>
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none"
-                  style={{ animation: confirmed ? 'checkFade 0.25s ease both 0.3s' : 'none', opacity: confirmed ? undefined : 0 }}
-                >
-                  <polyline points="6,14 12,20 22,9" stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                {/* チェックマーク: 先端から手書き風に描画 */}
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <polyline
+                    points="6,14 12,20 22,9"
+                    stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    strokeDasharray="24" strokeDashoffset="24"
+                    style={{ animation: confirmed ? 'drawCheck 0.4s ease forwards 0.55s' : 'none' }}
+                  />
                 </svg>
               </div>
               <div style={{
                 fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
                 color: green, textAlign: 'center' as const,
-                animation: confirmed ? 'checkFade 0.25s ease both 0.4s' : 'none',
                 opacity: confirmed ? undefined : 0,
+                animation: confirmed ? 'checkFade 0.25s ease both 0.7s' : 'none',
               }}>送信完了</div>
             </div>
 
@@ -514,6 +530,7 @@ export default function DashboardPage() {
       <style>{`
         @keyframes circlePop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
         @keyframes checkFade{0%{opacity:0}100%{opacity:1}}
+        @keyframes drawCheck{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
       `}</style>
 
       <div style={{ padding: '14px 20px 32px' }}>
