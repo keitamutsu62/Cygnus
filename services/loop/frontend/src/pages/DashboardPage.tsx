@@ -53,29 +53,43 @@ const OrbitSVG = () => (
   </svg>
 )
 
-// ─── BottomSheet CSS（プロトタイプと同一のクラス切り替え方式）──────────────
+// ─── BottomSheet CSS を <head> に一度だけ注入（Safari ポータル対応）────────
 const BS_CSS = `
 .bs-overlay {
-  position: fixed; inset: 0; z-index: 200;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200;
   background: rgba(0,0,0,0.7);
-  display: flex; align-items: flex-end; justify-content: center;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: flex-end; align-items: flex-end;
+  -webkit-justify-content: center; justify-content: center;
   opacity: 0; pointer-events: none;
-  transition: opacity 0.3s ease;
+  -webkit-transition: opacity 0.3s ease; transition: opacity 0.3s ease;
 }
-.bs-overlay.open { opacity: 1; pointer-events: all; }
+.bs-overlay.open { opacity: 1; pointer-events: auto; }
 .bs-panel {
   width: 100%; max-width: 480px; box-sizing: border-box;
   background: #1a1816;
   border-top: 1px solid rgba(200,168,130,0.3);
   border-radius: 16px 16px 0 0;
   padding: 24px 20px 40px;
-  transform: translateY(100%);
+  -webkit-transform: translateY(100%); transform: translateY(100%);
+  -webkit-transition: -webkit-transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-  max-height: 85vh; overflow-y: auto;
+  max-height: 85vh; min-height: 280px; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  will-change: transform;
 }
-.bs-overlay.open .bs-panel { transform: translateY(0); }
+.bs-overlay.open .bs-panel {
+  -webkit-transform: translateY(0); transform: translateY(0);
+}
 `
+;(function injectBsStyles() {
+  const existing = document.getElementById('bs-styles')
+  if (existing) existing.remove()
+  const el = document.createElement('style')
+  el.id = 'bs-styles'
+  el.textContent = BS_CSS
+  document.head.appendChild(el)
+})()
 
 export interface BottomSheetRef { close: () => void }
 
@@ -147,17 +161,14 @@ function BottomSheet({ onClose, children }, ref) {
   }, [])
 
   return createPortal(
-    <>
-      <style>{BS_CSS}</style>
-      <div ref={overlayRef} className="bs-overlay"
-        onClick={e => { if (e.target === e.currentTarget) close() }}
-      >
-        <div ref={panelRef} className="bs-panel">
-          <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
-          {children}
-        </div>
+    <div ref={overlayRef} className="bs-overlay"
+      onClick={e => { if (e.target === e.currentTarget) close() }}
+    >
+      <div ref={panelRef} className="bs-panel">
+        <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
+        {children}
       </div>
-    </>,
+    </div>,
     document.body
   )
 })
@@ -314,24 +325,30 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
 
         {/* ─ 完了アニメーション（フォームの上に重ねる） ─ */}
         <div style={{
-          position: 'absolute', inset: 0,
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 16,
           opacity: confirmed ? 1 : 0,
           transition: 'opacity 0.3s ease',
-          pointerEvents: confirmed ? 'all' : 'none',
+          pointerEvents: confirmed ? 'auto' : 'none',
+          overflow: 'hidden',
         }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
             border: `2px solid ${green}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
             animation: confirmed ? 'checkPop 0.4s ease both' : 'none',
           }}>
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
               <polyline points="6,14 12,20 22,9" stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em', color: green, textAlign: 'center' as const }}>送信完了</div>
+          <div style={{
+            fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
+            color: green, textAlign: 'center' as const,
+            width: '100%', padding: '0 16px', boxSizing: 'border-box' as const,
+          }}>送信完了</div>
         </div>
 
       </div>
