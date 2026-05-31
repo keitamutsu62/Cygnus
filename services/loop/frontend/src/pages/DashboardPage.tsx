@@ -306,7 +306,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                     onChange={e => setDealerId(Number(e.target.value))}
                     style={{
                       background: 'transparent', border: 'none', outline: 'none',
-                      color: '#e8e4dc', fontFamily: zen, fontSize: 14, textAlign: 'right' as const,
+                      color: '#e8e4dc', fontFamily: zen, fontSize: 16, textAlign: 'right' as const,
                       maxWidth: 180,
                     }}
                   >

@@ -106,7 +106,7 @@ function StoreTab({ ym }: { ym: string }) {
             border: `1px solid rgba(232,228,220,0.12)`,
             borderRadius: 2,
             padding: '8px 12px',
-            fontSize: 13,
+            fontSize: 16,
             color: '#e8e4dc',
             fontFamily: zen,
             width: '100%',

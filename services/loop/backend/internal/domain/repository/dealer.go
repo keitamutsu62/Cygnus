@@ -20,4 +20,5 @@ type OrderRepository interface {
 	UpdateStatus(ctx context.Context, id uint64, status model.OrderStatus) error
 	AddItems(ctx context.Context, items []*model.OrderItem) error
 	FindItems(ctx context.Context, orderID uint64) ([]*model.OrderItem, error)
+	FindItemsForOrders(ctx context.Context, orderIDs []uint64) ([]*model.ItemWithMaterial, error)
 }

@@ -132,6 +132,7 @@ func main() {
 	api.POST("/dealers", dealerH.CreateDealer)
 	api.PATCH("/dealers/:id", dealerH.UpdateDealer)
 	api.GET("/orders", dealerH.ListOrders)
+	api.GET("/orders/history", dealerH.ListOrdersHistory)
 	api.POST("/orders", dealerH.CreateOrder)
 	api.GET("/orders/:id", dealerH.GetOrder)
 	api.PATCH("/orders/:id/status", dealerH.UpdateOrderStatus)

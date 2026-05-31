@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/model"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/repository"
@@ -118,4 +119,75 @@ func (u *DealerUsecase) GetOrder(ctx context.Context, id uint64) (*model.Order, 
 // "sent" に変更した場合が LINE/email 通知の外部連携トリガーになる。
 func (u *DealerUsecase) UpdateOrderStatus(ctx context.Context, id uint64, status model.OrderStatus) error {
 	return u.orderRepo.UpdateStatus(ctx, id, status)
+}
+
+type OrderHistoryItemEntry struct {
+	MaterialName  string  `json:"material_name"`
+	Quantity      uint32  `json:"quantity"`
+	Unit          string  `json:"unit"`
+	EstimatedCost *uint32 `json:"estimated_cost"`
+}
+
+type OrderHistoryEntry struct {
+	ID                 uint64                  `json:"id"`
+	StoreID            uint64                  `json:"store_id"`
+	Status             model.OrderStatus       `json:"status"`
+	IsNextMonthInvoice bool                    `json:"is_next_month_invoice"`
+	CreatedAt          time.Time               `json:"created_at"`
+	DealerName         string                  `json:"dealer_name"`
+	ContactMethod      model.ContactMethod     `json:"contact_method"`
+	Items              []OrderHistoryItemEntry `json:"items"`
+}
+
+func (u *DealerUsecase) ListOrdersHistory(ctx context.Context, salonID uint64) ([]*OrderHistoryEntry, error) {
+	orders, err := u.orderRepo.FindBySalonID(ctx, salonID)
+	if err != nil {
+		return nil, err
+	}
+
+	dealers, err := u.dealerRepo.FindBySalonID(ctx, salonID)
+	if err != nil {
+		return nil, err
+	}
+	dealerMap := make(map[uint64]*model.Dealer)
+	for _, d := range dealers {
+		dealerMap[d.ID] = d
+	}
+
+	orderIDs := make([]uint64, len(orders))
+	for i, o := range orders {
+		orderIDs[i] = o.ID
+	}
+
+	rawItems, err := u.orderRepo.FindItemsForOrders(ctx, orderIDs)
+	if err != nil {
+		return nil, err
+	}
+	itemsByOrder := make(map[uint64][]OrderHistoryItemEntry)
+	for _, it := range rawItems {
+		itemsByOrder[it.OrderID] = append(itemsByOrder[it.OrderID], OrderHistoryItemEntry{
+			MaterialName:  it.MaterialName,
+			Quantity:      it.Quantity,
+			Unit:          it.Unit,
+			EstimatedCost: it.EstimatedCost,
+		})
+	}
+
+	result := make([]*OrderHistoryEntry, len(orders))
+	for i, o := range orders {
+		entry := &OrderHistoryEntry{
+			ID:                 o.ID,
+			StoreID:            o.StoreID,
+			Status:             o.Status,
+			IsNextMonthInvoice: o.IsNextMonthInvoice,
+			CreatedAt:          o.CreatedAt,
+			Items:              itemsByOrder[o.ID],
+		}
+		if d := dealerMap[o.DealerID]; d != nil {
+			entry.DealerName = d.Name
+			entry.ContactMethod = d.ContactMethod
+		}
+		result[i] = entry
+	}
+	return result, nil
 }

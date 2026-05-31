@@ -57,3 +57,11 @@ type OrderItem struct {
 	Unit          string  `db:"unit"`
 	EstimatedCost *uint32 `db:"estimated_cost"`
 }
+
+type ItemWithMaterial struct {
+	OrderID       uint64  `db:"order_id"`
+	MaterialName  string  `db:"material_name"`
+	Quantity      uint32  `db:"quantity"`
+	Unit          string  `db:"unit"`
+	EstimatedCost *uint32 `db:"estimated_cost"`
+}

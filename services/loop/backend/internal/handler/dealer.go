@@ -66,6 +66,16 @@ func (h *DealerHandler) UpdateDealer(c echo.Context) error {
 	return c.JSON(http.StatusOK, d)
 }
 
+// GET /api/v1/orders/history
+func (h *DealerHandler) ListOrdersHistory(c echo.Context) error {
+	claims := claimsFrom(c)
+	entries, err := h.uc.ListOrdersHistory(c.Request().Context(), claims.SalonID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, entries)
+}
+
 // GET /api/v1/orders
 func (h *DealerHandler) ListOrders(c echo.Context) error {
 	claims := claimsFrom(c)

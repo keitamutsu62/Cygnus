@@ -119,3 +119,24 @@ func (r *OrderRepository) FindItems(ctx context.Context, orderID uint64) ([]*mod
 	}
 	return list, nil
 }
+
+func (r *OrderRepository) FindItemsForOrders(ctx context.Context, orderIDs []uint64) ([]*model.ItemWithMaterial, error) {
+	if len(orderIDs) == 0 {
+		return nil, nil
+	}
+	query, args, err := sqlx.In(`
+		SELECT oi.order_id, m.name AS material_name, oi.quantity, oi.unit, oi.estimated_cost
+		FROM order_items oi
+		JOIN materials m ON m.id = oi.material_id
+		WHERE oi.order_id IN (?)
+		ORDER BY oi.id ASC`, orderIDs)
+	if err != nil {
+		return nil, fmt.Errorf("OrderRepository.FindItemsForOrders: %w", err)
+	}
+	var list []*model.ItemWithMaterial
+	err = r.db.SelectContext(ctx, &list, r.db.Rebind(query), args...)
+	if err != nil {
+		return nil, fmt.Errorf("OrderRepository.FindItemsForOrders: %w", err)
+	}
+	return list, nil
+}

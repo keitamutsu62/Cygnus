@@ -307,7 +307,7 @@ function FieldInput({
         border: `1px solid rgba(232,228,220,0.12)`,
         borderRadius: 2,
         padding: '10px 12px',
-        fontSize: 14,
+        fontSize: 16,
         color: '#e8e4dc',
         fontFamily: zen,
         outline: 'none',
