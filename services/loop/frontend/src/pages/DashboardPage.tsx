@@ -96,12 +96,14 @@ function BottomSheet({ onClose, children }: {
   onCloseRef.current = onClose
 
   function close() {
-    // オーバーレイはそのまま（フェードさせない）、パネルだけ下にスライド
     const overlay = overlayRef.current
     const panel   = panelRef.current
+    // overlay を固定（フェードさせない）、パネルだけ下にスライド
     if (overlay) {
       overlay.style.transition    = 'none'
+      overlay.style.opacity       = '1'       // .open 除去後も不透明を維持
       overlay.style.pointerEvents = 'none'
+      overlay.classList.remove('open')        // CSS の translateY(0) ルールを解除
     }
     if (panel) {
       panel.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
@@ -142,7 +144,12 @@ function BottomSheet({ onClose, children }: {
       const dy = e.changedTouches[0].clientY - sy
       if (dy > 80 && el.scrollTop === 0) {
         const overlay = overlayRef.current
-        if (overlay) { overlay.style.transition = 'none'; overlay.style.pointerEvents = 'none' }
+        if (overlay) {
+          overlay.style.transition    = 'none'
+          overlay.style.opacity       = '1'
+          overlay.style.pointerEvents = 'none'
+          overlay.classList.remove('open')
+        }
         el.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
         el.style.transform  = 'translateY(100%)'
         setTimeout(() => onCloseRef.current(), 450)
@@ -260,7 +267,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
       {close => {
         closeRef.current = close
         return (
-          <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+          <div style={{ position: 'relative', width: '100%' }}>
 
             {/* ─ フォーム（confirmed 時はフェードアウト） ─ */}
             <div style={{
@@ -337,6 +344,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               gap: 16,
+              background: 'transparent',
               opacity: confirmed ? 1 : 0,
               transition: 'opacity 0.15s ease 0.25s',
               pointerEvents: confirmed ? 'auto' : 'none',
@@ -344,6 +352,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               {/* 丸: フォーム消えた後にポップイン */}
               <div style={{
                 width: 64, height: 64, borderRadius: '50%',
+                background: 'transparent',
                 border: `2px solid ${green}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
@@ -351,12 +360,17 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                 animation: confirmed ? 'circlePop 0.35s ease both 0.15s' : 'none',
               }}>
                 {/* チェックマーク: 先端から手書き風に描画 */}
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none"
+                  style={{ display: 'block', background: 'transparent', overflow: 'visible' }}
+                >
                   <polyline
                     points="6,14 12,20 22,9"
                     stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                    strokeDasharray="24" strokeDashoffset="24"
-                    style={{ animation: confirmed ? 'drawCheck 0.4s ease forwards 0.55s' : 'none' }}
+                    style={{
+                      strokeDasharray: 24,
+                      strokeDashoffset: 24,
+                      animation: confirmed ? 'drawCheck 0.4s ease both 0.55s' : 'none',
+                    }}
                   />
                 </svg>
               </div>
