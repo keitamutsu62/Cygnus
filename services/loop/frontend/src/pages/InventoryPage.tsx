@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
 import { getClaims } from '../lib/auth'
@@ -51,9 +52,10 @@ const BS_CSS = `
 })()
 
 // ─── BottomSheet ─────────────────────────────────────────────────────────────
-function BottomSheet({ onClose, children }: {
+function BottomSheet({ onClose, children, noScroll }: {
   onClose: () => void
   children: (close: () => void) => React.ReactNode
+  noScroll?: boolean
 }) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const panelRef   = useRef<HTMLDivElement>(null)
@@ -86,12 +88,34 @@ function BottomSheet({ onClose, children }: {
     return () => cancelAnimationFrame(id1)
   }, [])
 
+  // 背景スクロール禁止
+  useEffect(() => {
+    const overlay = overlayRef.current
+    const panel   = panelRef.current
+    if (!overlay || !panel) return
+    const stop = (e: TouchEvent) => { if (!panel.contains(e.target as Node)) e.preventDefault() }
+    overlay.addEventListener('touchmove', stop, { passive: false })
+    return () => overlay.removeEventListener('touchmove', stop)
+  }, [])
+
+  // スワイプで閉じる（ライブ移動 + scrollTop チェック）
   useEffect(() => {
     const el = panelRef.current
     if (!el) return
-    let sy = 0
-    const onStart = (e: TouchEvent) => { sy = e.touches[0].clientY }
-    const onEnd   = (e: TouchEvent) => {
+    let sy = 0, isDragging = false
+
+    const onStart = (e: TouchEvent) => { sy = e.touches[0].clientY; isDragging = true }
+    const onMove  = (e: TouchEvent) => {
+      if (!isDragging) return
+      const dy = e.touches[0].clientY - sy
+      if (dy > 0 && el.scrollTop === 0) {
+        e.preventDefault()
+        el.style.transition = 'none'
+        el.style.transform  = `translateY(${dy}px)`
+      }
+    }
+    const onEnd = (e: TouchEvent) => {
+      isDragging = false
       const dy = e.changedTouches[0].clientY - sy
       if (dy > 80 && el.scrollTop === 0) {
         const overlay = overlayRef.current
@@ -104,12 +128,18 @@ function BottomSheet({ onClose, children }: {
         el.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
         el.style.transform  = 'translateY(100%)'
         setTimeout(() => onCloseRef.current(), 450)
+      } else {
+        el.style.transition = 'transform 0.35s ease'
+        el.style.transform  = 'translateY(0)'
+        setTimeout(() => { el.style.transition = ''; el.style.transform = '' }, 350)
       }
     }
     el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove',  onMove,  { passive: false })
     el.addEventListener('touchend',   onEnd,   { passive: true })
     return () => {
       el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove',  onMove)
       el.removeEventListener('touchend',   onEnd)
     }
   }, [])
@@ -118,7 +148,7 @@ function BottomSheet({ onClose, children }: {
     <div ref={overlayRef} className="inv-bs-overlay"
       onClick={e => { if (e.target === e.currentTarget) close() }}
     >
-      <div ref={panelRef} className="inv-bs-panel">
+      <div ref={panelRef} className="inv-bs-panel" style={noScroll ? { overflowY: 'hidden' } : undefined}>
         <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
         {children(close)}
       </div>
@@ -626,7 +656,7 @@ function MaterialFormSheet({
   }
 
   return (
-    <BottomSheet onClose={onClose}>
+    <BottomSheet onClose={onClose} noScroll>
       {close => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* ヘッダー */}
@@ -1163,6 +1193,7 @@ export default function InventoryPage() {
   const claims      = getClaims()
   const isManager   = claims?.role === 'owner' || claims?.role === 'admin'
   const ownStoreId  = claims?.store_id ?? null
+  const loc         = useLocation()
 
   const [items,          setItems]          = useState<InventoryItem[]>([])
   const [stores,         setStores]         = useState<Store[]>([])
@@ -1174,7 +1205,7 @@ export default function InventoryPage() {
   const [isOwnStore,     setIsOwnStore]      = useState(true)
   const [loading,        setLoading]         = useState(true)
 
-  const [mainTab,        setMainTab]         = useState<'stock' | 'history'>('stock')
+  const [mainTab,        setMainTab]         = useState<'stock' | 'history'>((loc.state as any)?.tab === 'history' ? 'history' : 'stock')
   const [filter,         setFilter]          = useState<string>('すべて')
   const [search,         setSearch]          = useState('')
 
@@ -1183,10 +1214,12 @@ export default function InventoryPage() {
   const [editItem,       setEditItem]        = useState<InventoryItem | null>(null)
 
   const [sentIds,        setSentIds]         = useState<Set<number>>(new Set())
+  const [receivedOrderIds, setReceivedOrderIds] = useState<Set<number>>(new Set())
   const [toastMsg,       setToastMsg]        = useState('')
   const [toastVisible,   setToastVisible]    = useState(false)
   const [scannerOpen,    setScannerOpen]     = useState(false)
   const [view,           setView]            = useState<'main' | 'master'>('main')
+  const [editOrderId,    setEditOrderId]     = useState<number | null>(null)
 
   function showToast(msg: string) {
     setToastMsg(msg)
@@ -1306,13 +1339,13 @@ export default function InventoryPage() {
       {/* 他店舗閲覧バナー */}
       {!isOwnStore && (
         <div style={{ margin: '8px 20px 0', padding: '8px 14px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2 }}>
-          <div style={{ fontSize: 11, color: muted, display: 'flex', alignItems: 'center', gap: 6, fontFamily: zen }}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <div style={{ fontSize: 11, color: muted, display: 'flex', alignItems: 'flex-start', gap: 6, fontFamily: zen, lineHeight: 1.6 }}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
               <circle cx="6" cy="6" r="5" stroke={gold} strokeWidth="1"/>
               <line x1="6" y1="4" x2="6" y2="6.5" stroke={gold} strokeWidth="1.2" strokeLinecap="round"/>
               <circle cx="6" cy="8.5" r="0.6" fill={gold}/>
             </svg>
-            他店舗の在庫は<span style={{ color: gold }}>閲覧のみ</span>です。発注・編集は各店舗で行ってください。
+            <span>他店舗の在庫は<span style={{ color: gold }}>閲覧のみ</span>です。発注・編集は各店舗で行ってください。</span>
           </div>
         </div>
       )}
@@ -1486,16 +1519,24 @@ export default function InventoryPage() {
                       <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>
                         {dateStr}{costLabel ? ` · ${costLabel}` : ''}
                       </div>
-                      {(o.status === 'pending' || o.status === 'sent') && (
+                      {(o.status === 'pending' || o.status === 'sent') && !receivedOrderIds.has(o.id) && (
                         <button
                           style={{
                             padding: '6px 14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2,
                             fontSize: 10, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.08em',
                           }}
                           onClick={() => {
-                            // 在庫数更新モーダルを開く
                             const inv = items.find(i => firstItem && i.name === firstItem.material_name)
-                            if (inv) setEditItem(inv)
+                            if (inv) {
+                              setEditItem(inv)
+                              setEditOrderId(o.id)
+                            } else {
+                              // 在庫アイテムが見つからない場合も発注ステータスだけ更新
+                              const oid = o.id
+                              setReceivedOrderIds(prev => { const s = new Set(prev); s.add(oid); return s })
+                              setHistory(prev => prev.map(h => h.id === oid ? { ...h, status: 'received' } : h))
+                              showToast('発注ステータスを更新しました')
+                            }
                           }}
                         >在庫数を更新する</button>
                       )}
@@ -1535,7 +1576,7 @@ export default function InventoryPage() {
       {editItem && (
         <EditModal
           item={editItem}
-          onClose={() => setEditItem(null)}
+          onClose={() => { setEditItem(null); setEditOrderId(null) }}
           onDone={newQty => {
             setItems(prev => prev.map(i => {
               if (i.id !== editItem.id) return i
@@ -1546,6 +1587,12 @@ export default function InventoryPage() {
               return { ...i, quantity: newQty, status, bar_width: barW }
             }))
             setSentIds(prev => { const s = new Set(prev); s.delete(editItem.material_id); return s })
+            if (editOrderId !== null) {
+              const oid = editOrderId
+              setReceivedOrderIds(prev => { const s = new Set(prev); s.add(oid); return s })
+              setHistory(prev => prev.map(o => o.id === oid ? { ...o, status: 'received' } : o))
+              setEditOrderId(null)
+            }
             setEditItem(null)
             showToast('在庫数を更新しました')
           }}

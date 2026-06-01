@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
 import { getClaims } from '../lib/auth'
@@ -31,16 +32,16 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+function toLocal(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
 function weekBoundsNow() {
   const now = new Date()
   const day = now.getDay()
   const mon = new Date(now); mon.setDate(now.getDate() - ((day + 6) % 7))
   const sun = new Date(mon); sun.setDate(mon.getDate() + 6)
-  return {
-    from:    mon.toISOString().slice(0, 10),
-    to:      sun.toISOString().slice(0, 10),
-    today:   now.toISOString().slice(0, 10),
-  }
+  return { from: toLocal(mon), to: toLocal(sun), today: toLocal(now) }
 }
 
 function monthBoundsYm(ym: string) {
@@ -382,15 +383,23 @@ function AllView({ period, stores, onSelectStore }: {
     })
   }, [stores, period])
 
-  const today   = todayStr()
-  const total   = allSales.reduce((s, d) => s + d.total_sales, 0)
-  const clients = allSales.reduce((s, d) => s + d.client_count, 0)
+  const today      = todayStr()
+  const wb         = weekBoundsNow()
+  const monthStart = currentYm() + '-01'
+  const todayData   = allSales.filter(d => ds(d.date) === today)
+  const weekData    = allSales.filter(d => ds(d.date) >= wb.from && ds(d.date) <= today)
+  const monthData   = allSales.filter(d => ds(d.date) >= monthStart && ds(d.date) <= today)
+  const periodData  = period === 'today' ? todayData : period === 'week' ? weekData : monthData
+  const todayTotal   = todayData.reduce((s, d) => s + d.total_sales, 0)
+  const weekTotal    = weekData.reduce((s, d) => s + d.total_sales, 0)
+  const monthTotal   = monthData.reduce((s, d) => s + d.total_sales, 0)
+  const dispTotal    = period === 'today' ? todayTotal : period === 'week' ? weekTotal : monthTotal
+  const todayClients = todayData.reduce((s, d) => s + d.client_count, 0)
+  const total   = periodData.reduce((s, d) => s + d.total_sales, 0)
+  const clients = periodData.reduce((s, d) => s + d.client_count, 0)
   const avgUnit = clients > 0 ? Math.round(total / clients) : 0
-  const todayTotal   = allSales.filter(d => ds(d.date) === today).reduce((s, d) => s + d.total_sales, 0)
-  const todayClients = allSales.filter(d => ds(d.date) === today).reduce((s, d) => s + d.client_count, 0)
 
-  const bars      = buildWeekBars(allSales)
-  const weekTotal = allSales.filter(d => { const wb = weekBoundsNow(); return ds(d.date) >= wb.from && ds(d.date) <= wb.to }).reduce((s, d) => s + d.total_sales, 0)
+  const bars = buildWeekBars(allSales)
 
   const ranking = stores.map(s => {
     const ss = allSales.filter(d => d.store_id === s.id)
@@ -402,7 +411,7 @@ function AllView({ period, stores, onSelectStore }: {
   return (
     <div>
       <KpiGrid>
-        <KpiCard label={<><OrbitSVG size={10}/> 全店 · {periodLabel}</>} yenValue={period === 'today' ? todayTotal : total} diff="↑ 先週比 +6.1%" large full/>
+        <KpiCard label={<><OrbitSVG size={10}/> 全店 · {periodLabel}</>} yenValue={dispTotal} diff="↑ 先週比 +6.1%" large full/>
         <KpiCard label="総客数"    numValue={period === 'today' ? todayClients : clients}/>
         <KpiCard label="平均客単価" yenValue={avgUnit}/>
       </KpiGrid>
@@ -439,7 +448,7 @@ function AllView({ period, stores, onSelectStore }: {
 // ── StoreView ─────────────────────────────────────────────────────────────
 function StoreView({ period, stores, selectedId, onSelectId, onGoStaff }: {
   period: Period; stores: Store[]; selectedId: number | null
-  onSelectId: (id: number) => void; onGoStaff: () => void
+  onSelectId: (id: number) => void; onGoStaff: (staffId?: number) => void
 }) {
   const [sales, setSales]             = useState<DailySales[]>([])
   const [staffRanking, setStaffRanking] = useState<StaffSalesSummary[]>([])
@@ -460,26 +469,34 @@ function StoreView({ period, stores, selectedId, onSelectId, onGoStaff }: {
   }, [selectedId, period])
 
   const today       = todayStr()
-  const total       = sales.reduce((s, d) => s + d.total_sales, 0)
-  const clients     = sales.reduce((s, d) => s + d.client_count, 0)
-  const avgUnit     = clients > 0 ? Math.round(total / clients) : 0
-  const techTotal   = sales.reduce((s, d) => s + d.tech_sales, 0)
-  const retailTotal = sales.reduce((s, d) => s + d.retail_sales, 0)
-  const todayTotal  = sales.filter(d => ds(d.date) === today).reduce((s, d) => s + d.total_sales, 0)
+  const wb          = weekBoundsNow()
+  const monthStart  = currentYm() + '-01'
+  const todayData   = sales.filter(d => ds(d.date) === today)
+  const weekData    = sales.filter(d => ds(d.date) >= wb.from && ds(d.date) <= today)
+  const monthData   = sales.filter(d => ds(d.date) >= monthStart && ds(d.date) <= today)
+  const todayTotal  = todayData.reduce((s, d) => s + d.total_sales, 0)
+  const weekTotal   = weekData.reduce((s, d) => s + d.total_sales, 0)
+  const monthTotal  = monthData.reduce((s, d) => s + d.total_sales, 0)
+
+  const periodData  = period === 'today' ? todayData : period === 'week' ? weekData : monthData
+  const dispTotal   = period === 'today' ? todayTotal : period === 'week' ? weekTotal : monthTotal
+  const clients     = periodData.reduce((s, d) => s + d.client_count, 0)
+  const avgUnit     = clients > 0 ? Math.round(dispTotal / clients) : 0
+  const techTotal   = periodData.reduce((s, d) => s + d.tech_sales, 0)
+  const retailTotal = periodData.reduce((s, d) => s + d.retail_sales, 0)
 
   const bars     = buildWeekBars(sales)
-  const wb       = weekBoundsNow()
-  const weekTotal = sales.filter(d => ds(d.date) >= wb.from && ds(d.date) <= wb.to).reduce((s, d) => s + d.total_sales, 0)
 
   const staffTotal = staffRanking.reduce((s, r) => s + r.total_sales, 0)
+  const periodLabel = period === 'today' ? '本日売上' : period === 'week' ? '今週売上' : '今月売上'
 
   return (
     <div>
       <Picker label="表示中の店舗" selectedId={selectedId} items={stores} onSelect={onSelectId}/>
       <KpiGrid>
         <KpiCard
-          label={<><OrbitSVG size={10}/> {selectedStore?.name ?? ''} · 本日売上</>}
-          yenValue={todayTotal} large full
+          label={<><OrbitSVG size={10}/> {selectedStore?.name ?? ''} · {periodLabel}</>}
+          yenValue={dispTotal} large full
         />
         <KpiCard label="客数"    numValue={clients}/>
         <KpiCard label="客単価"  yenValue={avgUnit}/>
@@ -487,12 +504,13 @@ function StoreView({ period, stores, selectedId, onSelectId, onGoStaff }: {
         <KpiCard label="物販売上" yenValue={retailTotal}/>
       </KpiGrid>
       <WeekBarChart bars={bars} title="週間売上推移" total={weekTotal}/>
-      <SectionTitle text="スタッフ売上" link="詳細 →" onLink={onGoStaff}/>
+      <SectionTitle text="スタッフ売上" link="詳細 →" onLink={() => onGoStaff()}/>
       {staffRanking.slice(0, 3).map((r, i) => (
         <StaffRankRow
           key={r.staff_id} rank={i + 1} name={r.name} initials={r.avatar_initials}
           meta={`${r.client_count}名`} sales={r.total_sales}
           pct={staffTotal > 0 ? `${Math.round(r.total_sales / staffTotal * 100)}%` : '0%'}
+          onClick={() => onGoStaff(r.staff_id)}
         />
       ))}
     </div>
@@ -500,8 +518,9 @@ function StoreView({ period, stores, selectedId, onSelectId, onGoStaff }: {
 }
 
 // ── StaffView ─────────────────────────────────────────────────────────────
-function StaffView({ period }: { period: Period }) {
+function StaffView({ period, initStaffId }: { period: Period; initStaffId?: number }) {
   const claims = getClaims()
+  const [selectedStaffId, setSelectedStaffId] = useState<number | null>(initStaffId ?? claims?.staff_id ?? null)
   const [staffList, setStaffList]   = useState<Staff[]>([])
   const [sales, setSales]           = useState<StaffDailySales[]>([])
   const [aiResult, setAiResult]     = useState<string | null>(null)
@@ -516,20 +535,26 @@ function StaffView({ period }: { period: Period }) {
 
   useEffect(() => {
     const { from, to } = fetchRange(period)
-    apiFetch<StaffDailySales[]>(`/api/v1/sales/staff?from=${from}&to=${to}`)
+    const staffParam = selectedStaffId ? `&staff_id=${selectedStaffId}` : ''
+    apiFetch<StaffDailySales[]>(`/api/v1/sales/staff?from=${from}&to=${to}${staffParam}`)
       .then(data => setSales(Array.isArray(data) ? data : []))
       .catch(() => setSales([]))
-  }, [period])
+  }, [period, selectedStaffId])
 
-  const today       = todayStr()
-  const myStaff     = staffList.find(s => s.id === claims?.staff_id)
-  const todaySales  = sales.filter(d => ds(d.date) === today)
-  const todayTotal  = todaySales.reduce((s, d) => s + d.total_sales, 0)
-  const total       = sales.reduce((s, d) => s + d.total_sales, 0)
-  const clients     = sales.reduce((s, d) => s + d.client_count, 0)
-  const avgUnit     = clients > 0 ? Math.round(total / clients) : 0
-  const retailTotal = sales.reduce((s, d) => s + d.retail_sales, 0)
-  const todayClients = todaySales.reduce((s, d) => s + d.client_count, 0)
+  const today          = todayStr()
+  const wbS            = weekBoundsNow()
+  const monthStartS    = currentYm() + '-01'
+  const displayStaff   = staffList.find(s => s.id === selectedStaffId)
+  const todaySales     = sales.filter(d => ds(d.date) === today)
+  const weekSales      = sales.filter(d => ds(d.date) >= wbS.from && ds(d.date) <= today)
+  const monthSales     = sales.filter(d => ds(d.date) >= monthStartS && ds(d.date) <= today)
+  const periodSales    = period === 'today' ? todaySales : period === 'week' ? weekSales : monthSales
+  const periodTotal    = periodSales.reduce((s, d) => s + d.total_sales, 0)
+  const clients        = periodSales.reduce((s, d) => s + d.client_count, 0)
+  const avgUnit        = clients > 0 ? Math.round(periodTotal / clients) : 0
+  const retailTotal    = periodSales.reduce((s, d) => s + d.retail_sales, 0)
+  const todayClients   = todaySales.reduce((s, d) => s + d.client_count, 0)
+  const staffPeriodLabel = period === 'today' ? '本日' : period === 'week' ? '今週' : '今月'
 
   const MENUS = [
     { name: 'カット + カラー', count: 3, amount: 33000, pct: 80 },
@@ -540,25 +565,34 @@ function StaffView({ period }: { period: Period }) {
   return (
     <div>
       {/* Staff picker */}
-      <div style={{ background: surface, border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '12px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 12, color: muted }}>表示中のスタッフ</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: gold, fontSize: 13, fontFamily: josefin, fontWeight: 100 }}>{myStaff?.name ?? '—'}</span>
-          <ChevronDown/>
+      {(claims?.role === 'owner' || claims?.role === 'admin') ? (
+        <Picker
+          label="表示中のスタッフ"
+          selectedId={selectedStaffId}
+          items={staffList.map(s => ({ id: s.id, name: s.name }))}
+          onSelect={setSelectedStaffId}
+          myId={claims?.staff_id}
+        />
+      ) : (
+        <div style={{ background: surface, border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '12px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 12, color: muted }}>表示中のスタッフ</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ color: gold, fontSize: 13, fontFamily: josefin, fontWeight: 100 }}>{displayStaff?.name ?? '—'}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* my-header */}
       <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '18px 16px', marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${gold}, transparent)` }}/>
-        <div style={{ fontSize: 12, color: muted, marginBottom: 4 }}>本日の売上</div>
+        <div style={{ fontSize: 12, color: muted, marginBottom: 4 }}>{staffPeriodLabel}の売上</div>
         <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 40, color: txt, lineHeight: 1, marginBottom: 14 }}>
-          <span style={{ fontSize: 17, color: muted, marginRight: 3 }}>¥</span>{fmt(todayTotal)}
+          <span style={{ fontSize: 17, color: muted, marginRight: 3 }}>¥</span>{fmt(periodTotal)}
         </div>
         <div style={{ display: 'flex', gap: 20, paddingTop: 12, borderTop: `1px solid ${bdr}` }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <div style={{ fontSize: 10, color: muted }}>担当客数</div>
-            <div style={{ fontSize: 15, fontWeight: 400, color: txt }}>{todayClients}名</div>
+            <div style={{ fontSize: 15, fontWeight: 400, color: txt }}>{clients}名</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <div style={{ fontSize: 10, color: muted }}>客単価</div>
@@ -692,10 +726,17 @@ function CompareView({ view }: { view: View }) {
 
 // ── SalesPage ─────────────────────────────────────────────────────────────
 export default function SalesPage() {
-  const [view, setView]       = useState<View>('all')
+  const loc = useLocation()
+  const [view, setView] = useState<View>(() => {
+    const t = (loc.state as any)?.tab
+    if (t === 'store') return 'store'
+    if (t === 'staff') return 'staff'
+    return 'all'
+  })
   const [period, setPeriod]   = useState<Period>('today')
   const [stores, setStores]   = useState<Store[]>([])
   const [selStoreId, setSelStoreId] = useState<number | null>(null)
+  const [selStaffId, setSelStaffId] = useState<number | null>((loc.state as any)?.staffId ?? null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -776,10 +817,10 @@ export default function SalesPage() {
               stores={stores}
               selectedId={selStoreId}
               onSelectId={setSelStoreId}
-              onGoStaff={() => setView('staff')}
+              onGoStaff={(staffId) => { if (staffId !== undefined) setSelStaffId(staffId); setView('staff') }}
             />
           ) : (
-            <StaffView period={period}/>
+            <StaffView period={period} initStaffId={selStaffId ?? undefined}/>
           )}
         </div>
       </div>

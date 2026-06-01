@@ -123,6 +123,16 @@ function BottomSheet({ onClose, children }: {
     return () => cancelAnimationFrame(id1)
   }, [])
 
+  // 背景スクロール禁止（オーバーレイ上のtouchmoveをパネル外でブロック）
+  useEffect(() => {
+    const overlay = overlayRef.current
+    const panel   = panelRef.current
+    if (!overlay || !panel) return
+    const stop = (e: TouchEvent) => { if (!panel.contains(e.target as Node)) e.preventDefault() }
+    overlay.addEventListener('touchmove', stop, { passive: false })
+    return () => overlay.removeEventListener('touchmove', stop)
+  }, [])
+
   // スワイプで閉じる
   useEffect(() => {
     const el = panelRef.current
@@ -433,7 +443,9 @@ export default function DashboardPage() {
   const [invAlerts,   setInvAlerts]   = useState<InvAlert[]>([])
   const [dealers,     setDealers]     = useState<Dealer[]>([])
   const [orderTarget, setOrderTarget] = useState<InvAlert | null>(null)
-  const [sentOrders,  setSentOrders]  = useState<{ name: string; qty: string; dealer: string }[]>([])
+  const [sentOrders,  setSentOrders]  = useState<{ name: string; qty: string; dealer: string }[]>(() => {
+    try { return JSON.parse(sessionStorage.getItem('dashboard_sent_orders') ?? '[]') } catch { return [] }
+  })
   const [showNotif,   setShowNotif]   = useState(false)
 
   const cardRef      = useRef<HTMLDivElement>(null)
@@ -451,9 +463,12 @@ export default function DashboardPage() {
 
     apiFetch<InvAlert[]>(`/api/v1/inventory?store_id=${storeId}`)
       .then(d => {
+        const sentNames = new Set<string>(
+          JSON.parse(sessionStorage.getItem('dashboard_sent_orders') ?? '[]').map((o: { name: string }) => o.name)
+        )
         setInvAlerts(
           (Array.isArray(d) ? d : [])
-            .filter(i => i.status === '要発注' || i.status === '注意')
+            .filter(i => (i.status === '要発注' || i.status === '注意') && !sentNames.has(i.name))
             .slice(0, 3)
         )
       }).catch(() => {})
@@ -712,32 +727,32 @@ export default function DashboardPage() {
         )}
 
         {/* ─── 発注状況 ─── */}
-        {sentOrders.length > 0 && (
-          <>
-            <SectionTitle
-              label="発注状況" sub="· 本日" link="履歴を見る →"
-              onLink={() => navigate('/inventory')}
-            />
-            {sentOrders.map((o, i) => (
-              <div key={i} style={{
-                background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
-                padding: '14px 16px', marginBottom: 10,
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{o.name} × {o.qty}</div>
-                  <div style={{ fontSize: 12, color: muted, fontFamily: josefin, fontWeight: 100 }}>{o.dealer} · LINE送信済み</div>
-                </div>
-                <div style={{
-                  fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
-                  padding: '3px 10px', borderRadius: 1, whiteSpace: 'nowrap' as const,
-                  background: 'rgba(109,186,142,0.1)', color: green,
-                  border: '1px solid rgba(109,186,142,0.25)',
-                }}>送信済</div>
+        <>
+          <SectionTitle
+            label="発注状況" sub="· 本日" link="履歴を見る →"
+            onLink={() => navigate('/inventory', { state: { tab: 'history' } })}
+          />
+          {sentOrders.length === 0 ? (
+            <div style={{ fontSize: 12, color: muted, fontFamily: zen, padding: '4px 0 8px', lineHeight: 1.7 }}>本日分の発注はありません</div>
+          ) : sentOrders.map((o, i) => (
+            <div key={i} style={{
+              background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
+              padding: '14px 16px', marginBottom: 10,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{o.name} × {o.qty}</div>
+                <div style={{ fontSize: 12, color: muted, fontFamily: josefin, fontWeight: 100 }}>{o.dealer} · LINE送信済み</div>
               </div>
-            ))}
-          </>
-        )}
+              <div style={{
+                fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+                padding: '3px 10px', borderRadius: 1, whiteSpace: 'nowrap' as const,
+                background: 'rgba(109,186,142,0.1)', color: green,
+                border: '1px solid rgba(109,186,142,0.25)',
+              }}>送信済</div>
+            </div>
+          ))}
+        </>
 
         {/* ─── スタッフ売上 ─── */}
         {isManager && staffList.length > 0 && (
@@ -745,7 +760,7 @@ export default function DashboardPage() {
             <SectionTitle label="スタッフ売上" sub="· 本日" link="詳細 →" onLink={() => navigate('/sales', { state: { tab: 'staff' } })} />
             {staffList.map(s => (
               <div key={s.staff_id}
-                onClick={() => navigate('/sales', { state: { tab: 'staff' } })}
+                onClick={() => navigate('/sales', { state: { tab: 'staff', staffId: s.staff_id } })}
                 style={{
                   background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
                   padding: '12px 16px', marginBottom: 8,
@@ -785,7 +800,11 @@ export default function DashboardPage() {
           onDone={(dealerName, qtyStr) => {
             const target = orderTarget
             setInvAlerts(prev => prev.filter(a => a.id !== target.id))
-            setSentOrders(prev => [{ name: target.name, qty: qtyStr, dealer: dealerName }, ...prev])
+            setSentOrders(prev => {
+              const next = [{ name: target.name, qty: qtyStr, dealer: dealerName }, ...prev]
+              sessionStorage.setItem('dashboard_sent_orders', JSON.stringify(next))
+              return next
+            })
           }}
         />
       )}

@@ -32,11 +32,20 @@ func (h *SalesHandler) GetStoreSales(c echo.Context) error {
 	return c.JSON(http.StatusOK, list)
 }
 
-// GET /api/v1/sales/staff?from=2026-05-01&to=2026-05-31
+// GET /api/v1/sales/staff?from=2026-05-01&to=2026-05-31[&staff_id=X]
 func (h *SalesHandler) GetMyStaffSales(c echo.Context) error {
 	claims := claimsFrom(c)
+	staffID := claims.StaffID
+	// owner/admin はクエリパラメータで任意スタッフの売上を取得可能
+	if s := c.QueryParam("staff_id"); s != "" {
+		if claims.Role == "owner" || claims.Role == "admin" {
+			if id, err := strconv.ParseUint(s, 10, 64); err == nil {
+				staffID = id
+			}
+		}
+	}
 	from, to := parseDateRange(c)
-	list, err := h.repo.FindStaffDailySales(c.Request().Context(), claims.StaffID, from, to)
+	list, err := h.repo.FindStaffDailySales(c.Request().Context(), staffID, from, to)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
 	}
