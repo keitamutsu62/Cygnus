@@ -150,6 +150,18 @@ type HistoryOrder = {
   created_at: string; dealer_name: string; contact_method: string
   items: HistoryOrderItem[]
 }
+type MaterialMenuAssoc = { menu_id: number; menu_name: string }
+type Material = {
+  id: number
+  name: string
+  brand: string | null
+  category: string
+  size_amount: number | null
+  size_unit: string | null
+  stock_unit: string
+  menus: MaterialMenuAssoc[]
+}
+type AppMenu = { id: number; name: string; is_active: boolean }
 
 // ─── ユーティリティ ───────────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {
@@ -206,7 +218,10 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
       })
       if (!res.ok) throw new Error()
       setConfirmed(true)
-      setTimeout(() => { onDone(); closeRef.current?.() }, 2000)
+      setTimeout(() => {
+        closeRef.current?.()        // スライドダウンアニメーション開始
+        setTimeout(onDone, 450)     // アニメーション完了後にアンマウント
+      }, 2000)
     } catch {
       alert('発注に失敗しました')
       setLoading(false)
@@ -537,7 +552,413 @@ const STATUS_STYLE: Record<string, React.CSSProperties> = {
   delivered: { background: 'rgba(109,186,142,0.12)', border: '1px solid rgba(109,186,142,0.3)',  color: green },
 }
 
-// ─── 音声入力ボタン ───────────────────────────────────────────────────────────
+// ─── 材料マスタ ────────────────────────────────────────────────────────────────
+const MASTER_CATEGORIES = ['カラー', 'パーマ', 'シャンプー・トリートメント', 'スタイリング', '物販'] as const
+
+function MasterField({
+  placeholder, value, onChange, inputMode,
+}: {
+  placeholder: string; value: string; onChange: (v: string) => void
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']
+}) {
+  return (
+    <input
+      type="text" inputMode={inputMode} placeholder={placeholder} value={value}
+      onChange={e => onChange(e.target.value)}
+      style={{
+        width: '100%', boxSizing: 'border-box' as const,
+        background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.12)`,
+        borderRadius: 2, padding: '10px 12px',
+        fontSize: 16, color: '#e8e4dc', fontFamily: zen, outline: 'none',
+      }}
+    />
+  )
+}
+
+// ─── 材料追加/編集フォーム（BottomSheet） ─────────────────────────────────────
+function MaterialFormSheet({
+  initial, menus, onSave, onClose,
+}: {
+  initial?: Material
+  menus: AppMenu[]
+  onSave: (data: {
+    name: string; brand: string | null; category: string
+    stock_unit: string; threshold: number; menu_ids: number[]
+  }) => Promise<void>
+  onClose: () => void
+}) {
+  const [fname,      setFname]      = useState(initial?.name ?? '')
+  const [fbrand,     setFbrand]     = useState(initial?.brand ?? '')
+  const [fcat,       setFcat]       = useState(initial?.category ?? MASTER_CATEGORIES[0])
+  const [funit,      setFunit]      = useState(initial?.stock_unit ?? '本')
+  const [fthreshold, setFthreshold] = useState('10')
+  const [menuIds,    setMenuIds]    = useState<Set<number>>(
+    new Set(initial?.menus.map(m => m.menu_id) ?? [])
+  )
+  const [saving, setSaving] = useState(false)
+
+  function toggleMenu(id: number) {
+    setMenuIds(prev => {
+      const s = new Set(prev)
+      s.has(id) ? s.delete(id) : s.add(id)
+      return s
+    })
+  }
+
+  async function handleSave(): Promise<boolean> {
+    if (!fname.trim()) return false
+    setSaving(true)
+    try {
+      await onSave({
+        name: fname.trim(),
+        brand: fbrand.trim() || null,
+        category: fcat,
+        stock_unit: funit.trim() || '本',
+        threshold: Number(fthreshold) || 10,
+        menu_ids: Array.from(menuIds),
+      })
+      return true
+    } catch (e) {
+      setSaving(false)
+      alert(e instanceof Error ? e.message : '保存に失敗しました')
+      return false
+    }
+  }
+
+  return (
+    <BottomSheet onClose={onClose}>
+      {close => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* ヘッダー */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <OrbitSVG size={10} />
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>
+              {initial ? '材料を編集' : '新規材料を追加'}
+            </div>
+          </div>
+
+          {/* フォーム */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>材料名</div>
+              <MasterField placeholder="例：Milbon カラー 6NA" value={fname} onChange={setFname} />
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>ブランド</div>
+              <MasterField placeholder="例：Milbon" value={fbrand} onChange={setFbrand} />
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>カテゴリ</div>
+              <select
+                value={fcat}
+                onChange={e => setFcat(e.target.value)}
+                style={{
+                  width: '100%', boxSizing: 'border-box' as const,
+                  background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.12)`,
+                  borderRadius: 2, padding: '10px 12px',
+                  fontSize: 16, color: '#e8e4dc', fontFamily: zen, outline: 'none',
+                  WebkitAppearance: 'none',
+                } as React.CSSProperties}
+              >
+                {MASTER_CATEGORIES.map(c => (
+                  <option key={c} value={c} style={{ background: '#1a1816' }}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>在庫単位</div>
+                <MasterField placeholder="例：本" value={funit} onChange={setFunit} />
+              </div>
+              {!initial && (
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>発注基準数</div>
+                  <MasterField placeholder="例：10" value={fthreshold} onChange={setFthreshold} inputMode="numeric" />
+                </div>
+              )}
+            </div>
+
+            {/* メニュー多選択 */}
+            <div>
+              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 8 }}>使用するメニュー（複数選択可）</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
+                {menus.filter(m => m.is_active).map(m => {
+                  const active = menuIds.has(m.id)
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => toggleMenu(m.id)}
+                      style={{
+                        padding: '6px 14px', borderRadius: 2, cursor: 'pointer',
+                        border: `1px solid ${active ? goldBorder : border}`,
+                        background: active ? goldDim : 'transparent',
+                        color: active ? gold : muted,
+                        fontFamily: zen, fontSize: 12,
+                      }}
+                    >{m.name}</button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={async () => { const ok = await handleSave(); if (ok) close() }}
+            disabled={saving || !fname.trim()}
+            style={{
+              padding: '13px 0', background: saving || !fname.trim() ? 'rgba(200,168,130,0.4)' : gold,
+              border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: 'pointer',
+            }}
+          >{saving ? '保存中...' : '保存する'}</button>
+          <button onClick={close} style={{ background: 'transparent', border: 'none', fontSize: 11, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.1em', textAlign: 'center' }}>キャンセル</button>
+        </div>
+      )}
+    </BottomSheet>
+  )
+}
+
+// ─── 材料詳細シート（BottomSheet） ────────────────────────────────────────────
+function MaterialDetailSheet({
+  material, onClose, onEdit, onDelete,
+}: {
+  material: Material
+  onClose: () => void
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  return (
+    <BottomSheet onClose={onClose}>
+      {close => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {/* ヘッダー */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+            <OrbitSVG size={10} />
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>材料詳細</div>
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{material.name}</div>
+
+          {/* 詳細情報 */}
+          <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, marginBottom: 16 }}>
+            {material.brand && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${border}` }}>
+                <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>ブランド</div>
+                <div style={{ fontSize: 12, color: '#e8e4dc', fontFamily: zen }}>{material.brand}</div>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px' }}>
+              <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>カテゴリ</div>
+              <div style={{ fontSize: 12, color: '#e8e4dc', fontFamily: zen }}>{material.category}</div>
+            </div>
+          </div>
+
+          {/* 使用メニュー */}
+          {(material.menus ?? []).length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 10 }}>使用するメニュー</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
+                {(material.menus ?? []).map(m => (
+                  <div
+                    key={m.menu_id}
+                    style={{
+                      padding: '6px 14px', borderRadius: 2,
+                      border: `1px solid ${goldBorder}`, background: goldDim,
+                      color: gold, fontFamily: zen, fontSize: 12,
+                    }}
+                  >{m.menu_name}</div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => { close(); setTimeout(onEdit, 450) }}
+            style={{ padding: '13px 0', background: gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: 'pointer', marginBottom: 8 }}
+          >編集する</button>
+          <button
+            onClick={() => { close(); setTimeout(onDelete, 450) }}
+            style={{ padding: '13px 0', background: 'transparent', border: '1px solid rgba(224,112,96,0.3)', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#e07060', cursor: 'pointer' }}
+          >削除する</button>
+        </div>
+      )}
+    </BottomSheet>
+  )
+}
+
+// ─── 材料マスタ画面（フルページ） ────────────────────────────────────────────
+function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onChanged: () => void }) {
+  const [materials,  setMaterials]  = useState<Material[]>([])
+  const [menus,      setMenus]      = useState<AppMenu[]>([])
+  const [loading,    setLoading]    = useState(true)
+  const [detailItem, setDetailItem] = useState<Material | null>(null)
+  const [editItem,   setEditItem]   = useState<Material | null>(null)
+  const [addOpen,    setAddOpen]    = useState(false)
+
+  async function load() {
+    setLoading(true)
+    const [matsResult, msResult] = await Promise.allSettled([
+      apiFetch<Material[]>('/api/v1/materials'),
+      apiFetch<AppMenu[]>('/api/v1/menus'),
+    ])
+    if (matsResult.status === 'fulfilled') setMaterials(Array.isArray(matsResult.value) ? matsResult.value : [])
+    if (msResult.status === 'fulfilled')  setMenus(Array.isArray(msResult.value) ? msResult.value : [])
+    setLoading(false)
+  }
+  useEffect(() => { load() }, [])
+
+  async function handleSave(data: {
+    name: string; brand: string | null; category: string
+    stock_unit: string; threshold: number; menu_ids: number[]
+  }) {
+    const res = await api('/api/v1/materials', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('保存に失敗しました')
+    await load()
+    onChanged()
+  }
+
+  async function handleUpdate(data: {
+    name: string; brand: string | null; category: string
+    stock_unit: string; threshold: number; menu_ids: number[]
+  }) {
+    if (!editItem) return
+    const res = await api(`/api/v1/materials/${editItem.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('更新に失敗しました')
+    await load()
+    onChanged()
+  }
+
+  async function handleDelete(id: number) {
+    const res = await api(`/api/v1/materials/${id}`, { method: 'DELETE' })
+    if (!res.ok) { alert('削除に失敗しました'); return }
+    setDetailItem(null)
+    await load()
+    onChanged()
+  }
+
+  const registeredCats = new Set(materials.map(m => m.category))
+  const orderedCats    = MASTER_CATEGORIES.filter(c => registeredCats.has(c))
+  const otherCats      = materials.map(m => m.category).filter(c => !MASTER_CATEGORIES.includes(c as typeof MASTER_CATEGORIES[number]))
+  const allCats        = [...orderedCats, ...Array.from(new Set(otherCats))]
+  const missingCats    = MASTER_CATEGORIES.filter(c => !registeredCats.has(c))
+
+  return (
+    <>
+      {/* トップバー */}
+      <div style={{ padding: '14px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(232,228,220,0.6)', padding: 4, display: 'flex' }}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <polyline points="13,4 7,10 13,16" stroke="#e8e4dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <div style={{ fontSize: 16, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>メニュー × 材料マスタ</div>
+        </div>
+        <button
+          onClick={() => setAddOpen(true)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: gold, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.1em' }}
+        >+ 材料追加</button>
+      </div>
+
+      {/* リスト */}
+      <div style={{ padding: '16px 20px 40px' }}>
+        {loading ? (
+          <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 12, fontFamily: josefin }}>Loading...</div>
+        ) : materials.length === 0 ? (
+          <div style={{ background: goldDim, border: `1px dashed ${goldBorder}`, borderRadius: 2, padding: 20, textAlign: 'center' }}>
+            <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 10, lineHeight: 1.7 }}>材料が登録されていません</div>
+            <button onClick={() => setAddOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold }}>+ 材料を追加する</button>
+          </div>
+        ) : (
+          <>
+            {allCats.map(cat => {
+              const catItems = materials.filter(m => m.category === cat)
+              if (catItems.length === 0) return null
+              return (
+                <div key={cat} style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 0 8px' }}>
+                    <OrbitSVG size={10} />
+                    <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.15em', color: muted }}>{cat}</span>
+                  </div>
+                  <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2 }}>
+                    {catItems.map((m, i) => {
+                      const menuLabel = m.menus?.length > 0
+                        ? m.menus.map(x => x.menu_name).join('、')
+                        : null
+                      const sub = [m.brand, menuLabel].filter(Boolean).join(' · ')
+                      return (
+                        <div
+                          key={m.id}
+                          onClick={() => setDetailItem(m)}
+                          style={{
+                            display: 'flex', alignItems: 'center', padding: '14px 16px', cursor: 'pointer',
+                            borderBottom: i < catItems.length - 1 ? `1px solid ${border}` : 'none',
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
+                            <div style={{ fontSize: 13, color: '#e8e4dc', fontFamily: zen, marginBottom: sub ? 3 : 0 }}>{m.name}</div>
+                            {sub && <div style={{ fontSize: 11, color: muted, fontFamily: zen, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{sub}</div>}
+                          </div>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+                            <polyline points="6,4 10,8 6,12" stroke="#e8e4dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+
+            {/* 未登録カテゴリの案内 */}
+            {missingCats.length > 0 && (
+              <div style={{ background: goldDim, border: `1px dashed ${goldBorder}`, borderRadius: 2, padding: 16, textAlign: 'center', marginTop: 8 }}>
+                <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 8, lineHeight: 1.7 }}>
+                  {missingCats.join('・')}カテゴリの材料は未登録です
+                </div>
+                <button onClick={() => setAddOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold }}>+ 材料を追加する</button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* 詳細シート */}
+      {detailItem && (
+        <MaterialDetailSheet
+          material={detailItem}
+          onClose={() => setDetailItem(null)}
+          onEdit={() => { setEditItem(detailItem); setDetailItem(null) }}
+          onDelete={() => { handleDelete(detailItem.id) }}
+        />
+      )}
+
+      {/* 編集フォーム */}
+      {editItem && (
+        <MaterialFormSheet
+          initial={editItem}
+          menus={menus}
+          onSave={handleUpdate}
+          onClose={() => setEditItem(null)}
+        />
+      )}
+
+      {/* 追加フォーム */}
+      {addOpen && (
+        <MaterialFormSheet
+          menus={menus}
+          onSave={handleSave}
+          onClose={() => setAddOpen(false)}
+        />
+      )}
+    </>
+  )
+}
+
 function MicButton({ onResult }: { onResult: (text: string) => void }) {
   const [listening, setListening] = useState(false)
   const recRef = useRef<any>(null)
@@ -765,11 +1186,21 @@ export default function InventoryPage() {
   const [toastMsg,       setToastMsg]        = useState('')
   const [toastVisible,   setToastVisible]    = useState(false)
   const [scannerOpen,    setScannerOpen]     = useState(false)
+  const [view,           setView]            = useState<'main' | 'master'>('main')
 
   function showToast(msg: string) {
     setToastMsg(msg)
     setToastVisible(true)
     setTimeout(() => setToastVisible(false), 3000)
+  }
+
+  function reloadInventory() {
+    if (!currentStoreId) return
+    setLoading(true)
+    apiFetch<InventoryItem[]>(`/api/v1/inventory?store_id=${currentStoreId}`)
+      .then(data => setItems(Array.isArray(data) ? data : []))
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false))
   }
 
   // 初期データ読み込み
@@ -836,6 +1267,17 @@ export default function InventoryPage() {
       })
     return Array.from(map.entries()).map(([label, orders]) => ({ label, orders }))
   })()
+
+  if (view === 'master') {
+    return (
+      <AppLayout>
+        <MaterialMasterScreen
+          onBack={() => setView('main')}
+          onChanged={reloadInventory}
+        />
+      </AppLayout>
+    )
+  }
 
   return (
     <AppLayout>
@@ -957,7 +1399,7 @@ export default function InventoryPage() {
           {/* 在庫リスト */}
           <div style={{ padding: '0 20px 40px' }}>
             {/* Master リンク */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '12px 0 4px', padding: '12px 16px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, cursor: 'pointer' }}>
+            <div onClick={() => setView('master')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '12px 0 4px', padding: '12px 16px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, cursor: 'pointer' }}>
               <div>
                 <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold, opacity: 0.7, marginBottom: 3 }}>// Master</div>
                 <div style={{ fontSize: 13, color: gold }}>メニュー × 材料マスタを編集</div>

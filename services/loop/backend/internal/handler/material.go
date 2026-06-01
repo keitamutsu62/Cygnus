@@ -32,13 +32,14 @@ func (h *MaterialHandler) List(c echo.Context) error {
 func (h *MaterialHandler) Create(c echo.Context) error {
 	claims := claimsFrom(c)
 	var req struct {
-		Name       string  `json:"name"`
-		Brand      *string `json:"brand"`
-		Category   string  `json:"category"`
-		SizeAmount *uint32 `json:"size_amount"`
-		SizeUnit   *string `json:"size_unit"`
-		StockUnit  string  `json:"stock_unit"`
-		Threshold  uint32  `json:"threshold"`
+		Name       string   `json:"name"`
+		Brand      *string  `json:"brand"`
+		Category   string   `json:"category"`
+		SizeAmount *uint32  `json:"size_amount"`
+		SizeUnit   *string  `json:"size_unit"`
+		StockUnit  string   `json:"stock_unit"`
+		Threshold  uint32   `json:"threshold"`
+		MenuIDs    []uint64 `json:"menu_ids"`
 	}
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
@@ -58,6 +59,7 @@ func (h *MaterialHandler) Create(c echo.Context) error {
 		SizeUnit:   req.SizeUnit,
 		StockUnit:  req.StockUnit,
 		Threshold:  req.Threshold,
+		MenuIDs:    req.MenuIDs,
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
@@ -73,12 +75,13 @@ func (h *MaterialHandler) Update(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
 	}
 	var req struct {
-		Name       string  `json:"name"`
-		Brand      *string `json:"brand"`
-		Category   string  `json:"category"`
-		SizeAmount *uint32 `json:"size_amount"`
-		SizeUnit   *string `json:"size_unit"`
-		StockUnit  string  `json:"stock_unit"`
+		Name       string   `json:"name"`
+		Brand      *string  `json:"brand"`
+		Category   string   `json:"category"`
+		SizeAmount *uint32  `json:"size_amount"`
+		SizeUnit   *string  `json:"size_unit"`
+		StockUnit  string   `json:"stock_unit"`
+		MenuIDs    []uint64 `json:"menu_ids"`
 	}
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
@@ -92,6 +95,7 @@ func (h *MaterialHandler) Update(c echo.Context) error {
 		SizeAmount: req.SizeAmount,
 		SizeUnit:   req.SizeUnit,
 		StockUnit:  req.StockUnit,
+		MenuIDs:    req.MenuIDs,
 	})
 	if err != nil {
 		if errors.Is(err, apierror.ErrNotFound) {

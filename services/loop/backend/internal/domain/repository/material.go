@@ -10,8 +10,10 @@ type MaterialRepository interface {
 	Create(ctx context.Context, m *model.Material) error
 	FindByID(ctx context.Context, id uint64) (*model.Material, error)
 	FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Material, error)
+	FindBySalonIDWithMenus(ctx context.Context, salonID uint64) ([]*model.MaterialWithMenus, error)
 	Update(ctx context.Context, m *model.Material) error
 	Delete(ctx context.Context, id uint64) error
+	SetMenuAssociations(ctx context.Context, materialID uint64, menuIDs []uint64) error
 }
 
 type InventoryWriteRepository interface {

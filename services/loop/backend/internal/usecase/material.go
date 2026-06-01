@@ -23,8 +23,8 @@ func NewMaterialUsecase(
 	return &MaterialUsecase{materialRepo: materialRepo, inventoryRepo: inventoryRepo, storeRepo: storeRepo}
 }
 
-func (u *MaterialUsecase) List(ctx context.Context, salonID uint64) ([]*model.Material, error) {
-	return u.materialRepo.FindBySalonID(ctx, salonID)
+func (u *MaterialUsecase) List(ctx context.Context, salonID uint64) ([]*model.MaterialWithMenus, error) {
+	return u.materialRepo.FindBySalonIDWithMenus(ctx, salonID)
 }
 
 type CreateMaterialInput struct {
@@ -36,6 +36,7 @@ type CreateMaterialInput struct {
 	SizeUnit   *string
 	StockUnit  string
 	Threshold  uint32 // 初期発注点。全店舗の在庫行に適用
+	MenuIDs    []uint64
 }
 
 // Create は材料を登録し、サロンの全店舗に在庫行を自動生成する。
@@ -61,6 +62,10 @@ func (u *MaterialUsecase) Create(ctx context.Context, in CreateMaterialInput) (*
 			_ = u.inventoryRepo.CreateForStore(ctx, sid, m.ID, in.Threshold)
 		}
 	}
+	// メニュー関連付け
+	if len(in.MenuIDs) > 0 {
+		_ = u.materialRepo.SetMenuAssociations(ctx, m.ID, in.MenuIDs)
+	}
 	return m, nil
 }
 
@@ -73,6 +78,7 @@ type UpdateMaterialInput struct {
 	SizeAmount *uint32
 	SizeUnit   *string
 	StockUnit  string
+	MenuIDs    []uint64
 }
 
 func (u *MaterialUsecase) Update(ctx context.Context, in UpdateMaterialInput) (*model.Material, error) {
@@ -92,6 +98,8 @@ func (u *MaterialUsecase) Update(ctx context.Context, in UpdateMaterialInput) (*
 	if err := u.materialRepo.Update(ctx, m); err != nil {
 		return nil, fmt.Errorf("MaterialUsecase.Update: %w", err)
 	}
+	// メニュー関連付けを上書き（空配列なら全解除）
+	_ = u.materialRepo.SetMenuAssociations(ctx, m.ID, in.MenuIDs)
 	return m, nil
 }
 

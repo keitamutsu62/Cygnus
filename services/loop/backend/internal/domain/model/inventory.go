@@ -13,6 +13,23 @@ type Material struct {
 	StockUnit  string  `db:"stock_unit"`
 }
 
+type MenuAssoc struct {
+	MenuID   uint64 `db:"menu_id"   json:"menu_id"`
+	MenuName string `db:"menu_name" json:"menu_name"`
+}
+
+type MaterialWithMenus struct {
+	ID         uint64      `json:"id"`
+	SalonID    uint64      `json:"salon_id"`
+	Name       string      `json:"name"`
+	Brand      *string     `json:"brand"`
+	Category   string      `json:"category"`
+	SizeAmount *uint32     `json:"size_amount"`
+	SizeUnit   *string     `json:"size_unit"`
+	StockUnit  string      `json:"stock_unit"`
+	Menus      []MenuAssoc `json:"menus"`
+}
+
 type Inventory struct {
 	ID         uint64    `db:"id"`
 	StoreID    uint64    `db:"store_id"`

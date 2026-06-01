@@ -59,6 +59,71 @@ func (r *MaterialRepository) Delete(ctx context.Context, id uint64) error {
 	return err
 }
 
+func (r *MaterialRepository) FindBySalonIDWithMenus(ctx context.Context, salonID uint64) ([]*model.MaterialWithMenus, error) {
+	type row struct {
+		ID         uint64  `db:"id"`
+		SalonID    uint64  `db:"salon_id"`
+		Name       string  `db:"name"`
+		Brand      *string `db:"brand"`
+		Category   string  `db:"category"`
+		SizeAmount *uint32 `db:"size_amount"`
+		SizeUnit   *string `db:"size_unit"`
+		StockUnit  string  `db:"stock_unit"`
+		MenuID     uint64  `db:"menu_id"`
+		MenuName   string  `db:"menu_name"`
+	}
+	var rows []row
+	err := r.db.SelectContext(ctx, &rows, `
+		SELECT m.id, m.salon_id, m.name, m.brand, m.category, m.size_amount, m.size_unit, m.stock_unit,
+		       COALESCE(mn.id, 0) AS menu_id, COALESCE(mn.name, '') AS menu_name
+		FROM materials m
+		LEFT JOIN menu_materials mm ON mm.material_id = m.id
+		LEFT JOIN menus mn ON mn.id = mm.menu_id
+		WHERE m.salon_id = ?
+		ORDER BY m.category, m.name, mm.id`, salonID)
+	if err != nil {
+		return nil, fmt.Errorf("MaterialRepository.FindBySalonIDWithMenus: %w", err)
+	}
+	// 行を material ごとに集約
+	indexed := make(map[uint64]*model.MaterialWithMenus)
+	var order []uint64
+	for _, r := range rows {
+		if _, exists := indexed[r.ID]; !exists {
+			indexed[r.ID] = &model.MaterialWithMenus{
+				ID: r.ID, SalonID: r.SalonID, Name: r.Name, Brand: r.Brand,
+				Category: r.Category, SizeAmount: r.SizeAmount, SizeUnit: r.SizeUnit, StockUnit: r.StockUnit,
+				Menus: []model.MenuAssoc{},
+			}
+			order = append(order, r.ID)
+		}
+		if r.MenuID != 0 {
+			indexed[r.ID].Menus = append(indexed[r.ID].Menus, model.MenuAssoc{MenuID: r.MenuID, MenuName: r.MenuName})
+		}
+	}
+	result := make([]*model.MaterialWithMenus, 0, len(order))
+	for _, id := range order {
+		result = append(result, indexed[id])
+	}
+	return result, nil
+}
+
+func (r *MaterialRepository) SetMenuAssociations(ctx context.Context, materialID uint64, menuIDs []uint64) error {
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("MaterialRepository.SetMenuAssociations begin: %w", err)
+	}
+	defer tx.Rollback()
+	if _, err := tx.ExecContext(ctx, `DELETE FROM menu_materials WHERE material_id = ?`, materialID); err != nil {
+		return fmt.Errorf("MaterialRepository.SetMenuAssociations delete: %w", err)
+	}
+	for _, menuID := range menuIDs {
+		if _, err := tx.ExecContext(ctx, `INSERT INTO menu_materials (menu_id, material_id) VALUES (?, ?)`, menuID, materialID); err != nil {
+			return fmt.Errorf("MaterialRepository.SetMenuAssociations insert: %w", err)
+		}
+	}
+	return tx.Commit()
+}
+
 // ─── InventoryWriteRepository ────────────────────────────────
 
 type InventoryWriteRepository struct{ db *sqlx.DB }
