@@ -60,6 +60,7 @@ func main() {
 	materialUC      := usecase.NewMaterialUsecase(materialRepo, invtWriteRepo, storeRepo)
 	dealerUC        := usecase.NewDealerUsecase(dealerRepo, orderRepo)
 	retailSaleUC    := usecase.NewRetailSaleUsecase(retailSaleRepo, salesRepo)
+	aiUC            := usecase.NewAIUsecase(salesRepo, staffRepo)
 
 	// ─── ハンドラ ──────────────────────────────────────────────
 	authH        := handler.NewAuthHandler(authUC, cfg.FrontendURL)
@@ -75,6 +76,7 @@ func main() {
 	dealerH      := handler.NewDealerHandler(dealerUC)
 	salesH          := handler.NewSalesHandler(salesRepo)
 	retailSaleH     := handler.NewRetailSaleHandler(retailSaleUC)
+	aiH             := handler.NewAIHandler(aiUC)
 
 	// ─── Echo ─────────────────────────────────────────────────
 	e := echo.New()
@@ -160,6 +162,10 @@ func main() {
 	// 物販記録（会計時に記録 → daily_sales / staff_daily_sales の retail_sales を自動加算）
 	api.POST("/retail-sales", retailSaleH.Create)
 	api.GET("/retail-sales", retailSaleH.List)
+
+	// AI 分析（スタッフの得意領域）
+	// TODO: ANTHROPIC_API_KEY を設定すれば usecase/ai.go の stub が実 API に切り替わる
+	api.POST("/staff/analysis", aiH.Analyze)
 
 	// STUDIO
 	api.GET("/studio/profile", studioH.GetMyProfile)
