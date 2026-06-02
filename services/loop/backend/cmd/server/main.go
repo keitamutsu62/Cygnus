@@ -105,6 +105,7 @@ func main() {
 	api.POST("/auth/invite", authH.Invite)
 	api.GET("/staffs", staffH.List)
 	api.GET("/staffs/:id", staffH.Get)
+	api.PATCH("/staffs/:id", staffH.Update)
 
 	// 店舗管理（RESERVE の空き枠計算が business_hours を参照）
 	api.GET("/stores", storeH.List)

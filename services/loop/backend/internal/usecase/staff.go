@@ -40,6 +40,33 @@ type CreateStaffInput struct {
 	Role     model.StaffRole
 }
 
+type UpdateStaffInput struct {
+	ID       uint64
+	SalonID  uint64
+	Role     model.StaffRole
+	IsActive *bool
+}
+
+func (u *StaffUsecase) UpdateStaff(ctx context.Context, in UpdateStaffInput) (*model.Staff, error) {
+	s, err := u.staffRepo.FindByID(ctx, in.ID)
+	if err != nil {
+		return nil, fmt.Errorf("StaffUsecase.UpdateStaff: not found")
+	}
+	if s.SalonID != in.SalonID {
+		return nil, fmt.Errorf("StaffUsecase.UpdateStaff: forbidden")
+	}
+	if in.Role != "" {
+		s.Role = in.Role
+	}
+	if in.IsActive != nil {
+		s.IsActive = *in.IsActive
+	}
+	if err := u.staffRepo.Update(ctx, s); err != nil {
+		return nil, fmt.Errorf("StaffUsecase.UpdateStaff: %w", err)
+	}
+	return s, nil
+}
+
 func (u *StaffUsecase) CreateStaff(ctx context.Context, in CreateStaffInput) (*model.Staff, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 	if err != nil {

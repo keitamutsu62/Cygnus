@@ -20,11 +20,11 @@ const greenDim   = 'rgba(109,186,142,0.1)'
 const purpleDim  = 'rgba(150,100,220,0.1)'
 const purple     = '#9664DC'
 const grayDim    = 'rgba(232,228,220,0.06)'
-const alert      = '#e07060'
+const alertColor = '#e07060'
 
 type Dealer = { id: number; name: string; contact_method: 'LINE' | 'email'; contact_info: string }
 type BusinessHours = { open_time: string; close_time: string; closed_weekday: number | null }
-type SubPage = 'profile' | 'hours' | null
+type SubPage = 'profile' | 'hours' | 'staff-list' | 'staff-detail' | 'pos' | null
 
 // ─── 招待モーダル ──────────────────────────────────────────────────────────────
 function InviteModal({ onClose }: { onClose: () => void }) {
@@ -43,7 +43,7 @@ function InviteModal({ onClose }: { onClose: () => void }) {
       if (!res.ok) throw new Error()
       onClose()
     } catch {
-      alert('招待の送信に失敗しました')
+      window.alert('招待の送信に失敗しました')
     } finally {
       setSending(false)
     }
@@ -102,6 +102,14 @@ const PosCardIcon = ({ color }: { color: string }) => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <rect x="1" y="3" width="12" height="9" rx="1.5" stroke={color} strokeWidth="1.1"/>
     <path d="M4 3V2C4 1.4 4.4 1 5 1H9C9.6 1 10 1.4 10 2V3" stroke={color} strokeWidth="1.1"/>
+  </svg>
+)
+const MenuListIcon = ({ color }: { color: string }) => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <rect x="1" y="2" width="12" height="10" rx="1.5" stroke={color} strokeWidth="1.1"/>
+    <line x1="4" y1="5"   x2="10" y2="5"   stroke={color} strokeWidth="1" strokeLinecap="round"/>
+    <line x1="4" y1="7.5" x2="10" y2="7.5" stroke={color} strokeWidth="1" strokeLinecap="round"/>
+    <line x1="4" y1="10"  x2="7"  y2="10"  stroke={color} strokeWidth="1" strokeLinecap="round"/>
   </svg>
 )
 const BellIcon = ({ color }: { color: string }) => (
@@ -206,7 +214,7 @@ function SettingRow({
         </div>
       )}
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 400, color: danger ? alert : txt, fontFamily: zen, marginBottom: value ? 2 : 0 }}>{label}</div>
+        <div style={{ fontSize: 13, fontWeight: 400, color: danger ? alertColor : txt, fontFamily: zen, marginBottom: value ? 2 : 0 }}>{label}</div>
         {value && <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>{value}</div>}
       </div>
       {badge}
@@ -288,7 +296,7 @@ function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
       if (!res.ok) throw new Error()
       onDone()
     } catch {
-      alert('保存に失敗しました')
+      window.alert('保存に失敗しました')
       setSaving(false)
     }
   }
@@ -328,6 +336,180 @@ function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
           {saving ? '保存中...' : '追加する'}
         </button>
       </div>
+    </div>
+  )
+}
+
+// ─── スタッフ詳細画面 ──────────────────────────────────────────────────────────
+function StaffDetail({
+  staff,
+  storeList,
+  onBack,
+  onUpdated,
+}: {
+  staff: Staff
+  storeList: Store[]
+  onBack: () => void
+  onUpdated: () => void
+}) {
+  const claims    = getClaims()
+  const [rolePickerOpen, setRolePickerOpen] = useState(false)
+  const [deactivateOpen, setDeactivateOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  const storeName = storeList.find(s => s.id === staff.store_id)?.name ?? '—'
+  const initials  = staff.avatar_initials ?? staff.name.slice(0, 2)
+  const isSelf    = claims?.staff_id === staff.id
+
+  async function changeRole(role: StaffRole) {
+    setSaving(true)
+    setRolePickerOpen(false)
+    try {
+      const res = await api(`/api/v1/staffs/${staff.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role }),
+      })
+      if (!res.ok) throw new Error()
+      onUpdated()
+    } catch {
+      window.alert('役職の変更に失敗しました')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function toggleActive() {
+    setSaving(true)
+    setDeactivateOpen(false)
+    try {
+      const res = await api(`/api/v1/staffs/${staff.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_active: !staff.is_active }),
+      })
+      if (!res.ok) throw new Error()
+      onUpdated()
+    } catch {
+      window.alert('ステータスの変更に失敗しました')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const isActive = staff.is_active
+
+  return (
+    <div>
+      <BackHeader title="スタッフ詳細" onBack={onBack} />
+
+      {/* アバター */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '24px 0 32px' }}>
+        <div style={{ width: 72, height: 72, borderRadius: '50%', background: goldDim, border: `2px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 24, color: gold, opacity: isActive ? 1 : 0.4 }}>
+          {initials}
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 18, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 4 }}>{staff.name}</div>
+          <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[staff.role]}</div>
+        </div>
+        {/* ステータスバッジ（is_active 連動） */}
+        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1,
+          background: isActive ? greenDim : 'rgba(224,112,96,0.1)',
+          color: isActive ? green : alertColor,
+          border: isActive ? '1px solid rgba(109,186,142,0.3)' : '1px solid rgba(224,112,96,0.3)',
+        }}>
+          {isActive ? '有効' : '無効'}
+        </div>
+      </div>
+
+      {/* アカウント情報 */}
+      <GroupLabel>アカウント情報</GroupLabel>
+      <SettingGroup>
+        <SettingRow label="氏名" value={staff.name} />
+        <SettingRow label="メールアドレス" value={staff.email} />
+        <SettingRow label="所属店舗" value={storeName} />
+        <SettingRow label="ステータス" value={isActive ? '有効（ログイン可能）' : '無効（ログイン停止中）'} />
+        <SettingRow
+          label="役職"
+          value={ROLE_LABEL[staff.role]}
+          onClick={isSelf ? undefined : () => setRolePickerOpen(true)}
+          last
+        />
+      </SettingGroup>
+
+      {/* アカウント操作 */}
+      {!isSelf && (
+        <>
+          <GroupLabel>アカウント操作</GroupLabel>
+          <SettingGroup>
+            <SettingRow
+              label={isActive ? '無効にする' : '有効に戻す'}
+              value={isActive ? 'このサロンへのアクセスを停止します' : 'ログインを再び許可します'}
+              onClick={() => setDeactivateOpen(true)}
+              danger={isActive}
+              last
+            />
+          </SettingGroup>
+        </>
+      )}
+
+      {saving && (
+        <div style={{ textAlign: 'center', color: muted, fontSize: 11, fontFamily: josefin, padding: '8px 0' }}>更新中...</div>
+      )}
+
+      {/* 役職変更ピッカー */}
+      {rolePickerOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setRolePickerOpen(false)}>
+          <div style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 40px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }}/>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 16 }}>役職を変更</div>
+            {(['owner', 'admin', 'staff'] as StaffRole[]).map(r => (
+              <div
+                key={r}
+                onClick={() => changeRole(r)}
+                style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: 13, color: r === staff.role ? gold : txt, fontFamily: zen }}>{ROLE_LABEL[r]}</div>
+                {r === staff.role && (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <polyline points="2.5,7 5.5,10.5 11.5,3.5" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+            ))}
+            <button onClick={() => setRolePickerOpen(false)} style={{ width: '100%', marginTop: 12, padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}>キャンセル</button>
+          </div>
+        </div>
+      )}
+
+      {/* 有効/無効切り替え確認 */}
+      {deactivateOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }} onClick={() => setDeactivateOpen(false)}>
+          <div style={{ width: '100%', maxWidth: 400, background: '#1a1816', border: `1px solid ${goldBorder}`, borderRadius: 4, padding: 24 }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 15, color: txt, fontFamily: zen, marginBottom: 8 }}>
+              {isActive ? 'アカウントを無効にしますか？' : 'アカウントを有効に戻しますか？'}
+            </div>
+            <div style={{ fontSize: 12, color: muted, fontFamily: zen, lineHeight: 1.8, marginBottom: 20 }}>
+              {isActive
+                ? <>{staff.name} のアクセスを停止します。<br/>この操作は後から取り消せます。</>
+                : <>{staff.name} のログインを再び許可します。</>
+              }
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setDeactivateOpen(false)}
+                style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={toggleActive}
+                style={{ flex: 2, padding: '11px 0', background: isActive ? 'rgba(224,112,96,0.15)' : greenDim, border: `1px solid ${isActive ? 'rgba(224,112,96,0.4)' : 'rgba(109,186,142,0.3)'}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: isActive ? alertColor : green, cursor: 'pointer' }}
+              >
+                {isActive ? '無効にする' : '有効に戻す'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -386,6 +568,22 @@ function ProfileSettings({ onBack }: { onBack: () => void }) {
         <SettingRow label="パスワード変更" onClick={() => {}} />
         <SettingRow label="ログアウト" onClick={handleLogout} danger last />
       </SettingGroup>
+
+      {/* アカウント削除 */}
+      <GroupLabel>アカウント削除</GroupLabel>
+      <SettingGroup>
+        <SettingRow
+          label="アカウントを削除する"
+          value="Cygnusアカウントとデータを完全に削除します"
+          onClick={() => {
+            if (window.confirm('アカウントを削除しますか？\nこの操作は取り消せません。')) {
+              window.alert('バックエンド接続後に対応予定です')
+            }
+          }}
+          danger
+          last
+        />
+      </SettingGroup>
     </div>
   )
 }
@@ -425,7 +623,7 @@ function HoursSettings({ onBack }: { onBack: () => void }) {
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
     } catch {
-      alert('保存に失敗しました')
+      window.alert('保存に失敗しました')
     } finally {
       setSaving(false)
     }
@@ -488,23 +686,268 @@ function HoursSettings({ onBack }: { onBack: () => void }) {
   )
 }
 
+// ─── スタッフ一覧サブページ ────────────────────────────────────────────────────
+function StaffListSettings({
+  staffList,
+  storeList,
+  onSelectStaff,
+  onInvite,
+  onBack,
+}: {
+  staffList: Staff[]
+  storeList: Store[]
+  onSelectStaff: (s: Staff) => void
+  onInvite: () => void
+  onBack: () => void
+}) {
+  return (
+    <div>
+      <BackHeader title="スタッフ管理" onBack={onBack} />
+      <GroupLabel>メンバー ({staffList.length}名)</GroupLabel>
+      <SettingGroup>
+        {staffList.map(s => {
+          const storeName = storeList.find(st => st.id === s.store_id)?.name ?? '—'
+          const av = s.avatar_initials ?? s.name.slice(0, 1)
+          return (
+            <div
+              key={s.id}
+              onClick={() => onSelectStaff(s)}
+              style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
+            >
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 11, color: gold, flexShrink: 0, opacity: s.is_active ? 1 : 0.4 }}>
+                {av}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 400, color: s.is_active ? txt : muted, fontFamily: zen, marginBottom: 2 }}>{s.name}</div>
+                <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[s.role]}</div>
+              </div>
+              <div style={{
+                fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em',
+                textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1,
+                background: s.is_active ? greenDim : 'rgba(224,112,96,0.1)',
+                color: s.is_active ? green : alertColor,
+                border: s.is_active ? '1px solid rgba(109,186,142,0.3)' : '1px solid rgba(224,112,96,0.3)',
+              }}>
+                {s.is_active ? '有効' : '無効'}
+              </div>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+                <polyline points="6,4 10,8 6,12" stroke={muted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          )
+        })}
+        <div onClick={onInvite} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <line x1="7" y1="2" x2="7" y2="12" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
+            <line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <div style={{ fontSize: 13, color: gold, fontFamily: zen }}>スタッフを招待する</div>
+        </div>
+      </SettingGroup>
+    </div>
+  )
+}
+
+type PosType = 'none' | 'smaregi' | 'square'
+const POS_LABEL: Record<PosType, string> = { none: '未設定', smaregi: 'スマレジ', square: 'Square' }
+
+// ─── Square設定フォーム ───────────────────────────────────────────────────────
+function SquareSettings({ inputStyle }: { inputStyle: React.CSSProperties }) {
+  const [locationId, setLocationId] = useState('')
+  const [token,      setToken]      = useState('')
+  const [showToken,  setShowToken]  = useState(false)
+
+  return (
+    <SettingGroup>
+      <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
+        <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>Location ID</div>
+        <input
+          type="text" value={locationId} onChange={e => setLocationId(e.target.value)}
+          placeholder="例: LXXXXXXXXXXXXXXXXX"
+          style={inputStyle}
+        />
+      </div>
+      <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>Access Token</div>
+          <button
+            onClick={() => setShowToken(v => !v)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em' }}
+          >
+            {showToken ? '隠す' : '表示'}
+          </button>
+        </div>
+        <input
+          type={showToken ? 'text' : 'password'}
+          value={token} onChange={e => setToken(e.target.value)}
+          placeholder="EAAAxxxxxxxxxxxxxxxxxxxxxxxxx"
+          style={inputStyle}
+        />
+      </div>
+      <div style={{ padding: '12px 16px' }}>
+        <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
+          Square DeveloperダッシュボードからAccess TokenとLocation IDを発行・確認できます。
+        </div>
+      </div>
+    </SettingGroup>
+  )
+}
+
+// ─── POS店舗別設定画面 ─────────────────────────────────────────────────────────
+function PosStoreSettings({ store, onBack }: { store: Store; onBack: () => void }) {
+  const [posType, setPosType] = useState<PosType>('none')
+  const [storeId, setStoreId] = useState('')
+  const [saved,   setSaved]   = useState(false)
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
+    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
+    fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
+  }
+
+  function save() {
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2500)
+  }
+
+  return (
+    <div>
+      <BackHeader title={store.name} onBack={onBack} />
+
+      <GroupLabel>接続するPOSシステム</GroupLabel>
+      <SettingGroup>
+        {(['none', 'smaregi', 'square'] as PosType[]).map((t, i, arr) => (
+          <div
+            key={t}
+            onClick={() => setPosType(t)}
+            style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: i < arr.length - 1 ? `1px solid ${border}` : 'none', cursor: 'pointer' }}
+          >
+            <div style={{ flex: 1, fontSize: 13, color: posType === t ? gold : txt, fontFamily: zen }}>{POS_LABEL[t]}</div>
+            {posType === t && (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <polyline points="2.5,7 5.5,10.5 11.5,3.5" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </div>
+        ))}
+      </SettingGroup>
+
+      {posType === 'smaregi' && (
+        <>
+          <GroupLabel>スマレジ設定</GroupLabel>
+          <SettingGroup>
+            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
+              <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>Store ID</div>
+              <input
+                type="text" inputMode="numeric" value={storeId} onChange={e => setStoreId(e.target.value)}
+                placeholder="例: 00123"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ padding: '12px 16px' }}>
+              <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
+                スマレジのStore IDはスマレジ管理画面の「設定 → 店舗」から確認できます。
+              </div>
+            </div>
+          </SettingGroup>
+        </>
+      )}
+
+      {posType === 'square' && (
+        <>
+          <GroupLabel>Square設定</GroupLabel>
+          <SquareSettings inputStyle={inputStyle} />
+        </>
+      )}
+
+      {posType !== 'none' && (
+        <button
+          onClick={save}
+          style={{ width: '100%', padding: 14, background: saved ? greenDim : gold, border: saved ? '1px solid rgba(109,186,142,0.3)' : 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: saved ? green : '#1a1816', cursor: 'pointer' }}
+        >
+          {saved ? '保存しました ✓' : '保存する'}
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ─── POS連携サブページ（店舗一覧） ────────────────────────────────────────────
+function PosSettings({
+  storeList,
+  onBack,
+}: {
+  storeList: Store[]
+  onBack: () => void
+}) {
+  const [selectedStore, setSelectedStore] = useState<Store | null>(null)
+
+  if (selectedStore) {
+    return <PosStoreSettings store={selectedStore} onBack={() => setSelectedStore(null)} />
+  }
+
+  return (
+    <div>
+      <BackHeader title="POS連携" onBack={onBack} />
+      <div style={{ padding: '10px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, marginBottom: 20, fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
+        店舗ごとにPOSシステムとの連携を設定できます。
+      </div>
+      <GroupLabel>店舗を選択</GroupLabel>
+      <SettingGroup>
+        {storeList.length === 0 ? (
+          <div style={{ padding: '20px 16px', textAlign: 'center', color: muted, fontSize: 12, fontFamily: zen }}>店舗が登録されていません</div>
+        ) : (
+          storeList.map((store, i) => (
+            <SettingRow
+              key={store.id}
+              icon={<PosCardIcon color="rgba(232,228,220,0.3)" />} iconBg="gray"
+              label={store.name}
+              value="未接続"
+              badge={<SBadge type="warning" />}
+              onClick={() => setSelectedStore(store)}
+              last={i === storeList.length - 1}
+            />
+          ))
+        )}
+      </SettingGroup>
+    </div>
+  )
+}
+
 // ─── メインページ ──────────────────────────────────────────────────────────────
 export default function SettingsPage() {
   const claims   = getClaims()
   const navigate = useNavigate()
-  const [sub,          setSub]          = useState<SubPage>(null)
-  const [dealers,      setDealers]      = useState<Dealer[]>([])
-  const [addOpen,      setAddOpen]      = useState(false)
-  const [notif,        setNotif]        = useState({ stock: true, order: true, daily: false })
-  const [hours,        setHours]        = useState<BusinessHours | null>(null)
-  const [staffList,    setStaffList]    = useState<Staff[]>([])
-  const [storeList,    setStoreList]    = useState<Store[]>([])
-  const [myStaff,      setMyStaff]      = useState<Staff | null>(null)
-  const [showInvite,   setShowInvite]   = useState(false)
+  const [sub,            setSub]            = useState<SubPage>(null)
+  const [dealers,        setDealers]        = useState<Dealer[]>([])
+  const [addOpen,        setAddOpen]        = useState(false)
+  const [notif,          setNotif]          = useState({ stock: true, daily: false })
+  const [hours,          setHours]          = useState<BusinessHours | null>(null)
+  const [staffList,      setStaffList]      = useState<Staff[]>([])
+  const [storeList,      setStoreList]      = useState<Store[]>([])
+  const [myStaff,        setMyStaff]        = useState<Staff | null>(null)
+  const [showInvite,     setShowInvite]     = useState(false)
+  const [treatmentCount, setTreatmentCount] = useState(0)
+  const [retailCount,    setRetailCount]    = useState(0)
+  const [selectedStaff,  setSelectedStaff]  = useState<Staff | null>(null)
 
   function loadDealers() {
     apiFetch<Dealer[]>('/api/v1/dealers')
       .then(d => setDealers(Array.isArray(d) ? d : []))
+      .catch(() => {})
+  }
+
+  function loadStaffs() {
+    apiFetch<Staff[]>('/api/v1/staffs')
+      .then(list => {
+        const arr = Array.isArray(list) ? list : []
+        setStaffList(arr)
+        setMyStaff(arr.find(s => s.id === claims?.staff_id) ?? null)
+        if (selectedStaff) {
+          const updated = arr.find(s => s.id === selectedStaff.id)
+          if (updated) setSelectedStaff(updated)
+        }
+      })
       .catch(() => {})
   }
 
@@ -524,6 +967,12 @@ export default function SettingsPage() {
       .catch(() => {})
     apiFetch<Store[]>('/api/v1/stores')
       .then(list => setStoreList(Array.isArray(list) ? list : []))
+      .catch(() => {})
+    apiFetch<{ id: number; is_active: boolean }[]>('/api/v1/menus?type=treatment')
+      .then(list => setTreatmentCount(Array.isArray(list) ? list.filter(m => m.is_active).length : 0))
+      .catch(() => {})
+    apiFetch<{ id: number; is_active: boolean }[]>('/api/v1/menus?type=retail')
+      .then(list => setRetailCount(Array.isArray(list) ? list.filter(m => m.is_active).length : 0))
       .catch(() => {})
   }, [])
 
@@ -551,6 +1000,47 @@ export default function SettingsPage() {
       </AppLayout>
     )
   }
+  if (sub === 'staff-list') {
+    return (
+      <>
+      <AppLayout>
+        <div style={{ padding: '14px 20px 80px' }}>
+          <StaffListSettings
+            staffList={staffList}
+            storeList={storeList}
+            onSelectStaff={s => { setSelectedStaff(s); setSub('staff-detail') }}
+            onInvite={() => setShowInvite(true)}
+            onBack={() => setSub(null)}
+          />
+        </div>
+      </AppLayout>
+      {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
+      </>
+    )
+  }
+  if (sub === 'staff-detail' && selectedStaff) {
+    return (
+      <AppLayout>
+        <div style={{ padding: '14px 20px 80px' }}>
+          <StaffDetail
+            staff={selectedStaff}
+            storeList={storeList}
+            onBack={() => { setSub('staff-list'); setSelectedStaff(null) }}
+            onUpdated={() => loadStaffs()}
+          />
+        </div>
+      </AppLayout>
+    )
+  }
+  if (sub === 'pos') {
+    return (
+      <AppLayout>
+        <div style={{ padding: '14px 20px 80px' }}>
+          <PosSettings storeList={storeList} onBack={() => setSub(null)} />
+        </div>
+      </AppLayout>
+    )
+  }
 
   const hoursLabel  = hours ? `${hours.open_time} 〜 ${hours.close_time}` : '—'
   const closedLabel = hours?.closed_weekday != null ? `毎週${WEEKDAYS[hours.closed_weekday]}曜日` : '設定なし'
@@ -570,47 +1060,35 @@ export default function SettingsPage() {
         {/* スタッフ管理 */}
         <GroupLabel>スタッフ管理</GroupLabel>
         <SettingGroup>
-          {staffList.map(s => {
-            const storeName = storeList.find(st => st.id === s.store_id)?.name ?? '—'
-            const av = s.avatar_initials ?? s.name.slice(0, 1)
-            return (
-              <div key={s.id} style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${border}` }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 11, color: gold, flexShrink: 0 }}>
-                  {av}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 2 }}>{s.name}</div>
-                  <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[s.role]}</div>
-                </div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1, background: greenDim, color: green, border: '1px solid rgba(109,186,142,0.3)' }}>
-                  有効
-                </div>
-              </div>
-            )
-          })}
-          <div onClick={() => setShowInvite(true)} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <line x1="7" y1="2" x2="7" y2="12" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
-              <line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <div style={{ fontSize: 13, color: gold, fontFamily: zen }}>スタッフを招待する</div>
-          </div>
+          <SettingRow
+            icon={<PersonIcon color={gold} />} iconBg="gold"
+            label="スタッフ一覧・招待"
+            value={staffList.length > 0 ? `${staffList.length}名` : '—'}
+            onClick={() => setSub('staff-list')}
+            last
+          />
+        </SettingGroup>
+
+        {/* メニュー管理 */}
+        <GroupLabel>メニュー管理</GroupLabel>
+        <SettingGroup>
+          <SettingRow
+            icon={<MenuListIcon color={gold} />} iconBg="gold"
+            label="メニュー一覧・編集"
+            value={`施術 ${treatmentCount}件 · 物販 ${retailCount}件`}
+            onClick={() => navigate('/menus')}
+            last
+          />
         </SettingGroup>
 
         {/* POS連携 */}
         <GroupLabel>POS連携</GroupLabel>
         <SettingGroup>
           <SettingRow
-            icon={<PosCardIcon color={green} />} iconBg="green"
-            label="スマレジ" value="Store ID: 00123 · 接続済み"
-            badge={<SBadge type="connected" />}
-            onClick={() => {}}
-          />
-          <SettingRow
             icon={<PosCardIcon color="rgba(232,228,220,0.3)" />} iconBg="gray"
-            label="Square" value="未接続"
-            badge={<SBadge type="warning" />}
-            onClick={() => {}}
+            label="POS連携設定"
+            value={storeList.length > 0 ? `${storeList.length}店舗` : '店舗未登録'}
+            onClick={() => setSub('pos')}
             last
           />
         </SettingGroup>
@@ -655,11 +1133,6 @@ export default function SettingsPage() {
             icon={<BellIcon color={purple} />} iconBg="purple"
             label="在庫アラート通知"
             action={<Toggle on={notif.stock} onToggle={() => setNotif(n => ({ ...n, stock: !n.stock }))} />}
-          />
-          <SettingRow
-            icon={<CircleNotifIcon color={purple} />} iconBg="purple"
-            label="発注完了通知"
-            action={<Toggle on={notif.order} onToggle={() => setNotif(n => ({ ...n, order: !n.order }))} />}
           />
           <SettingRow
             icon={<MailIcon color={purple} />} iconBg="purple"

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/model"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/usecase"
 	"github.com/labstack/echo/v4"
 )
@@ -23,6 +24,7 @@ type staffRes struct {
 	Name           string  `json:"name"`
 	Email          string  `json:"email"`
 	Role           string  `json:"role"`
+	IsActive       bool    `json:"is_active"`
 	AvatarInitials *string `json:"avatar_initials"`
 	CreatedAt      string  `json:"created_at"`
 }
@@ -38,12 +40,43 @@ func (h *StaffHandler) List(c echo.Context) error {
 	for i, s := range list {
 		res[i] = staffRes{
 			ID: s.ID, SalonID: s.SalonID, StoreID: s.StoreID,
-			Name: s.Name, Email: s.Email, Role: string(s.Role),
+			Name: s.Name, Email: s.Email, Role: string(s.Role), IsActive: s.IsActive,
 			AvatarInitials: s.AvatarInitials,
 			CreatedAt:      s.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		}
 	}
 	return c.JSON(http.StatusOK, res)
+}
+
+// PATCH /api/v1/staffs/:id
+func (h *StaffHandler) Update(c echo.Context) error {
+	claims := claimsFrom(c)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	var req struct {
+		Role     string `json:"role"`
+		IsActive *bool  `json:"is_active"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+	s, err := h.uc.UpdateStaff(c.Request().Context(), usecase.UpdateStaffInput{
+		ID:       id,
+		SalonID:  claims.SalonID,
+		Role:     model.StaffRole(req.Role),
+		IsActive: req.IsActive,
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, staffRes{
+		ID: s.ID, SalonID: s.SalonID, StoreID: s.StoreID,
+		Name: s.Name, Email: s.Email, Role: string(s.Role), IsActive: s.IsActive,
+		AvatarInitials: s.AvatarInitials,
+		CreatedAt:      s.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	})
 }
 
 // GET /api/v1/staffs/:id
@@ -58,7 +91,7 @@ func (h *StaffHandler) Get(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, staffRes{
 		ID: s.ID, SalonID: s.SalonID, StoreID: s.StoreID,
-		Name: s.Name, Email: s.Email, Role: string(s.Role),
+		Name: s.Name, Email: s.Email, Role: string(s.Role), IsActive: s.IsActive,
 		AvatarInitials: s.AvatarInitials,
 		CreatedAt:      s.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	})

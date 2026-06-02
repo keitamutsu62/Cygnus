@@ -11,6 +11,7 @@ type Staff struct {
 	Email           string   `db:"email"`
 	PasswordHash    string   `db:"password_hash"`
 	Role            StaffRole `db:"role"`
+	IsActive        bool      `db:"is_active"`
 	AvatarInitials  *string  `db:"avatar_initials"`
 	CreatedAt       time.Time `db:"created_at"`
 	UpdatedAt       time.Time `db:"updated_at"`

@@ -17,6 +17,7 @@ export type Staff = {
   name: string
   email: string
   role: StaffRole
+  is_active: boolean
   avatar_initials: string | null
   created_at: string
 }

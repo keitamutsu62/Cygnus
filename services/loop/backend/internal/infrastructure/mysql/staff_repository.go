@@ -60,8 +60,8 @@ func (r *StaffRepository) CountBySalonID(ctx context.Context, salonID uint64) (i
 
 func (r *StaffRepository) Update(ctx context.Context, s *model.Staff) error {
 	_, err := r.db.ExecContext(ctx,
-		`UPDATE staffs SET name=?, role=?, avatar_initials=?, store_id=? WHERE id=?`,
-		s.Name, s.Role, s.AvatarInitials, s.StoreID, s.ID)
+		`UPDATE staffs SET name=?, role=?, is_active=?, avatar_initials=?, store_id=? WHERE id=?`,
+		s.Name, s.Role, s.IsActive, s.AvatarInitials, s.StoreID, s.ID)
 	return err
 }
 
