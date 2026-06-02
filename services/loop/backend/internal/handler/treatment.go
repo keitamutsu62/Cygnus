@@ -22,7 +22,7 @@ func (h *TreatmentHandler) Create(c echo.Context) error {
 	claims := claimsFrom(c)
 
 	var req struct {
-		CustomerID      uint64                   `json:"customer_id"`
+		CustomerID      *uint64                  `json:"customer_id"`
 		StoreID         *uint64                  `json:"store_id"`
 		MenuID          *uint64                  `json:"menu_id"`
 		MenuName        string                   `json:"menu_name"`
@@ -36,15 +36,21 @@ func (h *TreatmentHandler) Create(c echo.Context) error {
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
-	if req.CustomerID == 0 || req.MenuName == "" || req.PerformedAt == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "customer_id, menu_name, performed_at are required")
+	if req.MenuName == "" || req.PerformedAt == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "menu_name, performed_at are required")
+	}
+
+	// store_id が省略された場合は JWT のstore_id を使用する
+	storeID := req.StoreID
+	if storeID == nil && claims.StoreID != nil {
+		storeID = claims.StoreID
 	}
 
 	t, err := h.uc.Create(c.Request().Context(), usecase.CreateTreatmentInput{
 		StaffID:         claims.StaffID,
 		CustomerID:      req.CustomerID,
 		SalonID:         claims.SalonID,
-		StoreID:         req.StoreID,
+		StoreID:         storeID,
 		MenuID:          req.MenuID,
 		MenuName:        req.MenuName,
 		Price:           req.Price,

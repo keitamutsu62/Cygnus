@@ -17,13 +17,14 @@ func NewMenuUsecase(repo repository.MenuRepository) *MenuUsecase {
 	return &MenuUsecase{repo: repo}
 }
 
-func (u *MenuUsecase) List(ctx context.Context, salonID uint64) ([]*model.Menu, error) {
-	return u.repo.FindBySalonID(ctx, salonID)
+func (u *MenuUsecase) List(ctx context.Context, salonID uint64, menuType string) ([]*model.Menu, error) {
+	return u.repo.FindBySalonID(ctx, salonID, menuType)
 }
 
 type CreateMenuInput struct {
 	SalonID  uint64
 	Name     string
+	MenuType string
 	Price    uint32
 	Duration *uint16
 }
@@ -32,6 +33,7 @@ func (u *MenuUsecase) Create(ctx context.Context, in CreateMenuInput) (*model.Me
 	m := &model.Menu{
 		SalonID:  in.SalonID,
 		Name:     in.Name,
+		MenuType: in.MenuType,
 		Price:    in.Price,
 		Duration: in.Duration,
 	}

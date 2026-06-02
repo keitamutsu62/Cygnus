@@ -14,9 +14,13 @@ type MenuRepository struct{ db *sqlx.DB }
 func NewMenuRepository(db *sqlx.DB) *MenuRepository { return &MenuRepository{db: db} }
 
 func (r *MenuRepository) Create(ctx context.Context, m *model.Menu) error {
+	menuType := m.MenuType
+	if menuType == "" {
+		menuType = "treatment"
+	}
 	res, err := r.db.ExecContext(ctx,
-		`INSERT INTO menus (salon_id, name, price, duration) VALUES (?, ?, ?, ?)`,
-		m.SalonID, m.Name, m.Price, m.Duration)
+		`INSERT INTO menus (salon_id, name, menu_type, price, duration) VALUES (?, ?, ?, ?, ?)`,
+		m.SalonID, m.Name, menuType, m.Price, m.Duration)
 	if err != nil {
 		return fmt.Errorf("MenuRepository.Create: %w", err)
 	}
@@ -33,10 +37,16 @@ func (r *MenuRepository) FindByID(ctx context.Context, id uint64) (*model.Menu, 
 	return &m, nil
 }
 
-func (r *MenuRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Menu, error) {
+func (r *MenuRepository) FindBySalonID(ctx context.Context, salonID uint64, menuType string) ([]*model.Menu, error) {
 	var list []*model.Menu
-	err := r.db.SelectContext(ctx, &list,
-		`SELECT * FROM menus WHERE salon_id = ? ORDER BY id ASC`, salonID)
+	var err error
+	if menuType != "" {
+		err = r.db.SelectContext(ctx, &list,
+			`SELECT * FROM menus WHERE salon_id = ? AND menu_type = ? ORDER BY id ASC`, salonID, menuType)
+	} else {
+		err = r.db.SelectContext(ctx, &list,
+			`SELECT * FROM menus WHERE salon_id = ? ORDER BY id ASC`, salonID)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("MenuRepository.FindBySalonID: %w", err)
 	}

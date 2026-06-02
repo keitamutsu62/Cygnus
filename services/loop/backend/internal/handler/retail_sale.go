@@ -33,9 +33,15 @@ func (h *RetailSaleHandler) Create(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "product_name, sold_at are required")
 	}
 
+	// store_id が省略された場合は JWT のstore_id を使用する
+	storeID := req.StoreID
+	if storeID == 0 && claims.StoreID != nil {
+		storeID = *claims.StoreID
+	}
+
 	rs, err := h.uc.Create(c.Request().Context(), usecase.CreateRetailSaleInput{
 		StaffID:     claims.StaffID,
-		StoreID:     req.StoreID,
+		StoreID:     storeID,
 		SalonID:     claims.SalonID,
 		ProductName: req.ProductName,
 		Price:       req.Price,

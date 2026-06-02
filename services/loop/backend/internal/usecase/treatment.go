@@ -25,7 +25,7 @@ func NewTreatmentUsecase(
 
 type CreateTreatmentInput struct {
 	StaffID         uint64
-	CustomerID      uint64
+	CustomerID      *uint64
 	SalonID         uint64
 	StoreID         *uint64
 	MenuID          *uint64

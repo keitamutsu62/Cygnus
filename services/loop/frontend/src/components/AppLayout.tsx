@@ -90,6 +90,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {children}
       </div>
 
+      {/* 会計 FAB */}
+      <button
+        onClick={() => navigate('/checkout')}
+        style={{
+          position: 'fixed',
+          bottom: 88,
+          right: 20,
+          width: 56,
+          height: 56,
+          borderRadius: '50%',
+          background: '#c8a882',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1,
+          boxShadow: '0 4px 20px rgba(200,168,130,0.45)',
+          zIndex: 20,
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+          <rect x="3" y="5" width="16" height="13" rx="2" stroke="#1a1816" strokeWidth="1.6"/>
+          <line x1="3" y1="9" x2="19" y2="9" stroke="#1a1816" strokeWidth="1.2"/>
+          <line x1="7" y1="13" x2="10" y2="13" stroke="#1a1816" strokeWidth="1.2" strokeLinecap="round"/>
+          <line x1="7" y1="15.5" x2="12" y2="15.5" stroke="#1a1816" strokeWidth="1.2" strokeLinecap="round"/>
+        </svg>
+        <span style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 300, fontSize: 7, letterSpacing: '0.12em', color: '#1a1816' }}>会計</span>
+      </button>
+
       {/* ボトムナビ */}
       <div style={{
         flexShrink: 0,

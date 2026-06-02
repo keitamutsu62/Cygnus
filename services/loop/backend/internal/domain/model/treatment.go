@@ -15,7 +15,7 @@ const (
 type Treatment struct {
 	ID              uint64          `db:"id"`
 	StaffID         uint64          `db:"staff_id"`
-	CustomerID      uint64          `db:"customer_id"`
+	CustomerID      *uint64         `db:"customer_id"`
 	SalonID         uint64          `db:"salon_id"`
 	StoreID         *uint64         `db:"store_id"`
 	MenuID          *uint64         `db:"menu_id"`

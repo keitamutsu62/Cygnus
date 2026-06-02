@@ -16,10 +16,11 @@ type MenuHandler struct {
 
 func NewMenuHandler(uc *usecase.MenuUsecase) *MenuHandler { return &MenuHandler{uc: uc} }
 
-// GET /api/v1/menus
+// GET /api/v1/menus?type=treatment|retail
 func (h *MenuHandler) List(c echo.Context) error {
 	claims := claimsFrom(c)
-	list, err := h.uc.List(c.Request().Context(), claims.SalonID)
+	menuType := c.QueryParam("type") // "" = all, "treatment" | "retail" = filtered
+	list, err := h.uc.List(c.Request().Context(), claims.SalonID, menuType)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
 	}
@@ -31,6 +32,7 @@ func (h *MenuHandler) Create(c echo.Context) error {
 	claims := claimsFrom(c)
 	var req struct {
 		Name     string  `json:"name"`
+		MenuType string  `json:"menu_type"`
 		Price    uint32  `json:"price"`
 		Duration *uint16 `json:"duration"`
 	}
@@ -43,6 +45,7 @@ func (h *MenuHandler) Create(c echo.Context) error {
 	m, err := h.uc.Create(c.Request().Context(), usecase.CreateMenuInput{
 		SalonID:  claims.SalonID,
 		Name:     req.Name,
+		MenuType: req.MenuType,
 		Price:    req.Price,
 		Duration: req.Duration,
 	})

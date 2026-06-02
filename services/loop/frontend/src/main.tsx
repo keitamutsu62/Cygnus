@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage'
 import InventoryPage from './pages/InventoryPage'
 import SalesPage from './pages/SalesPage'
 import SettingsPage from './pages/SettingsPage'
+import CheckoutPage from './pages/CheckoutPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/inventory" element={<AuthGuard><InventoryPage /></AuthGuard>} />
         <Route path="/sales" element={<AuthGuard><SalesPage /></AuthGuard>} />
         <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+        <Route path="/checkout" element={<AuthGuard><CheckoutPage /></AuthGuard>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

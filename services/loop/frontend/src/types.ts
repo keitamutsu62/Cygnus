@@ -52,6 +52,7 @@ export type Menu = {
   id: number
   salon_id: number
   name: string
+  menu_type: 'treatment' | 'retail'
   price: number
   duration_minutes: number | null
   is_active: boolean

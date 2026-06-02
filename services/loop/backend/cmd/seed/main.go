@@ -176,24 +176,41 @@ func main() {
 		exec("customer:"+c.name, `INSERT INTO customers (salon_id, name, phone) VALUES (?, ?, ?)`, salonID, c.name, c.phone)
 	}
 
-	// ─── メニュー ─────────────────────────────────────────────
+	// ─── 施術メニュー ──────────────────────────────────────────
 	for _, m := range []struct {
 		name string
 		price, dur int
 	}{
-		{"カット",       5500,  60},
-		{"カラー",       8800,  90},
-		{"パーマ",      11000, 120},
-		{"トリートメント",  3300,  30},
-		{"ヘッドスパ",    4400,  45},
-		{"カット＋カラー", 13200, 150},
-		{"カット＋パーマ", 15400, 180},
-		{"ブリーチ",     11000, 120},
-		{"縮毛矯正",     22000, 180},
+		{"カット",          5500,  60},
+		{"カラー",          8800,  90},
+		{"パーマ",         11000, 120},
+		{"トリートメント",    3300,  30},
+		{"ヘッドスパ",       4400,  45},
+		{"カット＋カラー",   13200, 150},
+		{"カット＋パーマ",   15400, 180},
+		{"ブリーチ",        11000, 120},
+		{"縮毛矯正",        22000, 180},
 	} {
 		exec("menu:"+m.name,
-			`INSERT INTO menus (salon_id, name, price, duration) VALUES (?, ?, ?, ?)`,
+			`INSERT INTO menus (salon_id, name, menu_type, price, duration) VALUES (?, ?, 'treatment', ?, ?)`,
 			salonID, m.name, m.price, m.dur)
+	}
+
+	// ─── 物販商品 ───────────────────────────────────────────
+	for _, m := range []struct {
+		name  string
+		price int
+	}{
+		{"エルジューダ エマルジョン+", 2750},
+		{"エルジューダ FO",           2750},
+		{"ミルボン シャンプー",        2200},
+		{"ミルボン トリートメント",    2420},
+		{"スムージングオイル",         3300},
+		{"ヘアマスク",                3850},
+	} {
+		exec("retail:"+m.name,
+			`INSERT INTO menus (salon_id, name, menu_type, price) VALUES (?, ?, 'retail', ?)`,
+			salonID, m.name, m.price)
 	}
 
 	// ─── 材料 & 在庫 ─────────────────────────────────────────
