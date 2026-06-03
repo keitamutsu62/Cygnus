@@ -35,6 +35,7 @@ type CreateMaterialInput struct {
 	SizeAmount *uint32
 	SizeUnit   *string
 	StockUnit  string
+	JanCode    *string
 	Threshold  uint32 // 初期発注点。全店舗の在庫行に適用
 	MenuIDs    []uint64
 }
@@ -50,6 +51,7 @@ func (u *MaterialUsecase) Create(ctx context.Context, in CreateMaterialInput) (*
 		SizeAmount: in.SizeAmount,
 		SizeUnit:   in.SizeUnit,
 		StockUnit:  in.StockUnit,
+		JanCode:    in.JanCode,
 	}
 	if err := u.materialRepo.Create(ctx, m); err != nil {
 		return nil, fmt.Errorf("MaterialUsecase.Create: %w", err)
@@ -78,6 +80,7 @@ type UpdateMaterialInput struct {
 	SizeAmount *uint32
 	SizeUnit   *string
 	StockUnit  string
+	JanCode    *string
 	MenuIDs    []uint64
 }
 
@@ -95,6 +98,7 @@ func (u *MaterialUsecase) Update(ctx context.Context, in UpdateMaterialInput) (*
 	m.SizeAmount = in.SizeAmount
 	m.SizeUnit = in.SizeUnit
 	m.StockUnit = in.StockUnit
+	m.JanCode = in.JanCode
 	if err := u.materialRepo.Update(ctx, m); err != nil {
 		return nil, fmt.Errorf("MaterialUsecase.Update: %w", err)
 	}

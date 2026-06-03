@@ -38,6 +38,7 @@ func (h *MaterialHandler) Create(c echo.Context) error {
 		SizeAmount *uint32  `json:"size_amount"`
 		SizeUnit   *string  `json:"size_unit"`
 		StockUnit  string   `json:"stock_unit"`
+		JanCode    *string  `json:"jan_code"`
 		Threshold  uint32   `json:"threshold"`
 		MenuIDs    []uint64 `json:"menu_ids"`
 	}
@@ -58,6 +59,7 @@ func (h *MaterialHandler) Create(c echo.Context) error {
 		SizeAmount: req.SizeAmount,
 		SizeUnit:   req.SizeUnit,
 		StockUnit:  req.StockUnit,
+		JanCode:    req.JanCode,
 		Threshold:  req.Threshold,
 		MenuIDs:    req.MenuIDs,
 	})
@@ -81,6 +83,7 @@ func (h *MaterialHandler) Update(c echo.Context) error {
 		SizeAmount *uint32  `json:"size_amount"`
 		SizeUnit   *string  `json:"size_unit"`
 		StockUnit  string   `json:"stock_unit"`
+		JanCode    *string  `json:"jan_code"`
 		MenuIDs    []uint64 `json:"menu_ids"`
 	}
 	if err := c.Bind(&req); err != nil {
@@ -95,6 +98,7 @@ func (h *MaterialHandler) Update(c echo.Context) error {
 		SizeAmount: req.SizeAmount,
 		SizeUnit:   req.SizeUnit,
 		StockUnit:  req.StockUnit,
+		JanCode:    req.JanCode,
 		MenuIDs:    req.MenuIDs,
 	})
 	if err != nil {

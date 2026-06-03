@@ -11,6 +11,7 @@ type Material struct {
 	SizeAmount *uint32 `db:"size_amount"`
 	SizeUnit   *string `db:"size_unit"`
 	StockUnit  string  `db:"stock_unit"`
+	JanCode    *string `db:"jan_code"`
 }
 
 type MenuAssoc struct {
@@ -27,6 +28,7 @@ type MaterialWithMenus struct {
 	SizeAmount *uint32     `json:"size_amount"`
 	SizeUnit   *string     `json:"size_unit"`
 	StockUnit  string      `json:"stock_unit"`
+	JanCode    *string     `json:"jan_code"`
 	Menus      []MenuAssoc `json:"menus"`
 }
 

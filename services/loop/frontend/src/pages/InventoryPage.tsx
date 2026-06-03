@@ -197,6 +197,7 @@ type Material = {
   size_amount: number | null
   size_unit: string | null
   stock_unit: string
+  jan_code: string | null
   menus: MaterialMenuAssoc[]
 }
 type AppMenu = { id: number; name: string; menu_type: string; is_active: boolean }
@@ -615,7 +616,7 @@ function MaterialFormSheet({
   existingCategories: string[]
   onSave: (data: {
     name: string; brand: string | null; category: string
-    stock_unit: string; threshold: number; menu_ids: number[]
+    stock_unit: string; jan_code: string | null; threshold: number; menu_ids: number[]
   }) => Promise<void>
   onClose: () => void
 }) {
@@ -623,6 +624,7 @@ function MaterialFormSheet({
   const [fbrand,     setFbrand]     = useState(initial?.brand ?? '')
   const [fcat,       setFcat]       = useState(initial?.category ?? existingCategories[0] ?? '')
   const [funit,      setFunit]      = useState(initial?.stock_unit ?? '本')
+  const [fjan,       setFjan]       = useState(initial?.jan_code ?? '')
   const [fthreshold, setFthreshold] = useState('10')
   const [menuIds,    setMenuIds]    = useState<Set<number>>(
     new Set(initial?.menus.map(m => m.menu_id) ?? [])
@@ -646,6 +648,7 @@ function MaterialFormSheet({
         brand: fbrand.trim() || null,
         category: fcat,
         stock_unit: funit.trim() || '本',
+        jan_code: fjan.trim() || null,
         threshold: Number(fthreshold) || 10,
         menu_ids: Array.from(menuIds),
       })
@@ -678,6 +681,10 @@ function MaterialFormSheet({
             <div>
               <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>ブランド</div>
               <MasterField placeholder="例：Milbon" value={fbrand} onChange={setFbrand} />
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>JANコード（バーコード検索用）</div>
+              <MasterField placeholder="例：4901234567890" value={fjan} onChange={setFjan} inputMode="numeric" />
             </div>
             <div>
               <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>カテゴリ</div>
@@ -871,7 +878,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
 
   async function handleSave(data: {
     name: string; brand: string | null; category: string
-    stock_unit: string; threshold: number; menu_ids: number[]
+    stock_unit: string; jan_code: string | null; threshold: number; menu_ids: number[]
   }) {
     const res = await api('/api/v1/materials', {
       method: 'POST',
@@ -884,7 +891,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
 
   async function handleUpdate(data: {
     name: string; brand: string | null; category: string
-    stock_unit: string; threshold: number; menu_ids: number[]
+    stock_unit: string; jan_code: string | null; threshold: number; menu_ids: number[]
   }) {
     if (!editItem) return
     const res = await api(`/api/v1/materials/${editItem.id}`, {
@@ -895,7 +902,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
     // PATCHが成功したら即座に一覧のカテゴリを更新（load()の結果を待たずに反映）
     setMaterials(prev => prev.map(m =>
       m.id === editItem.id
-        ? { ...m, name: data.name, brand: data.brand, category: data.category, stock_unit: data.stock_unit }
+        ? { ...m, name: data.name, brand: data.brand, category: data.category, stock_unit: data.stock_unit, jan_code: data.jan_code }
         : m
     ))
     await load()
@@ -1332,7 +1339,10 @@ export default function InventoryPage() {
     if (filter !== 'すべて'  && it.status !== filter) return false
     if (search) {
       const q = search.toLowerCase()
-      if (!it.name.toLowerCase().includes(q) && !(it.brand ?? '').toLowerCase().includes(q)) return false
+      const matchName  = it.name.toLowerCase().includes(q)
+      const matchBrand = (it.brand ?? '').toLowerCase().includes(q)
+      const matchJan   = (it.jan_code ?? '') === search
+      if (!matchName && !matchBrand && !matchJan) return false
     }
     return true
   })

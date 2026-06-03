@@ -17,9 +17,9 @@ func NewMaterialRepository(db *sqlx.DB) *MaterialRepository { return &MaterialRe
 
 func (r *MaterialRepository) Create(ctx context.Context, m *model.Material) error {
 	res, err := r.db.ExecContext(ctx,
-		`INSERT INTO materials (salon_id, name, brand, category, size_amount, size_unit, stock_unit)
-		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		m.SalonID, m.Name, m.Brand, m.Category, m.SizeAmount, m.SizeUnit, m.StockUnit)
+		`INSERT INTO materials (salon_id, name, brand, category, size_amount, size_unit, stock_unit, jan_code)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		m.SalonID, m.Name, m.Brand, m.Category, m.SizeAmount, m.SizeUnit, m.StockUnit, m.JanCode)
 	if err != nil {
 		return fmt.Errorf("MaterialRepository.Create: %w", err)
 	}
@@ -48,9 +48,9 @@ func (r *MaterialRepository) FindBySalonID(ctx context.Context, salonID uint64) 
 
 func (r *MaterialRepository) Update(ctx context.Context, m *model.Material) error {
 	_, err := r.db.ExecContext(ctx,
-		`UPDATE materials SET name=?, brand=?, category=?, size_amount=?, size_unit=?, stock_unit=?
+		`UPDATE materials SET name=?, brand=?, category=?, size_amount=?, size_unit=?, stock_unit=?, jan_code=?
 		 WHERE id=? AND salon_id=?`,
-		m.Name, m.Brand, m.Category, m.SizeAmount, m.SizeUnit, m.StockUnit, m.ID, m.SalonID)
+		m.Name, m.Brand, m.Category, m.SizeAmount, m.SizeUnit, m.StockUnit, m.JanCode, m.ID, m.SalonID)
 	return err
 }
 
@@ -69,12 +69,13 @@ func (r *MaterialRepository) FindBySalonIDWithMenus(ctx context.Context, salonID
 		SizeAmount *uint32 `db:"size_amount"`
 		SizeUnit   *string `db:"size_unit"`
 		StockUnit  string  `db:"stock_unit"`
+		JanCode    *string `db:"jan_code"`
 		MenuID     uint64  `db:"menu_id"`
 		MenuName   string  `db:"menu_name"`
 	}
 	var rows []row
 	err := r.db.SelectContext(ctx, &rows, `
-		SELECT m.id, m.salon_id, m.name, m.brand, m.category, m.size_amount, m.size_unit, m.stock_unit,
+		SELECT m.id, m.salon_id, m.name, m.brand, m.category, m.size_amount, m.size_unit, m.stock_unit, m.jan_code,
 		       COALESCE(mn.id, 0) AS menu_id, COALESCE(mn.name, '') AS menu_name
 		FROM materials m
 		LEFT JOIN menu_materials mm ON mm.material_id = m.id
@@ -92,6 +93,7 @@ func (r *MaterialRepository) FindBySalonIDWithMenus(ctx context.Context, salonID
 			indexed[r.ID] = &model.MaterialWithMenus{
 				ID: r.ID, SalonID: r.SalonID, Name: r.Name, Brand: r.Brand,
 				Category: r.Category, SizeAmount: r.SizeAmount, SizeUnit: r.SizeUnit, StockUnit: r.StockUnit,
+				JanCode: r.JanCode,
 				Menus: []model.MenuAssoc{},
 			}
 			order = append(order, r.ID)

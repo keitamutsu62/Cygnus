@@ -155,7 +155,7 @@ function StaffPickerModal({
   return (
     <BottomSheet onClose={onClose} maxHeight="60vh">
       <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold, marginBottom: 16 }}>担当スタッフを選択</div>
-      {staffList.map(s => {
+      {staffList.filter(s => s.is_active).map(s => {
         const storeName = storeList.find(st => st.id === s.store_id)?.name ?? '—'
         const av = s.avatar_initials ?? s.name.slice(0, 1)
         const isSelected = s.id === selectedId
