@@ -66,7 +66,7 @@ func main() {
 		{"船橋店",            "千葉県船橋市本町2-3-4"},
 		{"流山おおたかの森店",  "千葉県流山市おおたかの森3-4-5"},
 		{"八潮店",            "埼玉県八潮市中央4-5-6"},
-		{"六丁店",            "埼玉県草加市六丁目5-6-7"},
+		{"六町店",            "埼玉県草加市六町目5-6-7"},
 		{"北千住店",           "東京都足立区千住2-3-4"},
 	}
 	storeIDs := map[string]int64{}
@@ -96,7 +96,7 @@ func main() {
 		{"石井 奈々", "IN", "mgr.funabashi@salon-test.com",    "admin", "船橋店"},
 		{"渡辺 翔",   "WS", "mgr.nagareyama@salon-test.com",   "admin", "流山おおたかの森店"},
 		{"佐藤 みく", "SM", "mgr.yashio@salon-test.com",       "admin", "八潮店"},
-		{"中村 健太", "NK", "mgr.rokkucho@salon-test.com",     "admin", "六丁店"},
+		{"中村 健太", "NK", "mgr.rokkucho@salon-test.com",     "admin", "六町店"},
 		{"伊藤 あかり","IA", "mgr.kitasenju@salon-test.com",   "admin", "北千住店"},
 	}
 
@@ -132,10 +132,10 @@ func main() {
 			{"井上 彩",   "IH", "st02.yashio@salon-test.com", "staff", "八潮店"},
 			{"松本 春香", "MH", "st03.yashio@salon-test.com", "staff", "八潮店"},
 		},
-		"六丁店": {
-			{"木村 咲",   "KS", "st01.rokkucho@salon-test.com", "staff", "六丁店"},
-			{"斎藤 りん", "SR", "st02.rokkucho@salon-test.com", "staff", "六丁店"},
-			{"福田 奈緒", "FN", "st03.rokkucho@salon-test.com", "staff", "六丁店"},
+		"六町店": {
+			{"木村 咲",   "KS", "st01.rokkucho@salon-test.com", "staff", "六町店"},
+			{"斎藤 りん", "SR", "st02.rokkucho@salon-test.com", "staff", "六町店"},
+			{"福田 奈緒", "FN", "st03.rokkucho@salon-test.com", "staff", "六町店"},
 		},
 		"北千住店": {
 			{"池田 七海",  "IN2", "st01.kitasenju@salon-test.com", "staff", "北千住店"},
