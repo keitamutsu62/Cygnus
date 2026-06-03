@@ -159,6 +159,7 @@ func main() {
 	api.GET("/sales/store", salesH.GetStoreSales)
 	api.GET("/sales/store/staff", salesH.GetStoreStaffSales)
 	api.GET("/sales/staff", salesH.GetMyStaffSales)
+	api.GET("/sales/staff/menus", salesH.GetStaffMenuSales)
 
 	// 物販記録（会計時に記録 → daily_sales / staff_daily_sales の retail_sales を自動加算）
 	api.POST("/retail-sales", retailSaleH.Create)

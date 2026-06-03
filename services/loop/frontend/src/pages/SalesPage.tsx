@@ -362,6 +362,15 @@ function StaffRankRow({ rank, name, initials, meta, sales, pct, onClick }: {
   )
 }
 
+// ── 先週比計算ユーティリティ ──────────────────────────────────────────────
+function calcDiff(current: number, prev: number): { text: string; down: boolean } | undefined {
+  if (prev === 0) return undefined
+  const pct = Math.round((current - prev) / prev * 100)
+  return pct >= 0
+    ? { text: `↑ 先週比 +${pct}%`, down: false }
+    : { text: `↓ 先週比 ${pct}%`,  down: true  }
+}
+
 // ── AllView ───────────────────────────────────────────────────────────────
 function AllView({ period, stores, onSelectStore }: {
   period: Period; stores: Store[]; onSelectStore: (id: number) => void
@@ -371,9 +380,16 @@ function AllView({ period, stores, onSelectStore }: {
 
   useEffect(() => {
     if (stores.length === 0) return
-    const { from, to } = fetchRange(period)
+    // 比較用に前週・前月も含めた広めの範囲を取得
+    const wb = weekBoundsNow()
+    const prevMon = new Date(wb.from); prevMon.setDate(prevMon.getDate() - 7)
+    const ym = currentYm()
+    const [y, m] = ym.split('-').map(Number)
+    const prevYm = m === 1 ? `${y-1}-12` : `${y}-${String(m-1).padStart(2,'0')}`
+    const extFrom = period === 'month' ? `${prevYm}-01` : toLocal(prevMon)
+    const { to }  = fetchRange(period)
     Promise.allSettled(
-      stores.map(s => apiFetch<DailySales[]>(`/api/v1/sales/store?store_id=${s.id}&from=${from}&to=${to}`))
+      stores.map(s => apiFetch<DailySales[]>(`/api/v1/sales/store?store_id=${s.id}&from=${extFrom}&to=${to}`))
     ).then(results => {
       setAllSales(
         results
@@ -386,9 +402,20 @@ function AllView({ period, stores, onSelectStore }: {
   const today      = todayStr()
   const wb         = weekBoundsNow()
   const monthStart = currentYm() + '-01'
-  const todayData   = allSales.filter(d => ds(d.date) === today)
-  const weekData    = allSales.filter(d => ds(d.date) >= wb.from && ds(d.date) <= today)
-  const monthData   = allSales.filter(d => ds(d.date) >= monthStart && ds(d.date) <= today)
+  const prevMon    = (() => { const d = new Date(wb.from); d.setDate(d.getDate() - 7); return toLocal(d) })()
+  const prevTodayStr = (() => { const d = new Date(); d.setDate(d.getDate() - 7); return toLocal(d) })()
+  const ym = currentYm()
+  const [y, m] = ym.split('-').map(Number)
+  const prevYm = m === 1 ? `${y-1}-12` : `${y}-${String(m-1).padStart(2,'0')}`
+  const prevMonthStart = `${prevYm}-01`
+
+  const todayData    = allSales.filter(d => ds(d.date) === today)
+  const weekData     = allSales.filter(d => ds(d.date) >= wb.from && ds(d.date) <= today)
+  const monthData    = allSales.filter(d => ds(d.date) >= monthStart && ds(d.date) <= today)
+  const prevTodayData  = allSales.filter(d => ds(d.date) === prevTodayStr)
+  const prevWeekData   = allSales.filter(d => ds(d.date) >= prevMon && ds(d.date) < wb.from)
+  const prevMonthData  = allSales.filter(d => ds(d.date) >= prevMonthStart && ds(d.date) < monthStart)
+
   const periodData  = period === 'today' ? todayData : period === 'week' ? weekData : monthData
   const todayTotal   = todayData.reduce((s, d) => s + d.total_sales, 0)
   const weekTotal    = weekData.reduce((s, d) => s + d.total_sales, 0)
@@ -399,10 +426,17 @@ function AllView({ period, stores, onSelectStore }: {
   const clients = periodData.reduce((s, d) => s + d.client_count, 0)
   const avgUnit = clients > 0 ? Math.round(total / clients) : 0
 
-  const bars = buildWeekBars(allSales)
+  const prevTotal = period === 'today'
+    ? prevTodayData.reduce((s, d) => s + d.total_sales, 0)
+    : period === 'week'
+    ? prevWeekData.reduce((s, d) => s + d.total_sales, 0)
+    : prevMonthData.reduce((s, d) => s + d.total_sales, 0)
+  const diff = calcDiff(dispTotal, prevTotal)
+
+  const bars = buildWeekBars(allSales.filter(d => ds(d.date) >= wb.from))
 
   const ranking = stores.map(s => {
-    const ss = allSales.filter(d => d.store_id === s.id)
+    const ss = periodData.filter(d => d.store_id === s.id)
     return { store: s, total: ss.reduce((a, d) => a + d.total_sales, 0), clients: ss.reduce((a, d) => a + d.client_count, 0) }
   }).sort((a, b) => b.total - a.total)
 
@@ -411,7 +445,7 @@ function AllView({ period, stores, onSelectStore }: {
   return (
     <div>
       <KpiGrid>
-        <KpiCard label={<><OrbitSVG size={10}/> 全店 · {periodLabel}</>} yenValue={dispTotal} diff="↑ 先週比 +6.1%" large full/>
+        <KpiCard label={<><OrbitSVG size={10}/> 全店 · {periodLabel}</>} yenValue={dispTotal} diff={diff?.text} diffDown={diff?.down} large full/>
         <KpiCard label="総客数"    numValue={period === 'today' ? todayClients : clients}/>
         <KpiCard label="平均客単価" yenValue={avgUnit}/>
       </KpiGrid>
@@ -517,12 +551,15 @@ function StoreView({ period, stores, selectedId, onSelectId, onGoStaff }: {
   )
 }
 
+type MenuSummary = { menu_name: string; total_count: number; total_amount: number }
+
 // ── StaffView ─────────────────────────────────────────────────────────────
 function StaffView({ period, initStaffId }: { period: Period; initStaffId?: number }) {
   const claims = getClaims()
   const [selectedStaffId, setSelectedStaffId] = useState<number | null>(initStaffId ?? claims?.staff_id ?? null)
   const [staffList, setStaffList]   = useState<Staff[]>([])
   const [sales, setSales]           = useState<StaffDailySales[]>([])
+  const [menus, setMenus]           = useState<MenuSummary[]>([])
   const [aiResult, setAiResult]     = useState<string | null>(null)
   const [aiLoading, setAiLoading]   = useState(false)
   const [aiError, setAiError]       = useState<string | null>(null)
@@ -539,6 +576,9 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
     apiFetch<StaffDailySales[]>(`/api/v1/sales/staff?from=${from}&to=${to}${staffParam}`)
       .then(data => setSales(Array.isArray(data) ? data : []))
       .catch(() => setSales([]))
+    apiFetch<MenuSummary[]>(`/api/v1/sales/staff/menus?from=${from}&to=${to}${staffParam}`)
+      .then(data => setMenus(Array.isArray(data) ? data : []))
+      .catch(() => setMenus([]))
   }, [period, selectedStaffId])
 
   const today          = todayStr()
@@ -554,12 +594,7 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
   const avgUnit        = clients > 0 ? Math.round(periodTotal / clients) : 0
   const retailTotal    = periodSales.reduce((s, d) => s + d.retail_sales, 0)
   const staffPeriodLabel = period === 'today' ? '本日' : period === 'week' ? '今週' : '今月'
-
-  const MENUS = [
-    { name: 'カット + カラー', count: 3, amount: 33000, pct: 80 },
-    { name: 'カット + パーマ', count: 1, amount: 15000, pct: 40 },
-    { name: 'カットのみ',      count: 1, amount:  5500, pct: 15 },
-  ]
+  const maxMenuAmount  = menus[0]?.total_amount ?? 1
 
   return (
     <div>
@@ -605,19 +640,21 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
       </div>
 
       <SectionTitle text="メニュー別内訳"/>
-      {MENUS.map((m, i) => (
+      {menus.length === 0 ? (
+        <div style={{ fontSize: 12, color: muted, padding: '4px 0 12px', fontFamily: josefin }}>データがありません</div>
+      ) : menus.map((m, i) => (
         <div key={i}>
           <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '12px 16px', marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 400, color: txt, marginBottom: 2 }}>{m.name}</div>
-              <div style={{ fontSize: 11, color: muted }}>{m.count}件</div>
+              <div style={{ fontSize: 14, fontWeight: 400, color: txt, marginBottom: 2 }}>{m.menu_name}</div>
+              <div style={{ fontSize: 11, color: muted }}>{m.total_count}件</div>
             </div>
             <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: txt }}>
-              <span style={{ fontSize: 11, color: muted, marginRight: 1 }}>¥</span>{fmt(m.amount)}
+              <span style={{ fontSize: 11, color: muted, marginRight: 1 }}>¥</span>{fmt(m.total_amount)}
             </div>
           </div>
           <div style={{ height: 2, background: 'rgba(232,228,220,0.06)', borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
-            <div style={{ height: '100%', width: `${m.pct}%`, background: gold, borderRadius: 2, opacity: 0.6 }}/>
+            <div style={{ height: '100%', width: `${Math.max(5, Math.round(m.total_amount / maxMenuAmount * 90))}%`, background: gold, borderRadius: 2, opacity: 0.6 }}/>
           </div>
         </div>
       ))}

@@ -132,3 +132,32 @@ func (r *SalesRepository) FindAllStaffDailySalesByStore(ctx context.Context, sto
 	}
 	return result, nil
 }
+
+func (r *SalesRepository) FindStaffMenuSales(ctx context.Context, staffID uint64, from, to string) ([]*repository.StaffMenuSalesSummary, error) {
+	var rows []struct {
+		MenuName    string `db:"menu_name"`
+		TotalCount  uint32 `db:"total_count"`
+		TotalAmount uint32 `db:"total_amount"`
+	}
+	err := r.db.SelectContext(ctx, &rows, `
+		SELECT m.name AS menu_name, SUM(sms.count) AS total_count, SUM(sms.amount) AS total_amount
+		FROM staff_menu_sales sms
+		JOIN staff_daily_sales sds ON sds.id = sms.staff_daily_sale_id
+		JOIN menus m ON m.id = sms.menu_id
+		WHERE sds.staff_id = ? AND sds.date BETWEEN ? AND ?
+		GROUP BY sms.menu_id, m.name
+		ORDER BY total_amount DESC`,
+		staffID, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("SalesRepository.FindStaffMenuSales: %w", err)
+	}
+	result := make([]*repository.StaffMenuSalesSummary, len(rows))
+	for i, row := range rows {
+		result[i] = &repository.StaffMenuSalesSummary{
+			MenuName:    row.MenuName,
+			TotalCount:  row.TotalCount,
+			TotalAmount: row.TotalAmount,
+		}
+	}
+	return result, nil
+}

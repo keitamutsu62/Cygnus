@@ -21,6 +21,13 @@ type SalesRepository interface {
 	FindDailySalesByStore(ctx context.Context, storeID uint64, from, to string) ([]*model.DailySales, error)
 	FindStaffDailySales(ctx context.Context, staffID uint64, from, to string) ([]*model.StaffDailySales, error)
 	FindAllStaffDailySalesByStore(ctx context.Context, storeID uint64, date string) ([]*StaffSalesSummary, error)
+	FindStaffMenuSales(ctx context.Context, staffID uint64, from, to string) ([]*StaffMenuSalesSummary, error)
+}
+
+type StaffMenuSalesSummary struct {
+	MenuName   string `json:"menu_name"`
+	TotalCount uint32 `json:"total_count"`
+	TotalAmount uint32 `json:"total_amount"`
 }
 
 type StaffSalesSummary struct {

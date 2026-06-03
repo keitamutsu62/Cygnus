@@ -84,6 +84,25 @@ func (h *SalesHandler) GetStoreStaffSales(c echo.Context) error {
 	return c.JSON(http.StatusOK, list)
 }
 
+// GET /api/v1/sales/staff/menus?from=2026-06-01&to=2026-06-30[&staff_id=X]
+func (h *SalesHandler) GetStaffMenuSales(c echo.Context) error {
+	claims := claimsFrom(c)
+	staffID := claims.StaffID
+	if s := c.QueryParam("staff_id"); s != "" {
+		if claims.Role == "owner" || claims.Role == "admin" {
+			if id, err := strconv.ParseUint(s, 10, 64); err == nil {
+				staffID = id
+			}
+		}
+	}
+	from, to := parseDateRange(c)
+	list, err := h.repo.FindStaffMenuSales(c.Request().Context(), staffID, from, to)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, list)
+}
+
 func parseDateRange(c echo.Context) (from, to string) {
 	from = c.QueryParam("from")
 	to = c.QueryParam("to")
