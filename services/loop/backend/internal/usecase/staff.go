@@ -41,10 +41,12 @@ type CreateStaffInput struct {
 }
 
 type UpdateStaffInput struct {
-	ID       uint64
-	SalonID  uint64
-	Role     model.StaffRole
-	IsActive *bool
+	ID                uint64
+	SalonID           uint64
+	Role              model.StaffRole
+	IsActive          *bool
+	ShimeiCharge      *uint32
+	ClearShimeiCharge bool
 }
 
 func (u *StaffUsecase) UpdateStaff(ctx context.Context, in UpdateStaffInput) (*model.Staff, error) {
@@ -60,6 +62,11 @@ func (u *StaffUsecase) UpdateStaff(ctx context.Context, in UpdateStaffInput) (*m
 	}
 	if in.IsActive != nil {
 		s.IsActive = *in.IsActive
+	}
+	if in.ClearShimeiCharge {
+		s.ShimeiCharge = nil
+	} else if in.ShimeiCharge != nil {
+		s.ShimeiCharge = in.ShimeiCharge
 	}
 	if err := u.staffRepo.Update(ctx, s); err != nil {
 		return nil, fmt.Errorf("StaffUsecase.UpdateStaff: %w", err)

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
+import BottomSheet, { useBottomSheetDismiss } from '../components/BottomSheet'
 import { api, apiFetch } from '../lib/api'
 import { getClaims, logout } from '../lib/auth'
 import type { Staff, Store, StaffRole } from '../types'
@@ -21,6 +22,20 @@ const purpleDim  = 'rgba(150,100,220,0.1)'
 const purple     = '#9664DC'
 const grayDim    = 'rgba(232,228,220,0.06)'
 const alertColor = '#e07060'
+
+// BottomSheet 内のキャンセルボタン共通コンポーネント。
+// setOpen(false) を直接呼ぶと exit アニメーションが飛ぶため、必ずこれを使う。
+function SheetCancel({ label = 'キャンセル', style }: { label?: string; style?: React.CSSProperties }) {
+  const dismiss = useBottomSheetDismiss()
+  return (
+    <button
+      onClick={dismiss}
+      style={{ width: '100%', padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer', ...style }}
+    >
+      {label}
+    </button>
+  )
+}
 
 type Dealer = { id: number; name: string; contact_method: 'LINE' | 'email'; contact_info: string }
 type BusinessHours = { open_time: string; close_time: string; closed_weekday: number | null }
@@ -56,36 +71,33 @@ function InviteModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={onClose}>
-      <div style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 40px' }} onClick={e => e.stopPropagation()}>
-        <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }}/>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
-          <OrbitSVG size={10}/>
-          <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>スタッフを招待</span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>メールアドレス</div>
-            <input type="email" placeholder="staff@salon.com" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle}/>
-          </div>
-          <div>
-            <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>役職</div>
-            <select value={role} onChange={e => setRole(e.target.value as StaffRole)} style={{ ...inputStyle, WebkitAppearance: 'none' as any }}>
-              <option style={{ background: '#1a1816' }} value="staff">スタッフ</option>
-              <option style={{ background: '#1a1816' }} value="admin">店長</option>
-              <option style={{ background: '#1a1816' }} value="owner">オーナー</option>
-            </select>
-          </div>
-        </div>
-        <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2 }}>
-          <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>招待メールが送信されます。受け取った方は<br/>メール内のURLからアカウントを登録できます。</div>
-        </div>
-        <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
-          {sending ? '送信中...' : '招待メールを送信する'}
-        </button>
-        <button onClick={onClose} style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}>キャンセル</button>
+    <BottomSheet onClose={onClose}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
+        <OrbitSVG size={10}/>
+        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>スタッフを招待</span>
       </div>
-    </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div>
+          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>メールアドレス</div>
+          <input type="email" placeholder="staff@salon.com" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle}/>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>役職</div>
+          <select value={role} onChange={e => setRole(e.target.value as StaffRole)} style={{ ...inputStyle, WebkitAppearance: 'none' as any }}>
+            <option style={{ background: '#1a1816' }} value="staff">スタッフ</option>
+            <option style={{ background: '#1a1816' }} value="admin">店長</option>
+            <option style={{ background: '#1a1816' }} value="owner">オーナー</option>
+          </select>
+        </div>
+      </div>
+      <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2 }}>
+        <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>招待メールが送信されます。受け取った方は<br/>メール内のURLからアカウントを登録できます。</div>
+      </div>
+      <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
+        {sending ? '送信中...' : '招待メールを送信する'}
+      </button>
+      <SheetCancel style={{ marginTop: 8 }} />
+    </BottomSheet>
   )
 }
 
@@ -339,17 +351,21 @@ function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
 function StaffDetail({
   staff,
   storeList,
+  salonShimeiCharge,
   onBack,
   onUpdated,
 }: {
   staff: Staff
   storeList: Store[]
+  salonShimeiCharge: number
   onBack: () => void
   onUpdated: () => void
 }) {
   const claims    = getClaims()
-  const [rolePickerOpen, setRolePickerOpen] = useState(false)
-  const [deactivateOpen, setDeactivateOpen] = useState(false)
+  const [rolePickerOpen,   setRolePickerOpen]   = useState(false)
+  const [deactivateOpen,   setDeactivateOpen]   = useState(false)
+  const [shimeiEditOpen,   setShimeiEditOpen]   = useState(false)
+  const [shimeiInput,      setShimeiInput]      = useState('')
   const [saving, setSaving] = useState(false)
 
   const storeName = storeList.find(s => s.id === staff.store_id)?.name ?? '—'
@@ -368,6 +384,26 @@ function StaffDetail({
       onUpdated()
     } catch {
       window.alert('役職の変更に失敗しました')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function changeShimei(value: number | null) {
+    setSaving(true)
+    setShimeiEditOpen(false)
+    try {
+      const body = value === null
+        ? { clear_shimei_charge: true }
+        : { shimei_charge: value }
+      const res = await api(`/api/v1/staffs/${staff.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) throw new Error()
+      onUpdated()
+    } catch {
+      window.alert('指名料の変更に失敗しました')
     } finally {
       setSaving(false)
     }
@@ -426,6 +462,13 @@ function StaffDetail({
           label="役職"
           value={ROLE_LABEL[staff.role]}
           onClick={isSelf ? undefined : () => setRolePickerOpen(true)}
+        />
+        <SettingRow
+          label="指名料"
+          value={staff.shimei_charge !== null
+            ? `¥${staff.shimei_charge.toLocaleString('ja-JP')}（個別設定）`
+            : `共通設定を使用（¥${salonShimeiCharge.toLocaleString('ja-JP')}）`}
+          onClick={() => { setShimeiInput(String(staff.shimei_charge ?? salonShimeiCharge)); setShimeiEditOpen(true) }}
           last
         />
       </SettingGroup>
@@ -452,58 +495,79 @@ function StaffDetail({
 
       {/* 役職変更ピッカー */}
       {rolePickerOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setRolePickerOpen(false)}>
-          <div style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 40px' }} onClick={e => e.stopPropagation()}>
-            <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }}/>
-            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 16 }}>役職を変更</div>
-            {(['owner', 'admin', 'staff'] as StaffRole[]).map(r => (
-              <div
-                key={r}
-                onClick={() => changeRole(r)}
-                style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
-              >
-                <div style={{ fontSize: 13, color: r === staff.role ? gold : txt, fontFamily: zen }}>{ROLE_LABEL[r]}</div>
-                {r === staff.role && (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <polyline points="2.5,7 5.5,10.5 11.5,3.5" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </div>
-            ))}
-            <button onClick={() => setRolePickerOpen(false)} style={{ width: '100%', marginTop: 12, padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}>キャンセル</button>
+        <BottomSheet onClose={() => setRolePickerOpen(false)}>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 16 }}>役職を変更</div>
+          {(['owner', 'admin', 'staff'] as StaffRole[]).map(r => (
+            <div
+              key={r}
+              onClick={() => changeRole(r)}
+              style={{ padding: '14px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
+            >
+              <div style={{ fontSize: 13, color: r === staff.role ? gold : txt, fontFamily: zen }}>{ROLE_LABEL[r]}</div>
+              {r === staff.role && (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <polyline points="2.5,7 5.5,10.5 11.5,3.5" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+          ))}
+          <SheetCancel style={{ marginTop: 12 }} />
+        </BottomSheet>
+      )}
+
+      {/* 指名料編集 */}
+      {shimeiEditOpen && (
+        <BottomSheet onClose={() => setShimeiEditOpen(false)}>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 4 }}>指名料（個別設定）</div>
+          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 16 }}>未設定の場合、サロン共通の指名料が適用されます</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <span style={{ fontSize: 14, color: muted }}>¥</span>
+            <input
+              type="number"
+              min="0"
+              value={shimeiInput}
+              onChange={e => setShimeiInput(e.target.value)}
+              style={{ flex: 1, background: 'rgba(232,228,220,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '10px 12px', color: txt, fontSize: 16, fontFamily: josefin, fontWeight: 100, outline: 'none' }}
+            />
           </div>
-        </div>
+          <button
+            onClick={() => changeShimei(Math.max(0, parseInt(shimeiInput) || 0))}
+            style={{ width: '100%', padding: 12, background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, fontFamily: zen, fontSize: 13, color: gold, cursor: 'pointer', marginBottom: 8 }}
+          >
+            この金額で設定する
+          </button>
+          <button
+            onClick={() => changeShimei(null)}
+            style={{ width: '100%', padding: 12, background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer', marginBottom: 8 }}
+          >
+            共通設定に戻す（¥{salonShimeiCharge.toLocaleString('ja-JP')}）
+          </button>
+          <SheetCancel style={{ padding: 10 }} />
+        </BottomSheet>
       )}
 
       {/* 有効/無効切り替え確認 */}
       {deactivateOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }} onClick={() => setDeactivateOpen(false)}>
-          <div style={{ width: '100%', maxWidth: 400, background: '#1a1816', border: `1px solid ${goldBorder}`, borderRadius: 4, padding: 24 }} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 15, color: txt, fontFamily: zen, marginBottom: 8 }}>
-              {isActive ? 'アカウントを無効にしますか？' : 'アカウントを有効に戻しますか？'}
-            </div>
-            <div style={{ fontSize: 12, color: muted, fontFamily: zen, lineHeight: 1.8, marginBottom: 20 }}>
-              {isActive
-                ? <>{staff.name} のアクセスを停止します。<br/>この操作は後から取り消せます。</>
-                : <>{staff.name} のログインを再び許可します。</>
-              }
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                onClick={() => setDeactivateOpen(false)}
-                style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={toggleActive}
-                style={{ flex: 2, padding: '11px 0', background: isActive ? 'rgba(224,112,96,0.15)' : greenDim, border: `1px solid ${isActive ? 'rgba(224,112,96,0.4)' : 'rgba(109,186,142,0.3)'}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: isActive ? alertColor : green, cursor: 'pointer' }}
-              >
-                {isActive ? '無効にする' : '有効に戻す'}
-              </button>
-            </div>
+        <BottomSheet onClose={() => setDeactivateOpen(false)}>
+          <div style={{ fontSize: 15, color: txt, fontFamily: zen, marginBottom: 8 }}>
+            {isActive ? 'アカウントを無効にしますか？' : 'アカウントを有効に戻しますか？'}
           </div>
-        </div>
+          <div style={{ fontSize: 12, color: muted, fontFamily: zen, lineHeight: 1.8, marginBottom: 20 }}>
+            {isActive
+              ? <>{staff.name} のアクセスを停止します。<br/>この操作は後から取り消せます。</>
+              : <>{staff.name} のログインを再び許可します。</>
+            }
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <SheetCancel style={{ flex: 1, width: 'auto', padding: '11px 0', border: `1px solid ${border}`, borderRadius: 2 }} />
+            <button
+              onClick={toggleActive}
+              style={{ flex: 2, padding: '11px 0', background: isActive ? 'rgba(224,112,96,0.15)' : greenDim, border: `1px solid ${isActive ? 'rgba(224,112,96,0.4)' : 'rgba(109,186,142,0.3)'}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: isActive ? alertColor : green, cursor: 'pointer' }}
+            >
+              {isActive ? '無効にする' : '有効に戻す'}
+            </button>
+          </div>
+        </BottomSheet>
       )}
     </div>
   )
@@ -924,7 +988,8 @@ export default function SettingsPage() {
   const [showInvite,     setShowInvite]     = useState(false)
   const [treatmentCount, setTreatmentCount] = useState(0)
   const [retailCount,    setRetailCount]    = useState(0)
-  const [selectedStaff,  setSelectedStaff]  = useState<Staff | null>(null)
+  const [selectedStaff,       setSelectedStaff]       = useState<Staff | null>(null)
+  const [salonShimeiCharge,   setSalonShimeiCharge]   = useState(1100)
 
   function loadDealers() {
     apiFetch<Dealer[]>('/api/v1/dealers')
@@ -948,6 +1013,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadDealers()
+    apiFetch<{ shimei_charge: number }>('/api/v1/settings')
+      .then(d => { if (d?.shimei_charge !== undefined) setSalonShimeiCharge(d.shimei_charge) })
+      .catch(() => {})
     const storeId = claims?.store_id
     if (storeId) {
       apiFetch<BusinessHours>(`/api/v1/stores/${storeId}/hours`)
@@ -1020,6 +1088,7 @@ export default function SettingsPage() {
           <StaffDetail
             staff={selectedStaff}
             storeList={storeList}
+            salonShimeiCharge={salonShimeiCharge}
             onBack={() => { setSub('staff-list'); setSelectedStaff(null) }}
             onUpdated={() => loadStaffs()}
           />

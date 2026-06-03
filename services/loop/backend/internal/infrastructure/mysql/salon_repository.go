@@ -32,6 +32,19 @@ func (r *SalonRepository) FindByID(ctx context.Context, id uint64) (*model.Salon
 	return &s, nil
 }
 
+func (r *SalonRepository) GetShimeiCharge(ctx context.Context, salonID uint64) (uint32, error) {
+	var charge uint32
+	if err := r.db.QueryRowContext(ctx, `SELECT shimei_charge FROM salons WHERE id = ?`, salonID).Scan(&charge); err != nil {
+		return 1100, err
+	}
+	return charge, nil
+}
+
+func (r *SalonRepository) UpdateShimeiCharge(ctx context.Context, salonID uint64, charge uint32) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE salons SET shimei_charge = ? WHERE id = ?`, charge, salonID)
+	return err
+}
+
 type PlanRepository struct{ db *sqlx.DB }
 
 func NewPlanRepository(db *sqlx.DB) *PlanRepository { return &PlanRepository{db: db} }

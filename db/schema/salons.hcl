@@ -10,6 +10,11 @@ table "salons" {
   column "name" {
     type = varchar(255)
   }
+  column "shimei_charge" {
+    type     = int
+    unsigned = true
+    default  = 1100
+  }
   column "created_at" {
     type    = datetime
     default = sql("CURRENT_TIMESTAMP")
@@ -98,6 +103,11 @@ table "staffs" {
   column "avatar_initials" {
     type = varchar(4)
     null = true
+  }
+  column "shimei_charge" {
+    type     = int
+    unsigned = true
+    null     = true
   }
   column "created_at" {
     type    = datetime

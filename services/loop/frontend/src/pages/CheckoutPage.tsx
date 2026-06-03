@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getClaims } from '../lib/auth'
 import { apiFetch, api } from '../lib/api'
 import type { Staff, Store, Menu } from '../types'
+import BottomSheet from '../components/BottomSheet'
 import { ROLE_LABEL } from '../types'
 
 const gold = '#c8a882'
@@ -40,78 +41,6 @@ interface LineItem {
   name: string
   price: number
   note?: string
-}
-
-// ─── ボトムシート共通ラッパー ──────────────────────────────────────────
-// スワイプ検知はハンドル部のみ。コンテンツエリアのスクロールは妨げない。
-function BottomSheet({
-  onClose,
-  maxHeight = '75vh',
-  children,
-}: {
-  onClose: () => void
-  maxHeight?: string
-  children: React.ReactNode
-}) {
-  // body スクロールロック
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [])
-
-  const [translateY, setTranslateY] = useState(0)
-  const startYRef = useRef<number | null>(null)
-
-  // ハンドル部のみでスワイプ検知
-  function onHandleTouchStart(e: React.TouchEvent) {
-    startYRef.current = e.touches[0].clientY
-  }
-  function onHandleTouchMove(e: React.TouchEvent) {
-    if (startYRef.current === null) return
-    const dy = e.touches[0].clientY - startYRef.current
-    if (dy > 0) setTranslateY(dy)
-  }
-  function onHandleTouchEnd() {
-    if (translateY > 80) onClose()
-    else setTranslateY(0)
-    startYRef.current = null
-  }
-
-  return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'flex-end' }}
-      onClick={onClose}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%',
-          background: surface2,
-          borderRadius: '12px 12px 0 0',
-          maxHeight,
-          display: 'flex',
-          flexDirection: 'column',
-          transform: `translateY(${translateY}px)`,
-          transition: translateY === 0 ? 'transform 0.2s ease' : 'none',
-        }}
-      >
-        {/* スワイプハンドル（ここだけタッチ検知） */}
-        <div
-          onTouchStart={onHandleTouchStart}
-          onTouchMove={onHandleTouchMove}
-          onTouchEnd={onHandleTouchEnd}
-          style={{ flexShrink: 0, padding: '12px 20px 4px', touchAction: 'none', cursor: 'grab' }}
-        >
-          <div style={{ width: 32, height: 3, background: 'rgba(232,228,220,0.2)', borderRadius: 2, margin: '0 auto' }} />
-        </div>
-        {/* スクロール可能なコンテンツ */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px 40px', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
-          {children}
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // ─── メニューピッカー（施術 / 物販 共通） ──────────────────────────────
@@ -304,13 +233,17 @@ export default function CheckoutPage() {
     apiFetch<Store[]>('/api/v1/stores').then(list => setStoreList(Array.isArray(list) ? list : [])).catch(() => {})
     apiFetch<Menu[]>('/api/v1/menus?type=treatment').then(list => setTreatmentMenus(Array.isArray(list) ? list : [])).catch(() => {})
     apiFetch<Menu[]>('/api/v1/menus?type=retail').then(list => setRetailMenus(Array.isArray(list) ? list : [])).catch(() => {})
+    apiFetch<{ shimei_charge: number }>('/api/v1/settings').then(d => { if (d?.shimei_charge !== undefined) setShimeiRyo(d.shimei_charge) }).catch(() => {})
   }, [])
 
   const selectedStaff = staffList.find(s => s.id === selectedStaffId)
   const storeName = storeList.find(st => st.id === (selectedStaff?.store_id ?? claims?.store_id))?.name ?? ''
 
+  // スタッフ個別設定があればそちらを優先、なければサロンデフォルトを使用
+  const effectiveShimeiRyo = selectedStaff?.shimei_charge ?? shimeiRyo
+
   const subtotal = menuItems.reduce((s, i) => s + i.price, 0) + retailItems.reduce((s, i) => s + i.price, 0)
-  const total = subtotal + (shimei ? shimeiRyo : 0)
+  const total = subtotal + (shimei ? effectiveShimeiRyo : 0)
 
   const SOURCES: { id: Source; label: string }[] = [
     { id: 'walkin', label: 'フリー' },
@@ -470,7 +403,7 @@ export default function CheckoutPage() {
             {shimei && (
               <div onClick={() => setShowShimeiEdit(true)} style={{ marginTop: 8, padding: '12px 16px', background: surface, border: `1px solid ${border}`, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                 <div style={{ fontSize: 13, color: txt, fontFamily: zen }}>指名料</div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold }}>¥{shimeiRyo.toLocaleString()}</div>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold }}>¥{effectiveShimeiRyo.toLocaleString()}</div>
               </div>
             )}
           </Section>
@@ -522,8 +455,8 @@ export default function CheckoutPage() {
           <div style={{ margin: '20px 20px 0', padding: '16px 20px', background: surface2, border: `1px solid ${goldBorder}`, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: 10, letterSpacing: '0.15em', color: muted, fontFamily: josefin }}>合計金額</div>
-              {shimei && shimeiRyo > 0 && (
-                <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginTop: 3 }}>指名料 ¥{shimeiRyo.toLocaleString()} 含む</div>
+              {shimei && effectiveShimeiRyo > 0 && (
+                <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginTop: 3 }}>指名料 ¥{effectiveShimeiRyo.toLocaleString()} 含む</div>
               )}
             </div>
             <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 28, color: gold }}>
@@ -597,7 +530,7 @@ export default function CheckoutPage() {
       )}
       {showShimeiEdit && (
         <ShimeiEditModal
-          current={shimeiRyo}
+          current={effectiveShimeiRyo}
           onSave={setShimeiRyo}
           onClose={() => setShowShimeiEdit(false)}
         />

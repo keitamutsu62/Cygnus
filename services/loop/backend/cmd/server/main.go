@@ -77,6 +77,7 @@ func main() {
 	salesH          := handler.NewSalesHandler(salesRepo)
 	retailSaleH     := handler.NewRetailSaleHandler(retailSaleUC)
 	aiH             := handler.NewAIHandler(aiUC)
+	settingsH       := handler.NewSettingsHandler(salonRepo)
 
 	// ─── Echo ─────────────────────────────────────────────────
 	e := echo.New()
@@ -168,6 +169,10 @@ func main() {
 	// AI 分析（スタッフの得意領域）
 	// TODO: ANTHROPIC_API_KEY を設定すれば usecase/ai.go の stub が実 API に切り替わる
 	api.POST("/staff/analysis", aiH.Analyze)
+
+	// サロン設定（指名料など）
+	api.GET("/settings", settingsH.Get)
+	api.PATCH("/settings", settingsH.Update)
 
 	// STUDIO
 	api.GET("/studio/profile", studioH.GetMyProfile)

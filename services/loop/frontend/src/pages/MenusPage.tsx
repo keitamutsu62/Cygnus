@@ -339,7 +339,12 @@ export default function MenusPage() {
   }
 
   useEffect(() => {
-    loadMenus().finally(() => setLoading(false))
+    Promise.all([
+      loadMenus(),
+      apiFetch<{ shimei_charge: number }>('/api/v1/settings')
+        .then(d => { if (d?.shimei_charge !== undefined) setShimeiRyo(d.shimei_charge) })
+        .catch(() => {}),
+    ]).finally(() => setLoading(false))
   }, [])
 
   const currentList = tab === 'treatment' ? treatments : retails
@@ -515,7 +520,11 @@ export default function MenusPage() {
       <ShimeiEditModal
         current={shimeiRyo}
         onClose={() => setShimeiEdit(false)}
-        onSaved={v => { setShimeiRyo(v); setShimeiEdit(false) }}
+        onSaved={async v => {
+          await apiFetch('/api/v1/settings', { method: 'PATCH', body: JSON.stringify({ shimei_charge: v }) }).catch(() => {})
+          setShimeiRyo(v)
+          setShimeiEdit(false)
+        }}
       />
     )}
     </>
