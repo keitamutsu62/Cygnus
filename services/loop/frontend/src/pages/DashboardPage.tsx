@@ -6,6 +6,7 @@ import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
 import { getClaims, getSalonName } from '../lib/auth'
 import { businessDaysToClosing } from '../lib/businessDays'
+import { Toast, useToast } from '../components/Toast'
 import type { DailySales, StaffSalesSummary } from '../types'
 
 const josefin = "'Josefin Sans', sans-serif"
@@ -440,6 +441,7 @@ export default function DashboardPage() {
     try { return JSON.parse(sessionStorage.getItem('dashboard_sent_orders') ?? '[]') } catch { return [] }
   })
   const [showNotif,   setShowNotif]   = useState(false)
+  const { msg: toastMsg, showError }  = useToast()
 
   const cardRef      = useRef<HTMLDivElement>(null)
   const dayOffsetRef = useRef(0)
@@ -452,7 +454,7 @@ export default function DashboardPage() {
       .then(list => {
         const map = new Map((Array.isArray(list) ? list : []).map(d => [d.date.slice(0, 10), d]))
         setSalesDays(days.map(d => ({ ...d, data: map.get(d.dateStr) ?? null })))
-      }).catch(() => {})
+      }).catch(() => showError('売上データの読み込みに失敗しました'))
 
     apiFetch<InvAlert[]>(`/api/v1/inventory?store_id=${storeId}`)
       .then(d => {
@@ -464,11 +466,11 @@ export default function DashboardPage() {
             .filter(i => (i.status === '要発注' || i.status === '注意') && !sentNames.has(i.name))
             .slice(0, 3)
         )
-      }).catch(() => {})
+      }).catch(() => showError('在庫アラートの読み込みに失敗しました'))
 
     apiFetch<Dealer[]>('/api/v1/dealers')
       .then(d => setDealers(Array.isArray(d) ? d : []))
-      .catch(() => {})
+      .catch(() => showError('ディーラー情報の読み込みに失敗しました'))
 
     if (isManager) {
       apiFetch<StaffSalesSummary[]>(`/api/v1/sales/store/staff?store_id=${storeId}&date=${days[0].dateStr}`)
@@ -547,6 +549,7 @@ export default function DashboardPage() {
   ]
 
   return (
+    <>
     <AppLayout>
       <style>{`
         @keyframes circlePop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
@@ -808,5 +811,7 @@ export default function DashboardPage() {
       )}
 
     </AppLayout>
+    <Toast msg={toastMsg} />
+    </>
   )
 }

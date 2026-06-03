@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
+import { Toast, useToast } from '../components/Toast'
 import type { Menu } from '../types'
 
 const josefin    = "'Josefin Sans', sans-serif"
@@ -327,6 +328,7 @@ export default function MenusPage() {
   const [addTab,       setAddTab]       = useState<'treatment' | 'retail' | null>(null)
   const [shimeiEdit,   setShimeiEdit]   = useState(false)
   const [loading,      setLoading]      = useState(true)
+  const { msg: toastMsg, showError }    = useToast()
 
   function loadMenus() {
     return Promise.all([
@@ -335,7 +337,7 @@ export default function MenusPage() {
     ]).then(([t, r]) => {
       setTreatments(Array.isArray(t) ? t : [])
       setRetails(Array.isArray(r) ? r : [])
-    }).catch(() => {})
+    }).catch(() => showError('メニューの読み込みに失敗しました'))
   }
 
   useEffect(() => {
@@ -528,6 +530,7 @@ export default function MenusPage() {
       />
     )}
 
+    <Toast msg={toastMsg} />
     </>
   )
 }

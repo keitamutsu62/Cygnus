@@ -585,7 +585,6 @@ const STATUS_STYLE: Record<string, React.CSSProperties> = {
 }
 
 // ─── 材料マスタ ────────────────────────────────────────────────────────────────
-const MASTER_CATEGORIES = ['カラー剤', 'パーマ剤', 'シャンプー・トリートメント', 'スタイリング剤', '物販'] as const
 
 function MasterField({
   placeholder, value, onChange, inputMode,
@@ -609,10 +608,11 @@ function MasterField({
 
 // ─── 材料追加/編集フォーム（BottomSheet） ─────────────────────────────────────
 function MaterialFormSheet({
-  initial, menus, onSave, onClose,
+  initial, menus, existingCategories, onSave, onClose,
 }: {
   initial?: Material
   menus: AppMenu[]
+  existingCategories: string[]
   onSave: (data: {
     name: string; brand: string | null; category: string
     stock_unit: string; threshold: number; menu_ids: number[]
@@ -621,7 +621,7 @@ function MaterialFormSheet({
 }) {
   const [fname,      setFname]      = useState(initial?.name ?? '')
   const [fbrand,     setFbrand]     = useState(initial?.brand ?? '')
-  const [fcat,       setFcat]       = useState(initial?.category ?? MASTER_CATEGORIES[0])
+  const [fcat,       setFcat]       = useState(initial?.category ?? existingCategories[0] ?? '')
   const [funit,      setFunit]      = useState(initial?.stock_unit ?? '本')
   const [fthreshold, setFthreshold] = useState('10')
   const [menuIds,    setMenuIds]    = useState<Set<number>>(
@@ -681,21 +681,21 @@ function MaterialFormSheet({
             </div>
             <div>
               <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>カテゴリ</div>
-              <select
+              <input
+                list="category-list"
                 value={fcat}
                 onChange={e => setFcat(e.target.value)}
+                placeholder="例：カラー剤"
                 style={{
                   width: '100%', boxSizing: 'border-box' as const,
                   background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.12)`,
                   borderRadius: 2, padding: '10px 12px',
                   fontSize: 16, color: '#e8e4dc', fontFamily: zen, outline: 'none',
-                  WebkitAppearance: 'none',
-                } as React.CSSProperties}
-              >
-                {MASTER_CATEGORIES.map(c => (
-                  <option key={c} value={c} style={{ background: '#1a1816' }}>{c}</option>
-                ))}
-              </select>
+                }}
+              />
+              <datalist id="category-list">
+                {existingCategories.map(c => <option key={c} value={c} />)}
+              </datalist>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ flex: 1 }}>
@@ -910,11 +910,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
     onChanged()
   }
 
-  const registeredCats = new Set(materials.map(m => m.category))
-  const orderedCats    = MASTER_CATEGORIES.filter(c => registeredCats.has(c))
-  const otherCats      = materials.map(m => m.category).filter(c => !MASTER_CATEGORIES.includes(c as typeof MASTER_CATEGORIES[number]))
-  const allCats        = [...orderedCats, ...Array.from(new Set(otherCats))]
-  const missingCats    = MASTER_CATEGORIES.filter(c => !registeredCats.has(c))
+  const allCats = Array.from(new Set(materials.map(m => m.category)))
 
   return (
     <>
@@ -988,15 +984,6 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
               )
             })}
 
-            {/* 未登録カテゴリの案内 */}
-            {missingCats.length > 0 && (
-              <div style={{ background: goldDim, border: `1px dashed ${goldBorder}`, borderRadius: 2, padding: 16, textAlign: 'center', marginTop: 8 }}>
-                <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 8, lineHeight: 1.7 }}>
-                  {missingCats.join('・')}カテゴリの材料は未登録です
-                </div>
-                <button onClick={() => setAddOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold }}>+ 材料を追加する</button>
-              </div>
-            )}
           </>
         )}
       </div>
@@ -1026,6 +1013,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
           key={editItem.id}
           initial={editItem}
           menus={menus}
+          existingCategories={allCats}
           onSave={handleUpdate}
           onClose={() => setEditItem(null)}
         />
@@ -1035,6 +1023,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
       {addOpen && (
         <MaterialFormSheet
           menus={menus}
+          existingCategories={allCats}
           onSave={handleSave}
           onClose={() => setAddOpen(false)}
         />
@@ -1297,8 +1286,8 @@ export default function InventoryPage() {
       if (!ownStoreId && data.length > 0) {
         setCurrentStoreId(data[0].id)
       }
-    }).catch(() => {})
-    apiFetch<Dealer[]>('/api/v1/dealers').then(setDealers).catch(() => {})
+    }).catch(() => showToast('店舗情報の読み込みに失敗しました'))
+    apiFetch<Dealer[]>('/api/v1/dealers').then(setDealers).catch(() => showToast('ディーラー情報の読み込みに失敗しました'))
   }, [])
 
   // 在庫読み込み（店舗変更時）+ 発注済み品目の sentIds 初期化
@@ -1307,7 +1296,7 @@ export default function InventoryPage() {
     setLoading(true)
     apiFetch<InventoryItem[]>(`/api/v1/inventory?store_id=${currentStoreId}`)
       .then(data => { setItems(Array.isArray(data) ? data : []) })
-      .catch(() => setItems([]))
+      .catch(() => { setItems([]); showToast('在庫データの読み込みに失敗しました') })
       .finally(() => setLoading(false))
 
     // pending/sent の発注がある品目を「送信済」として初期表示

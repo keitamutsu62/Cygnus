@@ -4,6 +4,7 @@ import { getClaims } from '../lib/auth'
 import { apiFetch, api } from '../lib/api'
 import type { Staff, Store, Menu } from '../types'
 import BottomSheet from '../components/BottomSheet'
+import { Toast, useToast } from '../components/Toast'
 import { ROLE_LABEL } from '../types'
 
 const gold = '#c8a882'
@@ -227,11 +228,12 @@ export default function CheckoutPage() {
   const [success, setSuccess] = useState(false)
   const [successAmount, setSuccessAmount] = useState(0)
   const [successSub, setSuccessSub] = useState('')
+  const { msg: toastMsg, showError } = useToast()
 
   useEffect(() => {
-    apiFetch<Staff[]>('/api/v1/staffs').then(list => setStaffList(Array.isArray(list) ? list : [])).catch(() => {})
-    apiFetch<Store[]>('/api/v1/stores').then(list => setStoreList(Array.isArray(list) ? list : [])).catch(() => {})
-    apiFetch<Menu[]>('/api/v1/menus?type=treatment').then(list => setTreatmentMenus(Array.isArray(list) ? list : [])).catch(() => {})
+    apiFetch<Staff[]>('/api/v1/staffs').then(list => setStaffList(Array.isArray(list) ? list : [])).catch(() => showError('スタッフ情報の読み込みに失敗しました'))
+    apiFetch<Store[]>('/api/v1/stores').then(list => setStoreList(Array.isArray(list) ? list : [])).catch(() => showError('店舗情報の読み込みに失敗しました'))
+    apiFetch<Menu[]>('/api/v1/menus?type=treatment').then(list => setTreatmentMenus(Array.isArray(list) ? list : [])).catch(() => showError('メニュー情報の読み込みに失敗しました'))
     apiFetch<Menu[]>('/api/v1/menus?type=retail').then(list => setRetailMenus(Array.isArray(list) ? list : [])).catch(() => {})
     apiFetch<{ shimei_charge: number }>('/api/v1/settings').then(d => { if (d?.shimei_charge !== undefined) setShimeiRyo(d.shimei_charge) }).catch(() => {})
   }, [])
@@ -535,6 +537,7 @@ export default function CheckoutPage() {
           onClose={() => setShowShimeiEdit(false)}
         />
       )}
+    <Toast msg={toastMsg} />
     </>
   )
 }
