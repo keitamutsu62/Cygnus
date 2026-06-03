@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
 import { getClaims, getSalonName } from '../lib/auth'
+import { businessDaysToClosing } from '../lib/businessDays'
 import type { DailySales, StaffSalesSummary } from '../types'
 
 const josefin = "'Josefin Sans', sans-serif"
@@ -29,22 +30,6 @@ function dayLabel(i: number) {
   if (i === 0) return '本日'; if (i === 1) return '1日前'; return `${i}日前`
 }
 
-// 次の締日（毎月20日）まで何営業日か（定休日=月曜）
-function businessDaysToClosing(): number {
-  const today = new Date()
-  const day   = today.getDate()
-  const closing = day <= 20
-    ? new Date(today.getFullYear(), today.getMonth(), 20)
-    : new Date(today.getFullYear(), today.getMonth() + 1, 20)
-  let count = 0
-  const cur = new Date(today)
-  cur.setDate(cur.getDate() + 1)
-  while (cur <= closing) {
-    if (cur.getDay() !== 1) count++ // 月曜除外
-    cur.setDate(cur.getDate() + 1)
-  }
-  return count
-}
 
 const OrbitSVG = () => (
   <svg width="12" height="12" viewBox="0 0 80 80" fill="none">
@@ -237,13 +222,20 @@ type Dealer   = { id: number; name: string; contact_method: string }
 function OrderModal({ item, storeId, dealers, onClose, onDone }: {
   item: InvAlert; storeId: number; dealers: Dealer[]; onClose: () => void; onDone: (dealerName: string, qty: string) => void
 }) {
-  const [dealerId,  setDealerId]  = useState(() => dealers[0]?.id ?? 0)
-  const [qty,       setQty]       = useState(String(item.threshold))
-  const [loading,   setLoading]   = useState(false)
-  const [confirmed, setConfirmed] = useState(false)
+  const [dealerId,      setDealerId]      = useState(() => dealers[0]?.id ?? 0)
+  const [qty,           setQty]           = useState(String(item.threshold))
+  const [loading,       setLoading]       = useState(false)
+  const [confirmed,     setConfirmed]     = useState(false)
+  const [closedWeekday, setClosedWeekday] = useState<number | null>(null)
   const closeRef = useRef<(() => void) | null>(null)
 
-  const daysLeft = businessDaysToClosing()
+  useEffect(() => {
+    apiFetch<{ closed_weekday: number | null }>(`/api/v1/stores/${storeId}/hours`)
+      .then(d => setClosedWeekday(d.closed_weekday ?? null))
+      .catch(() => {})
+  }, [storeId])
+
+  const daysLeft = businessDaysToClosing(20, closedWeekday)
   const showWarn = daysLeft <= 5
   const dealer   = dealers.find(d => d.id === dealerId)
 
