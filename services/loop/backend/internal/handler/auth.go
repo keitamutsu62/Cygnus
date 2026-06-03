@@ -110,6 +110,28 @@ func (h *AuthHandler) Invite(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "invitation sent"})
 }
 
+// PATCH /api/v1/auth/change-password
+func (h *AuthHandler) ChangePassword(c echo.Context) error {
+	claims := claimsFrom(c)
+	var req struct {
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+	if req.CurrentPassword == "" || len(req.NewPassword) < 8 {
+		return echo.NewHTTPError(http.StatusBadRequest, "new_password must be at least 8 characters")
+	}
+	if err := h.uc.ChangePassword(c.Request().Context(), claims.StaffID, req.CurrentPassword, req.NewPassword); err != nil {
+		if errors.Is(err, apierror.ErrUnauthorized) {
+			return echo.NewHTTPError(http.StatusUnauthorized, "current password is incorrect")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to change password")
+	}
+	return c.NoContent(http.StatusNoContent)
+}
+
 // POST /api/v1/auth/accept-invitation
 func (h *AuthHandler) AcceptInvitation(c echo.Context) error {
 	var req struct {

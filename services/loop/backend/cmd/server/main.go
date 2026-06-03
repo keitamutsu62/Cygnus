@@ -39,6 +39,7 @@ func main() {
 	appointmentRepo  := mysql.NewAppointmentRepository(db)
 	storeRepo        := mysql.NewStoreRepository(db)
 	bhRepo           := mysql.NewBusinessHoursRepository(db)
+	closureRepo      := mysql.NewStoreSpecialClosureRepository(db)
 	salesRepo        := mysql.NewSalesRepository(db)
 	retailSaleRepo   := mysql.NewRetailSaleRepository(db)
 	materialRepo     := mysql.NewMaterialRepository(db)
@@ -56,7 +57,7 @@ func main() {
 	menuUC       := usecase.NewMenuUsecase(menuRepo)
 	customerUC   := usecase.NewCustomerUsecase(customerRepo)
 	appointmentUC := usecase.NewAppointmentUsecase(appointmentRepo)
-	storeUC      := usecase.NewStoreUsecase(storeRepo, bhRepo)
+	storeUC      := usecase.NewStoreUsecase(storeRepo, bhRepo, closureRepo)
 	materialUC      := usecase.NewMaterialUsecase(materialRepo, invtWriteRepo, storeRepo)
 	dealerUC        := usecase.NewDealerUsecase(dealerRepo, orderRepo)
 	retailSaleUC    := usecase.NewRetailSaleUsecase(retailSaleRepo, salesRepo)
@@ -104,6 +105,7 @@ func main() {
 
 	// 認証・スタッフ
 	api.POST("/auth/invite", authH.Invite)
+	api.PATCH("/auth/change-password", authH.ChangePassword)
 	api.GET("/staffs", staffH.List)
 	api.GET("/staffs/:id", staffH.Get)
 	api.PATCH("/staffs/:id", staffH.Update)
@@ -114,6 +116,9 @@ func main() {
 	api.PATCH("/stores/:id", storeH.Update)
 	api.GET("/stores/:id/hours", storeH.GetHours)
 	api.PUT("/stores/:id/hours", storeH.UpdateHours)
+	api.GET("/stores/:id/special-closures", storeH.ListSpecialClosures)
+	api.POST("/stores/:id/special-closures", storeH.AddSpecialClosure)
+	api.DELETE("/stores/:id/special-closures/:closureId", storeH.DeleteSpecialClosure)
 
 	// メニュー（RESERVE の予約フロー・duration で空き枠計算に使用）
 	api.GET("/menus", menuH.List)

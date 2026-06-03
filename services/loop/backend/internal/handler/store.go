@@ -77,6 +77,55 @@ func (h *StoreHandler) GetHours(c echo.Context) error {
 	return c.JSON(http.StatusOK, bh)
 }
 
+// GET /api/v1/stores/:id/special-closures
+func (h *StoreHandler) ListSpecialClosures(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	list, err := h.uc.ListSpecialClosures(c.Request().Context(), id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, list)
+}
+
+// POST /api/v1/stores/:id/special-closures
+func (h *StoreHandler) AddSpecialClosure(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	var req struct {
+		Date string `json:"date"`
+		Note string `json:"note"`
+	}
+	if err := c.Bind(&req); err != nil || req.Date == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "date is required (YYYY-MM-DD)")
+	}
+	closure, err := h.uc.AddSpecialClosure(c.Request().Context(), id, req.Date, req.Note)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusCreated, closure)
+}
+
+// DELETE /api/v1/stores/:id/special-closures/:closureId
+func (h *StoreHandler) DeleteSpecialClosure(c echo.Context) error {
+	storeID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	closureID, err := strconv.ParseUint(c.Param("closureId"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid closureId")
+	}
+	if err := h.uc.DeleteSpecialClosure(c.Request().Context(), closureID, storeID); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.NoContent(http.StatusNoContent)
+}
+
 // PUT /api/v1/stores/:id/hours
 func (h *StoreHandler) UpdateHours(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)

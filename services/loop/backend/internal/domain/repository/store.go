@@ -20,3 +20,9 @@ type BusinessHoursRepository interface {
 	Upsert(ctx context.Context, bh *model.BusinessHours) error
 	FindByStoreID(ctx context.Context, storeID uint64) (*model.BusinessHours, error)
 }
+
+type StoreSpecialClosureRepository interface {
+	FindByStoreID(ctx context.Context, storeID uint64) ([]*model.StoreSpecialClosure, error)
+	Create(ctx context.Context, c *model.StoreSpecialClosure) error
+	Delete(ctx context.Context, id uint64, storeID uint64) error
+}

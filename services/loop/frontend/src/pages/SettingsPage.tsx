@@ -67,7 +67,7 @@ function InviteModal({ onClose }: { onClose: () => void }) {
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
     border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
-    fontSize: 14, color: txt, fontFamily: zen, outline: 'none',
+    fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
   }
 
   return (
@@ -95,6 +95,181 @@ function InviteModal({ onClose }: { onClose: () => void }) {
       </div>
       <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
         {sending ? '送信中...' : '招待メールを送信する'}
+      </button>
+      <SheetCancel style={{ marginTop: 8 }} />
+    </BottomSheet>
+  )
+}
+
+// ─── パスワード変更シート ──────────────────────────────────────────────────────
+function PasswordChangeSheet({ onClose }: { onClose: () => void }) {
+  const [current, setCurrent] = useState('')
+  const [next,    setNext]    = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [saving,  setSaving]  = useState(false)
+  const [errMsg,  setErrMsg]  = useState<string | null>(null)
+  const dismiss = useBottomSheetDismiss()
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
+    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
+    fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
+  }
+
+  async function save() {
+    setErrMsg(null)
+    if (!current) { setErrMsg('現在のパスワードを入力してください'); return }
+    if (next.length < 8) { setErrMsg('新しいパスワードは8文字以上で入力してください'); return }
+    if (next !== confirm) { setErrMsg('パスワードが一致しません'); return }
+    setSaving(true)
+    try {
+      const res = await api('/api/v1/auth/change-password', {
+        method: 'PATCH',
+        body: JSON.stringify({ current_password: current, new_password: next }),
+      })
+      if (!res.ok) {
+        if (res.status === 401) { setErrMsg('現在のパスワードが正しくありません'); return }
+        throw new Error()
+      }
+      dismiss()
+    } catch {
+      setErrMsg('パスワードの変更に失敗しました')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <BottomSheet onClose={onClose}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
+        <OrbitSVG size={10} />
+        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>パスワード変更</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>現在のパスワード</div>
+          <input type="password" value={current} onChange={e => setCurrent(e.target.value)} style={inputStyle} />
+        </div>
+        <div>
+          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>新しいパスワード（8文字以上）</div>
+          <input type="password" value={next} onChange={e => setNext(e.target.value)} style={inputStyle} />
+        </div>
+        <div>
+          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>新しいパスワード（確認）</div>
+          <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} style={inputStyle} />
+        </div>
+      </div>
+      {errMsg && (
+        <div style={{ marginTop: 10, fontSize: 12, color: alertColor, fontFamily: zen }}>{errMsg}</div>
+      )}
+      <button
+        onClick={save} disabled={saving}
+        style={{ width: '100%', marginTop: 16, padding: 14, background: saving ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: saving ? 'default' : 'pointer' }}
+      >
+        {saving ? '変更中...' : '変更する'}
+      </button>
+      <SheetCancel style={{ marginTop: 8 }} />
+    </BottomSheet>
+  )
+}
+
+// ─── 臨時休業日シート ──────────────────────────────────────────────────────────
+type SpecialClosure = { id: number; store_id: number; date: string; note: string }
+
+function SpecialClosureSheet({ storeId, onClose }: { storeId: number; onClose: () => void }) {
+  const [closures, setClosures] = useState<SpecialClosure[]>([])
+  const [newDate,  setNewDate]  = useState('')
+  const [newNote,  setNewNote]  = useState('')
+  const [adding,   setAdding]   = useState(false)
+
+  useEffect(() => {
+    apiFetch<SpecialClosure[]>(`/api/v1/stores/${storeId}/special-closures`)
+      .then(list => setClosures(Array.isArray(list) ? list : []))
+      .catch(() => {})
+  }, [storeId])
+
+  async function add() {
+    if (!newDate) return
+    setAdding(true)
+    try {
+      const res = await api(`/api/v1/stores/${storeId}/special-closures`, {
+        method: 'POST',
+        body: JSON.stringify({ date: newDate, note: newNote }),
+      })
+      if (!res.ok) throw new Error()
+      const c: SpecialClosure = await res.json()
+      setClosures(prev => [...prev, c].sort((a, b) => a.date.localeCompare(b.date)))
+      setNewDate('')
+      setNewNote('')
+    } catch {
+      window.alert('追加に失敗しました')
+    } finally {
+      setAdding(false)
+    }
+  }
+
+  async function remove(id: number) {
+    try {
+      const res = await api(`/api/v1/stores/${storeId}/special-closures/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setClosures(prev => prev.filter(c => c.id !== id))
+    } catch {
+      window.alert('削除に失敗しました')
+    }
+  }
+
+  const inputStyle: React.CSSProperties = {
+    flex: 1, boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
+    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
+    fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
+  }
+
+  return (
+    <BottomSheet onClose={onClose}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
+        <OrbitSVG size={10} />
+        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>臨時休業日</span>
+      </div>
+
+      {/* 既存の臨時休業日リスト */}
+      {closures.length > 0 && (
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {closures.map(c => (
+            <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(232,228,220,0.04)', border: `1px solid ${border}`, borderRadius: 2 }}>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold }}>{c.date}</span>
+                {c.note && <span style={{ marginLeft: 8, fontSize: 12, color: muted, fontFamily: zen }}>{c.note}</span>}
+              </div>
+              <button
+                onClick={() => remove(c.id)}
+                style={{ padding: '4px 10px', background: 'transparent', border: `1px solid rgba(224,112,96,0.3)`, borderRadius: 2, fontSize: 11, color: alertColor, fontFamily: zen, cursor: 'pointer' }}
+              >削除</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {closures.length === 0 && (
+        <div style={{ textAlign: 'center', color: muted, fontSize: 12, fontFamily: zen, marginBottom: 16, padding: '12px 0' }}>臨時休業日は登録されていません</div>
+      )}
+
+      {/* 新規追加 */}
+      <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>日付を追加</div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }} />
+      </div>
+      <div style={{ marginBottom: 12 }}>
+        <input
+          type="text" placeholder="備考（年末年始・GW等）" value={newNote}
+          onChange={e => setNewNote(e.target.value)}
+          style={{ ...inputStyle, width: '100%' }}
+        />
+      </div>
+      <button
+        onClick={add} disabled={adding || !newDate}
+        style={{ width: '100%', padding: 14, background: (!newDate || adding) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: (!newDate || adding) ? 'default' : 'pointer' }}
+      >
+        {adding ? '追加中...' : '追加する'}
       </button>
       <SheetCancel style={{ marginTop: 8 }} />
     </BottomSheet>
@@ -421,7 +596,7 @@ function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
     border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
-    fontSize: 14, color: txt, fontFamily: zen, outline: 'none',
+    fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
   }
 
   return (
@@ -697,8 +872,9 @@ function StaffDetail({
 function ProfileSettings({ onBack }: { onBack: () => void }) {
   const claims   = getClaims()
   const navigate = useNavigate()
-  const [myStaff, setMyStaff] = useState<Staff | null>(null)
-  const [myStore, setMyStore] = useState<Store | null>(null)
+  const [myStaff,          setMyStaff]          = useState<Staff | null>(null)
+  const [myStore,          setMyStore]           = useState<Store | null>(null)
+  const [showPasswordSheet, setShowPasswordSheet] = useState(false)
 
   useEffect(() => {
     apiFetch<Staff[]>('/api/v1/staffs')
@@ -744,9 +920,11 @@ function ProfileSettings({ onBack }: { onBack: () => void }) {
       {/* セキュリティ */}
       <GroupLabel>セキュリティ</GroupLabel>
       <SettingGroup>
-        <SettingRow label="パスワード変更" onClick={() => {}} />
+        <SettingRow label="パスワード変更" onClick={() => setShowPasswordSheet(true)} />
         <SettingRow label="ログアウト" onClick={handleLogout} danger last />
       </SettingGroup>
+
+      {showPasswordSheet && <PasswordChangeSheet onClose={() => setShowPasswordSheet(false)} />}
 
       {/* アカウント削除 */}
       <GroupLabel>アカウント削除</GroupLabel>
@@ -1111,6 +1289,7 @@ export default function SettingsPage() {
   const [selectedStaff,       setSelectedStaff]       = useState<Staff | null>(null)
   const [salonShimeiCharge,   setSalonShimeiCharge]   = useState(1100)
   const [closingEditDealer,   setClosingEditDealer]   = useState<Dealer | null>(null)
+  const [showClosureSheet,    setShowClosureSheet]    = useState(false)
 
   function loadDealers() {
     apiFetch<Dealer[]>('/api/v1/dealers')
@@ -1350,7 +1529,7 @@ export default function SettingsPage() {
           <SettingRow
             icon={<CalPlusIcon color={gold} />} iconBg="gold"
             label="臨時休業日の追加" value="年末年始・GW等を登録"
-            onClick={() => {}}
+            onClick={() => setShowClosureSheet(true)}
             last
           />
         </SettingGroup>
@@ -1390,6 +1569,12 @@ export default function SettingsPage() {
         dealer={closingEditDealer}
         onClose={() => setClosingEditDealer(null)}
         onSaved={() => { loadDealers(); setClosingEditDealer(null) }}
+      />
+    )}
+    {showClosureSheet && claims?.store_id && (
+      <SpecialClosureSheet
+        storeId={claims.store_id}
+        onClose={() => setShowClosureSheet(false)}
       />
     )}
     </>

@@ -87,3 +87,39 @@ func (r *BusinessHoursRepository) FindByStoreID(ctx context.Context, storeID uin
 	}
 	return &bh, nil
 }
+
+// ─── StoreSpecialClosureRepository ───────────────────────────
+
+type StoreSpecialClosureRepository struct{ db *sqlx.DB }
+
+func NewStoreSpecialClosureRepository(db *sqlx.DB) *StoreSpecialClosureRepository {
+	return &StoreSpecialClosureRepository{db: db}
+}
+
+func (r *StoreSpecialClosureRepository) FindByStoreID(ctx context.Context, storeID uint64) ([]*model.StoreSpecialClosure, error) {
+	var list []*model.StoreSpecialClosure
+	err := r.db.SelectContext(ctx, &list,
+		`SELECT * FROM store_special_closures WHERE store_id = ? ORDER BY date ASC`, storeID)
+	if err != nil {
+		return nil, fmt.Errorf("StoreSpecialClosureRepository.FindByStoreID: %w", err)
+	}
+	return list, nil
+}
+
+func (r *StoreSpecialClosureRepository) Create(ctx context.Context, c *model.StoreSpecialClosure) error {
+	res, err := r.db.ExecContext(ctx,
+		`INSERT INTO store_special_closures (store_id, date, note) VALUES (?, ?, ?)`,
+		c.StoreID, c.Date, c.Note)
+	if err != nil {
+		return fmt.Errorf("StoreSpecialClosureRepository.Create: %w", err)
+	}
+	id, _ := res.LastInsertId()
+	c.ID = uint64(id)
+	return nil
+}
+
+func (r *StoreSpecialClosureRepository) Delete(ctx context.Context, id uint64, storeID uint64) error {
+	_, err := r.db.ExecContext(ctx,
+		`DELETE FROM store_special_closures WHERE id = ? AND store_id = ?`, id, storeID)
+	return err
+}

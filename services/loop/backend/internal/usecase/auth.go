@@ -282,6 +282,21 @@ func (u *AuthUsecase) AcceptInvitation(ctx context.Context, in AcceptInvitationI
 	return staff, nil
 }
 
+func (u *AuthUsecase) ChangePassword(ctx context.Context, staffID uint64, currentPassword, newPassword string) error {
+	staff, err := u.staffRepo.FindByID(ctx, staffID)
+	if err != nil {
+		return apierror.ErrUnauthorized
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(staff.PasswordHash), []byte(currentPassword)); err != nil {
+		return apierror.ErrUnauthorized
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("ChangePassword: hash: %w", err)
+	}
+	return u.staffRepo.UpdatePassword(ctx, staffID, string(hash))
+}
+
 func (u *AuthUsecase) generateJWT(s *model.Staff, salonName string) (string, error) {
 	claims := jwt.MapClaims{
 		"staff_id":   s.ID,

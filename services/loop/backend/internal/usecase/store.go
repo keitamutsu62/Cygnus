@@ -10,12 +10,17 @@ import (
 )
 
 type StoreUsecase struct {
-	storeRepo repository.StoreRepository
-	bhRepo    repository.BusinessHoursRepository
+	storeRepo   repository.StoreRepository
+	bhRepo      repository.BusinessHoursRepository
+	closureRepo repository.StoreSpecialClosureRepository
 }
 
-func NewStoreUsecase(storeRepo repository.StoreRepository, bhRepo repository.BusinessHoursRepository) *StoreUsecase {
-	return &StoreUsecase{storeRepo: storeRepo, bhRepo: bhRepo}
+func NewStoreUsecase(
+	storeRepo repository.StoreRepository,
+	bhRepo repository.BusinessHoursRepository,
+	closureRepo repository.StoreSpecialClosureRepository,
+) *StoreUsecase {
+	return &StoreUsecase{storeRepo: storeRepo, bhRepo: bhRepo, closureRepo: closureRepo}
 }
 
 func (u *StoreUsecase) List(ctx context.Context, salonID uint64) ([]*model.Store, error) {
@@ -73,4 +78,20 @@ func (u *StoreUsecase) UpdateBusinessHours(ctx context.Context, storeID uint64, 
 
 func (u *StoreUsecase) GetBusinessHours(ctx context.Context, storeID uint64) (*model.BusinessHours, error) {
 	return u.bhRepo.FindByStoreID(ctx, storeID)
+}
+
+func (u *StoreUsecase) ListSpecialClosures(ctx context.Context, storeID uint64) ([]*model.StoreSpecialClosure, error) {
+	return u.closureRepo.FindByStoreID(ctx, storeID)
+}
+
+func (u *StoreUsecase) AddSpecialClosure(ctx context.Context, storeID uint64, date, note string) (*model.StoreSpecialClosure, error) {
+	c := &model.StoreSpecialClosure{StoreID: storeID, Date: date, Note: note}
+	if err := u.closureRepo.Create(ctx, c); err != nil {
+		return nil, fmt.Errorf("StoreUsecase.AddSpecialClosure: %w", err)
+	}
+	return c, nil
+}
+
+func (u *StoreUsecase) DeleteSpecialClosure(ctx context.Context, id, storeID uint64) error {
+	return u.closureRepo.Delete(ctx, id, storeID)
 }

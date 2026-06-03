@@ -2,6 +2,14 @@ package model
 
 import "time"
 
+type StoreSpecialClosure struct {
+	ID        uint64    `db:"id"         json:"id"`
+	StoreID   uint64    `db:"store_id"   json:"store_id"`
+	Date      string    `db:"date"       json:"date"` // YYYY-MM-DD
+	Note      string    `db:"note"       json:"note"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+}
+
 type Store struct {
 	ID        uint64    `db:"id"         json:"id"`
 	SalonID   uint64    `db:"salon_id"   json:"salon_id"`
