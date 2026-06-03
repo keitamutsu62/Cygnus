@@ -1094,7 +1094,7 @@ function BarcodeScanner({ onScan, onClose }: { onScan: (code: string) => void; o
 
             async function scan() {
               if (videoRef.current && videoRef.current.readyState >= 2) {
-                const found = await detector.detect(videoRef.current).catch(() => [] as any[])
+                const found = await detector.detect(videoRef.current).catch(() => [] as { rawValue: string }[])
                 if (found.length > 0) { onScan(found[0].rawValue); return }
               }
               rafRef.current = requestAnimationFrame(scan)
@@ -1123,7 +1123,7 @@ function BarcodeScanner({ onScan, onClose }: { onScan: (code: string) => void; o
         return
       }
       const detector = new (window as any).BarcodeDetector({ formats: BARCODE_FORMATS })
-      const found = await detector.detect(img).catch(() => [] as any[])
+      const found = await detector.detect(img).catch(() => [] as { rawValue: string }[])
       URL.revokeObjectURL(img.src)
       if (found.length > 0) onScan(found[0].rawValue)
       else alert('バーコードを認識できませんでした')
@@ -1248,7 +1248,8 @@ export default function InventoryPage() {
   const [isOwnStore,     setIsOwnStore]      = useState(true)
   const [loading,        setLoading]         = useState(true)
 
-  const [mainTab,        setMainTab]         = useState<'stock' | 'history'>((loc.state as any)?.tab === 'history' ? 'history' : 'stock')
+  const locState = loc.state as { tab?: string } | null
+  const [mainTab,        setMainTab]         = useState<'stock' | 'history'>(locState?.tab === 'history' ? 'history' : 'stock')
   const [filter,         setFilter]          = useState<string>('すべて')
   const [search,         setSearch]          = useState('')
 

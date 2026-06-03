@@ -593,7 +593,7 @@ export default function DashboardPage() {
                 fontFamily: josefin, fontWeight: 100, fontSize: 12, color: gold, cursor: 'pointer',
               }}
             >
-              {(claims as any)?.avatar_initials ?? (claims?.role === 'owner' ? 'OW' : '??')}
+              {claims?.avatar_initials ?? (claims?.role === 'owner' ? 'OW' : '??')}
             </div>
           </div>
         </div>
@@ -711,7 +711,7 @@ export default function DashboardPage() {
                           fontFamily: josefin, fontWeight: 100, fontSize: 10,
                           letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                           color: crit ? '#1a1816' : gold, cursor: 'pointer', flexShrink: 0,
-                          WebkitAppearance: 'none' as any,
+                          WebkitAppearance: 'none',
                         }}
                       >発注する</button>
                     )}

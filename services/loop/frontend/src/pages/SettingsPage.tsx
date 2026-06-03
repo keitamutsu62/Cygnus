@@ -83,7 +83,7 @@ function InviteModal({ onClose }: { onClose: () => void }) {
         </div>
         <div>
           <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>役職</div>
-          <select value={role} onChange={e => setRole(e.target.value as StaffRole)} style={{ ...inputStyle, WebkitAppearance: 'none' as any }}>
+          <select value={role} onChange={e => setRole(e.target.value as StaffRole)} style={{ ...inputStyle, WebkitAppearance: 'none' }}>
             <option style={{ background: '#1a1816' }} value="staff">スタッフ</option>
             <option style={{ background: '#1a1816' }} value="admin">店長</option>
             <option style={{ background: '#1a1816' }} value="owner">オーナー</option>

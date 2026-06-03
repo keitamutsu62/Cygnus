@@ -7,6 +7,7 @@ export type AuthClaims = {
   salon_name?: string
   role: StaffRole
   cygnus_account_id?: number
+  avatar_initials?: string
   exp: number
 }
 

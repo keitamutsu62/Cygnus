@@ -817,8 +817,9 @@ function CompareView({ view, storeId, staffId, stores }: {
 // ── SalesPage ─────────────────────────────────────────────────────────────
 export default function SalesPage() {
   const loc = useLocation()
+  const locState = loc.state as { tab?: string; staffId?: number } | null
   const [view, setView] = useState<View>(() => {
-    const t = (loc.state as any)?.tab
+    const t = locState?.tab
     if (t === 'store') return 'store'
     if (t === 'staff') return 'staff'
     return 'all'
@@ -826,7 +827,7 @@ export default function SalesPage() {
   const [period, setPeriod]   = useState<Period>('today')
   const [stores, setStores]   = useState<Store[]>([])
   const [selStoreId, setSelStoreId] = useState<number | null>(null)
-  const [selStaffId, setSelStaffId] = useState<number | null>((loc.state as any)?.staffId ?? null)
+  const [selStaffId, setSelStaffId] = useState<number | null>(locState?.staffId ?? null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
