@@ -37,7 +37,7 @@ function SheetCancel({ label = 'キャンセル', style }: { label?: string; sty
   )
 }
 
-type Dealer = { id: number; name: string; contact_method: 'LINE' | 'email'; contact_info: string }
+type Dealer = { id: number; name: string; contact_method: 'LINE' | 'email'; contact_info: string; closing_day: number | null; status: string }
 type BusinessHours = { open_time: string; close_time: string; closed_weekday: number | null }
 type SubPage = 'profile' | 'hours' | 'staff-list' | 'staff-detail' | 'pos' | null
 
@@ -284,21 +284,131 @@ function SalonCard({ salonName }: { salonName: string }) {
   )
 }
 
+// ─── ディーラー締日編集モーダル ───────────────────────────────────────────────
+function DealerEditModal({
+  dealer,
+  onClose,
+  onSaved,
+}: {
+  dealer: Dealer
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [input,       setInput]       = useState(dealer.closing_day !== null ? String(dealer.closing_day) : '')
+  const [saving,      setSaving]      = useState(false)
+  const [confirmDel,  setConfirmDel]  = useState(false)
+  const dismiss = useBottomSheetDismiss()
+
+  async function saveClosingDay() {
+    const v = input.trim() === '' ? null : parseInt(input)
+    if (v !== null && (isNaN(v) || v < 1 || v > 28)) return
+    setSaving(true)
+    try {
+      const body = { name: dealer.name, contact_method: dealer.contact_method, contact_info: dealer.contact_info, status: dealer.status, closing_day: v }
+      const res = await api(`/api/v1/dealers/${dealer.id}`, { method: 'PATCH', body: JSON.stringify(body) })
+      if (!res.ok) throw new Error()
+      onSaved()
+      dismiss()
+    } catch {
+      window.alert('保存に失敗しました')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function deleteDealer() {
+    setSaving(true)
+    try {
+      const res = await api(`/api/v1/dealers/${dealer.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      onSaved()
+      dismiss()
+    } catch {
+      window.alert('削除に失敗しました')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <BottomSheet onClose={onClose}>
+      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 16 }}>{dealer.name}</div>
+
+      {/* 締日 */}
+      <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>締日（1〜28日、空欄で未設定）</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 13, color: muted, fontFamily: zen }}>毎月</span>
+        <input
+          type="number" min="1" max="28"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="例: 20"
+          style={{ flex: 1, background: 'rgba(232,228,220,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '10px 12px', color: txt, fontSize: 16, fontFamily: josefin, fontWeight: 100, outline: 'none' }}
+        />
+        <span style={{ fontSize: 13, color: muted, fontFamily: zen }}>日</span>
+      </div>
+      <button
+        onClick={saveClosingDay} disabled={saving}
+        style={{ width: '100%', padding: 12, background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, fontFamily: zen, fontSize: 13, color: gold, cursor: 'pointer', marginBottom: 16 }}
+      >
+        {saving ? '保存中...' : '締日を保存する'}
+      </button>
+
+      {/* 削除（インライン確認） */}
+      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 14 }}>
+        {confirmDel ? (
+          <>
+            <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 10, textAlign: 'center' as const }}>
+              本当に削除しますか？この操作は取り消せません。
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setConfirmDel(false)}
+                style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}
+              >
+                やめる
+              </button>
+              <button
+                onClick={deleteDealer} disabled={saving}
+                style={{ flex: 2, padding: '11px 0', background: 'rgba(224,112,96,0.15)', border: '1px solid rgba(224,112,96,0.4)', borderRadius: 2, fontFamily: zen, fontSize: 12, color: alertColor, cursor: 'pointer' }}
+              >
+                {saving ? '削除中...' : '削除する'}
+              </button>
+            </div>
+          </>
+        ) : (
+          <button
+            onClick={() => setConfirmDel(true)}
+            style={{ width: '100%', padding: 12, background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}
+          >
+            このディーラーを削除する
+          </button>
+        )}
+      </div>
+
+      {!confirmDel && <SheetCancel />}
+    </BottomSheet>
+  )
+}
+
 // ─── ディーラー追加フォーム ────────────────────────────────────────────────────
 function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
-  const [name,   setName]   = useState('')
-  const [method, setMethod] = useState<'LINE' | 'email'>('LINE')
-  const [info,   setInfo]   = useState('')
-  const [saving, setSaving] = useState(false)
+  const [name,       setName]       = useState('')
+  const [method,     setMethod]     = useState<'LINE' | 'email'>('LINE')
+  const [info,       setInfo]       = useState('')
+  const [closingDay, setClosingDay] = useState('')
+  const [saving,     setSaving]     = useState(false)
   const canSave = name.trim() && info.trim()
 
   async function save() {
     if (!canSave) return
+    const cd = closingDay.trim() === '' ? null : parseInt(closingDay)
+    if (cd !== null && (isNaN(cd) || cd < 1 || cd > 28)) return
     setSaving(true)
     try {
       const res = await api('/api/v1/dealers', {
         method: 'POST',
-        body: JSON.stringify({ name: name.trim(), contact_method: method, contact_info: info.trim() }),
+        body: JSON.stringify({ name: name.trim(), contact_method: method, contact_info: info.trim(), closing_day: cd }),
       })
       if (!res.ok) throw new Error()
       onDone()
@@ -336,6 +446,16 @@ function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
           value={info} onChange={e => setInfo(e.target.value)}
           style={inputStyle}
         />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, color: muted, fontFamily: zen, whiteSpace: 'nowrap' as const }}>締日（任意）</span>
+          <input
+            type="number" min="1" max="28"
+            placeholder="例: 20"
+            value={closingDay} onChange={e => setClosingDay(e.target.value)}
+            style={{ ...inputStyle, width: 80, flexShrink: 0 }}
+          />
+          <span style={{ fontSize: 12, color: muted, fontFamily: zen }}>日</span>
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={onCancel} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}>キャンセル</button>
@@ -990,6 +1110,7 @@ export default function SettingsPage() {
   const [retailCount,    setRetailCount]    = useState(0)
   const [selectedStaff,       setSelectedStaff]       = useState<Staff | null>(null)
   const [salonShimeiCharge,   setSalonShimeiCharge]   = useState(1100)
+  const [closingEditDealer,   setClosingEditDealer]   = useState<Dealer | null>(null)
 
   function loadDealers() {
     apiFetch<Dealer[]>('/api/v1/dealers')
@@ -1161,12 +1282,19 @@ export default function SettingsPage() {
         <GroupLabel>ディーラー登録</GroupLabel>
         <SettingGroup>
           {dealers.map((d, i) => (
-            <div key={d.id} style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${border}` }}>
+            <div
+              key={d.id}
+              onClick={() => setClosingEditDealer(d)}
+              style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
+            >
               <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, color: muted, minWidth: 16, textAlign: 'center' }}>{i + 1}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 2 }}>{d.name}</div>
                 <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>
                   {d.contact_method === 'LINE' ? 'LINE' : 'メール'} · {d.contact_info}
+                </div>
+                <div style={{ fontSize: 10, color: d.closing_day !== null ? gold : muted, fontFamily: josefin, fontWeight: 100, marginTop: 2 }}>
+                  {d.closing_day !== null ? `締日: 毎月${d.closing_day}日` : '締日: 未設定'}
                 </div>
               </div>
               <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1, background: greenDim, color: green, border: '1px solid rgba(109,186,142,0.3)' }}>
@@ -1257,6 +1385,13 @@ export default function SettingsPage() {
     </AppLayout>
 
     {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
+    {closingEditDealer && (
+      <DealerEditModal
+        dealer={closingEditDealer}
+        onClose={() => setClosingEditDealer(null)}
+        onSaved={() => { loadDealers(); setClosingEditDealer(null) }}
+      />
+    )}
     </>
   )
 }

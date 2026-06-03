@@ -22,6 +22,11 @@ table "dealers" {
     type    = enum("active", "inactive", "pending")
     default = "active"
   }
+  column "closing_day" {
+    type = tinyint
+    unsigned = true
+    null = true
+  }
   column "created_at" {
     type    = datetime
     default = sql("CURRENT_TIMESTAMP")

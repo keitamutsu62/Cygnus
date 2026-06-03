@@ -18,14 +18,15 @@ const (
 )
 
 type Dealer struct {
-	ID            uint64        `db:"id"            json:"id"`
-	SalonID       uint64        `db:"salon_id"      json:"salon_id"`
-	Name          string        `db:"name"          json:"name"`
+	ID            uint64        `db:"id"             json:"id"`
+	SalonID       uint64        `db:"salon_id"       json:"salon_id"`
+	Name          string        `db:"name"           json:"name"`
 	ContactMethod ContactMethod `db:"contact_method" json:"contact_method"`
-	ContactInfo   string        `db:"contact_info"  json:"contact_info"`
-	Status        DealerStatus  `db:"status"        json:"status"`
-	CreatedAt     time.Time     `db:"created_at"    json:"created_at"`
-	UpdatedAt     time.Time     `db:"updated_at"    json:"updated_at"`
+	ContactInfo   string        `db:"contact_info"   json:"contact_info"`
+	Status        DealerStatus  `db:"status"         json:"status"`
+	ClosingDay    *uint8        `db:"closing_day"    json:"closing_day"`
+	CreatedAt     time.Time     `db:"created_at"     json:"created_at"`
+	UpdatedAt     time.Time     `db:"updated_at"     json:"updated_at"`
 }
 
 type OrderStatus string

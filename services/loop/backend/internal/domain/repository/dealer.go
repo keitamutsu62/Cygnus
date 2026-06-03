@@ -11,6 +11,7 @@ type DealerRepository interface {
 	FindByID(ctx context.Context, id uint64) (*model.Dealer, error)
 	FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Dealer, error)
 	Update(ctx context.Context, d *model.Dealer) error
+	Delete(ctx context.Context, id uint64) error
 }
 
 type OrderRepository interface {

@@ -17,9 +17,9 @@ func NewDealerRepository(db *sqlx.DB) *DealerRepository { return &DealerReposito
 
 func (r *DealerRepository) Create(ctx context.Context, d *model.Dealer) error {
 	res, err := r.db.ExecContext(ctx,
-		`INSERT INTO dealers (salon_id, name, contact_method, contact_info, status)
-		 VALUES (?, ?, ?, ?, ?)`,
-		d.SalonID, d.Name, d.ContactMethod, d.ContactInfo, d.Status)
+		`INSERT INTO dealers (salon_id, name, contact_method, contact_info, status, closing_day)
+		 VALUES (?, ?, ?, ?, ?, ?)`,
+		d.SalonID, d.Name, d.ContactMethod, d.ContactInfo, d.Status, d.ClosingDay)
 	if err != nil {
 		return fmt.Errorf("DealerRepository.Create: %w", err)
 	}
@@ -46,10 +46,15 @@ func (r *DealerRepository) FindBySalonID(ctx context.Context, salonID uint64) ([
 	return list, nil
 }
 
+func (r *DealerRepository) Delete(ctx context.Context, id uint64) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM dealers WHERE id = ?`, id)
+	return err
+}
+
 func (r *DealerRepository) Update(ctx context.Context, d *model.Dealer) error {
 	_, err := r.db.ExecContext(ctx,
-		`UPDATE dealers SET name=?, contact_method=?, contact_info=?, status=? WHERE id=? AND salon_id=?`,
-		d.Name, d.ContactMethod, d.ContactInfo, d.Status, d.ID, d.SalonID)
+		`UPDATE dealers SET name=?, contact_method=?, contact_info=?, status=?, closing_day=? WHERE id=? AND salon_id=?`,
+		d.Name, d.ContactMethod, d.ContactInfo, d.Status, d.ClosingDay, d.ID, d.SalonID)
 	return err
 }
 

@@ -433,7 +433,7 @@ export default function MenusPage() {
                 </button>
               </div>
             </div>
-            <div style={{ padding: '12px 16px' }}>
+            <div style={{ padding: '12px 16px', borderTop: `1px solid ${border}` }}>
               <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
                 指名料は店舗全体に適用される一律金額です。
               </div>
@@ -527,6 +527,7 @@ export default function MenusPage() {
         }}
       />
     )}
+
     </>
   )
 }

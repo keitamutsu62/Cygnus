@@ -45,6 +45,19 @@ func (r *SalonRepository) UpdateShimeiCharge(ctx context.Context, salonID uint64
 	return err
 }
 
+func (r *SalonRepository) GetClosingDay(ctx context.Context, salonID uint64) (uint8, error) {
+	var day uint8
+	if err := r.db.QueryRowContext(ctx, `SELECT closing_day FROM salons WHERE id = ?`, salonID).Scan(&day); err != nil {
+		return 20, err
+	}
+	return day, nil
+}
+
+func (r *SalonRepository) UpdateClosingDay(ctx context.Context, salonID uint64, day uint8) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE salons SET closing_day = ? WHERE id = ?`, day, salonID)
+	return err
+}
+
 type PlanRepository struct{ db *sqlx.DB }
 
 func NewPlanRepository(db *sqlx.DB) *PlanRepository { return &PlanRepository{db: db} }

@@ -217,7 +217,7 @@ function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => voi
 
 // ─── 発注確認モーダル ────────────────────────────────────────────
 type InvAlert = { id: number; name: string; brand: string | null; quantity: number; threshold: number; stock_unit: string; status: string; material_id: number }
-type Dealer   = { id: number; name: string; contact_method: string }
+type Dealer   = { id: number; name: string; contact_method: string; closing_day: number | null }
 
 function OrderModal({ item, storeId, dealers, onClose, onDone }: {
   item: InvAlert; storeId: number; dealers: Dealer[]; onClose: () => void; onDone: (dealerName: string, qty: string) => void
@@ -235,9 +235,10 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
       .catch(() => {})
   }, [storeId])
 
-  const daysLeft = businessDaysToClosing(20, closedWeekday)
-  const showWarn = daysLeft <= 5
   const dealer   = dealers.find(d => d.id === dealerId)
+  const closingDay = dealer?.closing_day ?? 20
+  const daysLeft = businessDaysToClosing(closingDay, closedWeekday)
+  const showWarn = daysLeft <= 5
 
   async function submit() {
     if (!dealerId || !qty || Number(qty) <= 0) return

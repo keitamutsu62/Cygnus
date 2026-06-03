@@ -180,7 +180,7 @@ type InventoryItem = {
   status: '要発注' | '注意' | '正常' | '過剰'
   bar_width: number
 }
-type Dealer = { id: number; name: string; contact_method: string }
+type Dealer = { id: number; name: string; contact_method: string; closing_day: number | null }
 type Store  = { id: number; name: string }
 type HistoryOrderItem = { material_id: number; material_name: string; quantity: number; unit: string; estimated_cost: number | null }
 type HistoryOrder = {
@@ -231,9 +231,10 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
       .catch(() => {})
   }, [storeId])
 
-  const daysLeft = businessDaysToClosing(20, closedWeekday)
-  const showWarn = daysLeft <= 5
   const dealer   = dealers.find(d => d.id === dealerId)
+  const closingDay = dealer?.closing_day ?? 20
+  const daysLeft = businessDaysToClosing(closingDay, closedWeekday)
+  const showWarn = daysLeft <= 5
 
   async function submit() {
     if (!dealerId || !qty || Number(qty) <= 0) return

@@ -31,12 +31,16 @@ func (h *DealerHandler) CreateDealer(c echo.Context) error {
 	var req struct {
 		Name          string              `json:"name"`
 		ContactMethod model.ContactMethod `json:"contact_method"`
-		ContactInfo   string              `json:"contact_info"`
+		ContactInfo   string             `json:"contact_info"`
+		ClosingDay    *uint8              `json:"closing_day"`
 	}
 	if err := c.Bind(&req); err != nil || req.Name == "" || req.ContactInfo == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "name, contact_method, contact_info are required")
 	}
-	d, err := h.uc.CreateDealer(c.Request().Context(), claims.SalonID, req.Name, req.ContactMethod, req.ContactInfo)
+	if req.ClosingDay != nil && (*req.ClosingDay < 1 || *req.ClosingDay > 28) {
+		return echo.NewHTTPError(http.StatusBadRequest, "closing_day must be 1-28")
+	}
+	d, err := h.uc.CreateDealer(c.Request().Context(), claims.SalonID, req.Name, req.ContactMethod, req.ContactInfo, req.ClosingDay)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
 	}
@@ -55,15 +59,32 @@ func (h *DealerHandler) UpdateDealer(c echo.Context) error {
 		ContactMethod model.ContactMethod `json:"contact_method"`
 		ContactInfo   string              `json:"contact_info"`
 		Status        model.DealerStatus  `json:"status"`
+		ClosingDay    *uint8              `json:"closing_day"`
 	}
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
-	d, err := h.uc.UpdateDealer(c.Request().Context(), id, claims.SalonID, req.Name, req.ContactMethod, req.ContactInfo, req.Status)
+	if req.ClosingDay != nil && (*req.ClosingDay < 1 || *req.ClosingDay > 28) {
+		return echo.NewHTTPError(http.StatusBadRequest, "closing_day must be 1-28")
+	}
+	d, err := h.uc.UpdateDealer(c.Request().Context(), id, claims.SalonID, req.Name, req.ContactMethod, req.ContactInfo, req.Status, req.ClosingDay)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
 	}
 	return c.JSON(http.StatusOK, d)
+}
+
+// DELETE /api/v1/dealers/:id
+func (h *DealerHandler) DeleteDealer(c echo.Context) error {
+	claims := claimsFrom(c)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	if err := h.uc.DeleteDealer(c.Request().Context(), id, claims.SalonID); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.NoContent(http.StatusNoContent)
 }
 
 // GET /api/v1/orders/history

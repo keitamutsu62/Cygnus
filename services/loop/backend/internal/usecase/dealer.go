@@ -25,13 +25,14 @@ func (u *DealerUsecase) ListDealers(ctx context.Context, salonID uint64) ([]*mod
 	return u.dealerRepo.FindBySalonID(ctx, salonID)
 }
 
-func (u *DealerUsecase) CreateDealer(ctx context.Context, salonID uint64, name string, method model.ContactMethod, info string) (*model.Dealer, error) {
+func (u *DealerUsecase) CreateDealer(ctx context.Context, salonID uint64, name string, method model.ContactMethod, info string, closingDay *uint8) (*model.Dealer, error) {
 	d := &model.Dealer{
 		SalonID:       salonID,
 		Name:          name,
 		ContactMethod: method,
 		ContactInfo:   info,
 		Status:        model.DealerStatusActive,
+		ClosingDay:    closingDay,
 	}
 	if err := u.dealerRepo.Create(ctx, d); err != nil {
 		return nil, fmt.Errorf("CreateDealer: %w", err)
@@ -39,7 +40,7 @@ func (u *DealerUsecase) CreateDealer(ctx context.Context, salonID uint64, name s
 	return d, nil
 }
 
-func (u *DealerUsecase) UpdateDealer(ctx context.Context, id, salonID uint64, name string, method model.ContactMethod, info string, status model.DealerStatus) (*model.Dealer, error) {
+func (u *DealerUsecase) UpdateDealer(ctx context.Context, id, salonID uint64, name string, method model.ContactMethod, info string, status model.DealerStatus, closingDay *uint8) (*model.Dealer, error) {
 	d, err := u.dealerRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, apierror.ErrNotFound
@@ -51,10 +52,22 @@ func (u *DealerUsecase) UpdateDealer(ctx context.Context, id, salonID uint64, na
 	d.ContactMethod = method
 	d.ContactInfo = info
 	d.Status = status
+	d.ClosingDay = closingDay
 	if err := u.dealerRepo.Update(ctx, d); err != nil {
 		return nil, fmt.Errorf("UpdateDealer: %w", err)
 	}
 	return d, nil
+}
+
+func (u *DealerUsecase) DeleteDealer(ctx context.Context, id, salonID uint64) error {
+	d, err := u.dealerRepo.FindByID(ctx, id)
+	if err != nil {
+		return apierror.ErrNotFound
+	}
+	if d.SalonID != salonID {
+		return apierror.ErrForbidden
+	}
+	return u.dealerRepo.Delete(ctx, id)
 }
 
 // ─── Order ───────────────────────────────────────────────────

@@ -15,6 +15,11 @@ table "salons" {
     unsigned = true
     default  = 1100
   }
+  column "closing_day" {
+    type     = tinyint
+    unsigned = true
+    default  = 20
+  }
   column "created_at" {
     type    = datetime
     default = sql("CURRENT_TIMESTAMP")
