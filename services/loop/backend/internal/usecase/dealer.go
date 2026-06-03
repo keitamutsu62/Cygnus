@@ -122,6 +122,7 @@ func (u *DealerUsecase) UpdateOrderStatus(ctx context.Context, id uint64, status
 }
 
 type OrderHistoryItemEntry struct {
+	MaterialID    uint64  `json:"material_id"`
 	MaterialName  string  `json:"material_name"`
 	Quantity      uint32  `json:"quantity"`
 	Unit          string  `json:"unit"`
@@ -166,6 +167,7 @@ func (u *DealerUsecase) ListOrdersHistory(ctx context.Context, salonID uint64) (
 	itemsByOrder := make(map[uint64][]OrderHistoryItemEntry)
 	for _, it := range rawItems {
 		itemsByOrder[it.OrderID] = append(itemsByOrder[it.OrderID], OrderHistoryItemEntry{
+			MaterialID:    it.MaterialID,
 			MaterialName:  it.MaterialName,
 			Quantity:      it.Quantity,
 			Unit:          it.Unit,

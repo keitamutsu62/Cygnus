@@ -60,6 +60,7 @@ type OrderItem struct {
 
 type ItemWithMaterial struct {
 	OrderID       uint64  `db:"order_id"`
+	MaterialID    uint64  `db:"material_id"`
 	MaterialName  string  `db:"material_name"`
 	Quantity      uint32  `db:"quantity"`
 	Unit          string  `db:"unit"`

@@ -181,7 +181,7 @@ type InventoryItem = {
 }
 type Dealer = { id: number; name: string; contact_method: string }
 type Store  = { id: number; name: string }
-type HistoryOrderItem = { material_name: string; quantity: number; unit: string; estimated_cost: number | null }
+type HistoryOrderItem = { material_id: number; material_name: string; quantity: number; unit: string; estimated_cost: number | null }
 type HistoryOrder = {
   id: number; store_id: number; status: string; is_next_month_invoice: boolean
   created_at: string; dealer_name: string; contact_method: string
@@ -1306,7 +1306,7 @@ export default function InventoryPage() {
     apiFetch<Dealer[]>('/api/v1/dealers').then(setDealers).catch(() => {})
   }, [])
 
-  // 在庫読み込み（店舗変更時）
+  // 在庫読み込み（店舗変更時）+ 発注済み品目の sentIds 初期化
   useEffect(() => {
     if (!currentStoreId) return
     setLoading(true)
@@ -1314,7 +1314,22 @@ export default function InventoryPage() {
       .then(data => { setItems(Array.isArray(data) ? data : []) })
       .catch(() => setItems([]))
       .finally(() => setLoading(false))
-    setSentIds(new Set())
+
+    // pending/sent の発注がある品目を「送信済」として初期表示
+    apiFetch<HistoryOrder[]>('/api/v1/orders/history')
+      .then(data => {
+        const list = Array.isArray(data) ? data : []
+        const ids = new Set<number>()
+        list.forEach(order => {
+          if (order.status === 'pending' || order.status === 'sent') {
+            ;(order.items ?? []).forEach(it => ids.add(Number(it.material_id)))
+          }
+        })
+        setSentIds(ids)
+        setHistory(list)
+        setHistoryLoaded(true)
+      })
+      .catch(() => setSentIds(new Set()))
   }, [currentStoreId])
 
   // 発注履歴読み込み（履歴タブ表示時、または発注後フラグリセット時）
@@ -1325,16 +1340,11 @@ export default function InventoryPage() {
       .catch(() => { setHistory([]); setHistoryLoaded(true) })
   }, [mainTab, historyLoaded])
 
-  // ページ表示時に履歴キャッシュをリセット（Dashboard から戻った際も最新化）
-  useEffect(() => {
-    setHistoryLoaded(false)
-  }, [])
-
   // フィルタ・検索
+  // sentIds に含まれるアイテムはカードを消さずバッジだけ「送信済」に変える
   const displayItems = items.filter(it => {
-    if (filter === '送信済')  return sentIds.has(it.material_id)
+    if (filter === '送信済')  return sentIds.has(Number(it.material_id))
     if (filter !== 'すべて'  && it.status !== filter) return false
-    if (sentIds.has(it.material_id)) return false
     if (search) {
       const q = search.toLowerCase()
       if (!it.name.toLowerCase().includes(q) && !(it.brand ?? '').toLowerCase().includes(q)) return false
@@ -1519,7 +1529,7 @@ export default function InventoryPage() {
                     <InvCard
                       key={item.id}
                       item={item}
-                      sent={sentIds.has(item.material_id)}
+                      sent={sentIds.has(Number(item.material_id))}
                       readOnly={!isOwnStore}
                       onOrder={() => setOrderItem(item)}
                       onEdit={() => setEditItem(item)}
@@ -1625,7 +1635,7 @@ export default function InventoryPage() {
           dealers={dealers}
           onClose={() => setOrderItem(null)}
           onDone={() => {
-            setSentIds(prev => new Set(prev).add(orderItem.material_id))
+            setSentIds(prev => new Set(prev).add(Number(orderItem.material_id)))
             setHistoryLoaded(false) // 次回履歴タブ開時に再取得
             setOrderItem(null)
             showToast(`${orderItem.name} の発注を送信しました`)
