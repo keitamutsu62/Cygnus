@@ -21,16 +21,23 @@ func (h *RetailSaleHandler) Create(c echo.Context) error {
 	claims := claimsFrom(c)
 
 	var req struct {
-		StoreID     uint64 `json:"store_id"`
-		ProductName string `json:"product_name"`
-		Price       uint32 `json:"price"`
-		SoldAt      string `json:"sold_at"` // RFC3339
+		StaffID     *uint64 `json:"staff_id"`
+		StoreID     uint64  `json:"store_id"`
+		ProductName string  `json:"product_name"`
+		Price       uint32  `json:"price"`
+		SoldAt      string  `json:"sold_at"` // RFC3339
 	}
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
 	if req.ProductName == "" || req.SoldAt == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "product_name, sold_at are required")
+	}
+
+	// owner/admin は staff_id を指定可能、それ以外は自分自身
+	staffID := claims.StaffID
+	if req.StaffID != nil && (claims.Role == "owner" || claims.Role == "admin") {
+		staffID = *req.StaffID
 	}
 
 	// store_id が省略された場合は JWT のstore_id を使用する
@@ -40,7 +47,7 @@ func (h *RetailSaleHandler) Create(c echo.Context) error {
 	}
 
 	rs, err := h.uc.Create(c.Request().Context(), usecase.CreateRetailSaleInput{
-		StaffID:     claims.StaffID,
+		StaffID:     staffID,
 		StoreID:     storeID,
 		SalonID:     claims.SalonID,
 		ProductName: req.ProductName,

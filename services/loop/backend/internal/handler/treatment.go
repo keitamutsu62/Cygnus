@@ -22,6 +22,7 @@ func (h *TreatmentHandler) Create(c echo.Context) error {
 	claims := claimsFrom(c)
 
 	var req struct {
+		StaffID         *uint64                  `json:"staff_id"`
 		CustomerID      *uint64                  `json:"customer_id"`
 		StoreID         *uint64                  `json:"store_id"`
 		MenuID          *uint64                  `json:"menu_id"`
@@ -40,6 +41,12 @@ func (h *TreatmentHandler) Create(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "menu_name, performed_at are required")
 	}
 
+	// owner/admin は staff_id を指定可能、それ以外は自分自身
+	staffID := claims.StaffID
+	if req.StaffID != nil && (claims.Role == "owner" || claims.Role == "admin") {
+		staffID = *req.StaffID
+	}
+
 	// store_id が省略された場合は JWT のstore_id を使用する
 	storeID := req.StoreID
 	if storeID == nil && claims.StoreID != nil {
@@ -47,7 +54,7 @@ func (h *TreatmentHandler) Create(c echo.Context) error {
 	}
 
 	t, err := h.uc.Create(c.Request().Context(), usecase.CreateTreatmentInput{
-		StaffID:         claims.StaffID,
+		StaffID:         staffID,
 		CustomerID:      req.CustomerID,
 		SalonID:         claims.SalonID,
 		StoreID:         storeID,

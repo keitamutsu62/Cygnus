@@ -335,6 +335,7 @@ export default function CheckoutPage() {
           api('/api/v1/treatments', {
             method: 'POST',
             body: JSON.stringify({
+              staff_id: selectedStaffId,
               store_id: storeId,
               menu_id: item.menuId ?? null,
               menu_name: item.name,
@@ -349,10 +350,11 @@ export default function CheckoutPage() {
           api('/api/v1/retail-sales', {
             method: 'POST',
             body: JSON.stringify({
+              staff_id: selectedStaffId,
               store_id: storeId ?? 0,
               product_name: item.name,
               price: item.price,
-              sold_at: now, // RFC3339 形式で送る（バックエンドが time.Parse(RFC3339) で処理）
+              sold_at: now,
             }),
           }).then(r => { if (!r.ok) throw new Error() }),
         ),
