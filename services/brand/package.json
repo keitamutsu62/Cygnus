@@ -1,0 +1,9 @@
+{
+  "name": "@cygnus/brand",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "npx serve . -p 3000"
+  }
+}
