@@ -12,6 +12,7 @@ import SalesPage from './pages/SalesPage'
 import SettingsPage from './pages/SettingsPage'
 import CheckoutPage from './pages/CheckoutPage'
 import MenusPage from './pages/MenusPage'
+import PlanPage from './pages/PlanPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -26,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
         <Route path="/checkout" element={<AuthGuard><CheckoutPage /></AuthGuard>} />
         <Route path="/menus" element={<AuthGuard><MenusPage /></AuthGuard>} />
+        <Route path="/plan" element={<AuthGuard><PlanPage /></AuthGuard>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

@@ -57,9 +57,10 @@ function BottomSheet({ onClose, children, noScroll }: {
   children: (close: () => void) => React.ReactNode
   noScroll?: boolean
 }) {
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const panelRef   = useRef<HTMLDivElement>(null)
-  const onCloseRef = useRef(onClose)
+  const overlayRef    = useRef<HTMLDivElement>(null)
+  const panelRef      = useRef<HTMLDivElement>(null)
+  const onCloseRef    = useRef(onClose)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   onCloseRef.current = onClose
 
   function close() {
@@ -75,7 +76,10 @@ function BottomSheet({ onClose, children, noScroll }: {
       panel.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
       panel.style.transform  = 'translateY(100%)'
     }
-    setTimeout(() => onCloseRef.current(), 450)
+    closeTimerRef.current = setTimeout(() => {
+      closeTimerRef.current = null
+      onCloseRef.current()
+    }, 450)
   }
 
   useEffect(() => {
@@ -85,7 +89,10 @@ function BottomSheet({ onClose, children, noScroll }: {
       })
       return () => cancelAnimationFrame(id2)
     })
-    return () => cancelAnimationFrame(id1)
+    return () => {
+      cancelAnimationFrame(id1)
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    }
   }, [])
 
   // 背景スクロール禁止
@@ -191,7 +198,7 @@ type Material = {
   stock_unit: string
   menus: MaterialMenuAssoc[]
 }
-type AppMenu = { id: number; name: string; is_active: boolean }
+type AppMenu = { id: number; name: string; menu_type: string; is_active: boolean }
 
 // ─── ユーティリティ ───────────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {
@@ -583,7 +590,7 @@ const STATUS_STYLE: Record<string, React.CSSProperties> = {
 }
 
 // ─── 材料マスタ ────────────────────────────────────────────────────────────────
-const MASTER_CATEGORIES = ['カラー', 'パーマ', 'シャンプー・トリートメント', 'スタイリング', '物販'] as const
+const MASTER_CATEGORIES = ['カラー剤', 'パーマ剤', 'シャンプー・トリートメント', 'スタイリング剤', '物販'] as const
 
 function MasterField({
   placeholder, value, onChange, inputMode,
@@ -656,7 +663,7 @@ function MaterialFormSheet({
   }
 
   return (
-    <BottomSheet onClose={onClose} noScroll>
+    <BottomSheet onClose={onClose}>
       {close => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* ヘッダー */}
@@ -712,7 +719,7 @@ function MaterialFormSheet({
             <div>
               <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 8 }}>使用するメニュー（複数選択可）</div>
               <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
-                {menus.filter(m => m.is_active).map(m => {
+                {menus.filter(m => m.is_active && m.menu_type !== 'retail').map(m => {
                   const active = menuIds.has(m.id)
                   return (
                     <button
@@ -728,6 +735,32 @@ function MaterialFormSheet({
                     >{m.name}</button>
                   )
                 })}
+                {/* 物販メニューをまとめて1タグで表示 */}
+                {(() => {
+                  const retailIds = menus.filter(m => m.is_active && m.menu_type === 'retail').map(m => m.id)
+                  if (retailIds.length === 0) return null
+                  const active = retailIds.some(id => menuIds.has(id))
+                  function toggleRetail() {
+                    setMenuIds(prev => {
+                      const s = new Set(prev)
+                      if (active) { retailIds.forEach(id => s.delete(id)) }
+                      else        { retailIds.forEach(id => s.add(id)) }
+                      return s
+                    })
+                  }
+                  return (
+                    <button
+                      onClick={toggleRetail}
+                      style={{
+                        padding: '6px 14px', borderRadius: 2, cursor: 'pointer',
+                        border: `1px solid ${active ? goldBorder : border}`,
+                        background: active ? goldDim : 'transparent',
+                        color: active ? gold : muted,
+                        fontFamily: zen, fontSize: 12,
+                      }}
+                    >物販</button>
+                  )
+                })()}
               </div>
             </div>
           </div>
@@ -749,13 +782,23 @@ function MaterialFormSheet({
 
 // ─── 材料詳細シート（BottomSheet） ────────────────────────────────────────────
 function MaterialDetailSheet({
-  material, onClose, onEdit, onDelete,
+  material, onClose, onEdit, onDelete, retailMenuIds,
 }: {
   material: Material
   onClose: () => void
   onEdit: () => void
   onDelete: () => void
+  retailMenuIds: Set<number>
 }) {
+  const tagStyle: React.CSSProperties = {
+    padding: '6px 14px', borderRadius: 2,
+    border: `1px solid ${goldBorder}`, background: goldDim,
+    color: gold, fontFamily: zen, fontSize: 12,
+  }
+  const menus         = material.menus ?? []
+  const treatmentTags = menus.filter(m => !retailMenuIds.has(m.menu_id))
+  const hasRetail     = menus.some(m => retailMenuIds.has(m.menu_id))
+
   return (
     <BottomSheet onClose={onClose}>
       {close => (
@@ -781,27 +824,21 @@ function MaterialDetailSheet({
             </div>
           </div>
 
-          {/* 使用メニュー */}
-          {(material.menus ?? []).length > 0 && (
+          {/* 使用メニュー（物販は "物販" タグに集約） */}
+          {(treatmentTags.length > 0 || hasRetail) && (
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 10 }}>使用するメニュー</div>
               <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
-                {(material.menus ?? []).map(m => (
-                  <div
-                    key={m.menu_id}
-                    style={{
-                      padding: '6px 14px', borderRadius: 2,
-                      border: `1px solid ${goldBorder}`, background: goldDim,
-                      color: gold, fontFamily: zen, fontSize: 12,
-                    }}
-                  >{m.menu_name}</div>
+                {treatmentTags.map(m => (
+                  <div key={m.menu_id} style={tagStyle}>{m.menu_name}</div>
                 ))}
+                {hasRetail && <div style={tagStyle}>物販</div>}
               </div>
             </div>
           )}
 
           <button
-            onClick={() => { close(); setTimeout(onEdit, 450) }}
+            onClick={() => { onEdit(); close() }}
             style={{ padding: '13px 0', background: gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: 'pointer', marginBottom: 8 }}
           >編集する</button>
           <button
@@ -822,6 +859,8 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
   const [detailItem, setDetailItem] = useState<Material | null>(null)
   const [editItem,   setEditItem]   = useState<Material | null>(null)
   const [addOpen,    setAddOpen]    = useState(false)
+  const pendingEditRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const retailMenuIds  = new Set(menus.filter(m => m.menu_type === 'retail').map(m => m.id))
 
   async function load() {
     setLoading(true)
@@ -858,6 +897,12 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error('更新に失敗しました')
+    // PATCHが成功したら即座に一覧のカテゴリを更新（load()の結果を待たずに反映）
+    setMaterials(prev => prev.map(m =>
+      m.id === editItem.id
+        ? { ...m, name: data.name, brand: data.brand, category: data.category, stock_unit: data.stock_unit }
+        : m
+    ))
     await load()
     onChanged()
   }
@@ -916,14 +961,18 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
                   </div>
                   <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2 }}>
                     {catItems.map((m, i) => {
-                      const menuLabel = m.menus?.length > 0
-                        ? m.menus.map(x => x.menu_name).join('、')
-                        : null
+                      const treatmentNames = (m.menus ?? []).filter(x => !retailMenuIds.has(x.menu_id)).map(x => x.menu_name)
+                      const hasRetailLink  = (m.menus ?? []).some(x => retailMenuIds.has(x.menu_id))
+                      const menuParts      = [...treatmentNames, ...(hasRetailLink ? ['物販'] : [])]
+                      const menuLabel      = menuParts.length > 0 ? menuParts.join('、') : null
                       const sub = [m.brand, menuLabel].filter(Boolean).join(' · ')
                       return (
                         <div
                           key={m.id}
-                          onClick={() => setDetailItem(m)}
+                          onClick={() => {
+                            if (pendingEditRef.current) { clearTimeout(pendingEditRef.current); pendingEditRef.current = null }
+                            setEditItem(null); setDetailItem(m)
+                          }}
                           style={{
                             display: 'flex', alignItems: 'center', padding: '14px 16px', cursor: 'pointer',
                             borderBottom: i < catItems.length - 1 ? `1px solid ${border}` : 'none',
@@ -960,9 +1009,18 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
       {/* 詳細シート */}
       {detailItem && (
         <MaterialDetailSheet
+          key={detailItem.id}
           material={detailItem}
+          retailMenuIds={retailMenuIds}
           onClose={() => setDetailItem(null)}
-          onEdit={() => { setEditItem(detailItem); setDetailItem(null) }}
+          onEdit={() => {
+            const item = detailItem
+            if (pendingEditRef.current) clearTimeout(pendingEditRef.current)
+            pendingEditRef.current = setTimeout(() => {
+              pendingEditRef.current = null
+              setEditItem(item)
+            }, 450)
+          }}
           onDelete={() => { handleDelete(detailItem.id) }}
         />
       )}
@@ -970,6 +1028,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
       {/* 編集フォーム */}
       {editItem && (
         <MaterialFormSheet
+          key={editItem.id}
           initial={editItem}
           menus={menus}
           onSave={handleUpdate}
@@ -1275,7 +1334,7 @@ export default function InventoryPage() {
   const displayItems = items.filter(it => {
     if (filter === '送信済')  return sentIds.has(it.material_id)
     if (filter !== 'すべて'  && it.status !== filter) return false
-    if (filter !== '送信済'  && sentIds.has(it.material_id)) return false
+    if (sentIds.has(it.material_id)) return false
     if (search) {
       const q = search.toLowerCase()
       if (!it.name.toLowerCase().includes(q) && !(it.brand ?? '').toLowerCase().includes(q)) return false

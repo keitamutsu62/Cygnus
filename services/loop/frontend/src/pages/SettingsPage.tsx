@@ -118,12 +118,6 @@ const BellIcon = ({ color }: { color: string }) => (
     <path d="M5.5 11C5.5 11.8 6.2 12.5 7 12.5C7.8 12.5 8.5 11.8 8.5 11" stroke={color} strokeWidth="1.1" fill="none"/>
   </svg>
 )
-const CircleNotifIcon = ({ color }: { color: string }) => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <circle cx="7" cy="7" r="5.5" stroke={color} strokeWidth="1.1"/>
-    <polyline points="4.5,7 6.5,9 9.5,5" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
 const MailIcon = ({ color }: { color: string }) => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <rect x="2" y="3" width="10" height="8" rx="1.5" stroke={color} strokeWidth="1.1"/>
@@ -260,8 +254,9 @@ function BackHeader({ title, onBack }: { title: string; onBack: () => void }) {
 
 // ─── サロンカード ──────────────────────────────────────────────────────────────
 function SalonCard({ salonName }: { salonName: string }) {
+  const navigate = useNavigate()
   return (
-    <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
+    <div onClick={() => navigate('/plan')} style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, position: 'relative', overflow: 'hidden', cursor: 'pointer' }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${gold}, transparent)` }}/>
       <div style={{ width: 38, height: 38, borderRadius: '50%', background: goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <BellIcon color={gold} />

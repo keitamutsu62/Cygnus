@@ -80,7 +80,7 @@ function MenuEditModal({
       if (!res.ok) throw new Error()
       onSaved()
     } catch {
-      alert('保存に失敗しました')
+      window.alert('保存に失敗しました')
     } finally {
       setSaving(false)
     }
@@ -95,7 +95,7 @@ function MenuEditModal({
       if (!res.ok) throw new Error()
       onSaved()
     } catch {
-      alert('削除に失敗しました')
+      window.alert('削除に失敗しました')
     } finally {
       setDeleting(false)
     }
@@ -104,13 +104,53 @@ function MenuEditModal({
   const typeLabel = tab === 'treatment' ? '施術' : '物販'
   const canSave   = name.trim() && price.trim() && !isNaN(parseInt(price, 10))
 
+  const overlayRef  = useRef<HTMLDivElement>(null)
+  const panelRef    = useRef<HTMLDivElement>(null)
+  const onCloseRef  = useRef(onClose)
+  onCloseRef.current = onClose
+
+  useEffect(() => {
+    const overlay = overlayRef.current
+    const panel   = panelRef.current
+    if (!overlay || !panel) return
+    const stop = (e: TouchEvent) => { if (!panel.contains(e.target as Node)) e.preventDefault() }
+    overlay.addEventListener('touchmove', stop, { passive: false })
+    return () => overlay.removeEventListener('touchmove', stop)
+  }, [])
+
+  useEffect(() => {
+    const el = panelRef.current
+    if (!el) return
+    let sy = 0
+    const onStart = (e: TouchEvent) => { sy = e.touches[0].clientY }
+    const onMove  = (e: TouchEvent) => {
+      const dy = e.touches[0].clientY - sy
+      if (dy > 0) { e.preventDefault(); el.style.transition = 'none'; el.style.transform = `translateY(${dy}px)` }
+    }
+    const onEnd = (e: TouchEvent) => {
+      const dy = e.changedTouches[0].clientY - sy
+      if (dy > 80) { onCloseRef.current(); return }
+      el.style.transition = 'transform 0.2s'; el.style.transform = 'translateY(0)'
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove',  onMove,  { passive: false })
+    el.addEventListener('touchend',   onEnd,   { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove',  onMove)
+      el.removeEventListener('touchend',   onEnd)
+    }
+  }, [])
+
   return (
     <div
+      ref={overlayRef}
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
       onClick={onClose}
     >
       <div
-        style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 40px' }}
+        ref={panelRef}
+        style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 40px', transition: 'transform 0.2s', willChange: 'transform' }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }}/>
@@ -203,13 +243,53 @@ function ShimeiEditModal({
   const num = parseInt(price, 10)
   const ok  = !isNaN(num) && num >= 0
 
+  const overlayRef2  = useRef<HTMLDivElement>(null)
+  const panelRef2    = useRef<HTMLDivElement>(null)
+  const onCloseRef2  = useRef(onClose)
+  onCloseRef2.current = onClose
+
+  useEffect(() => {
+    const overlay = overlayRef2.current
+    const panel   = panelRef2.current
+    if (!overlay || !panel) return
+    const stop = (e: TouchEvent) => { if (!panel.contains(e.target as Node)) e.preventDefault() }
+    overlay.addEventListener('touchmove', stop, { passive: false })
+    return () => overlay.removeEventListener('touchmove', stop)
+  }, [])
+
+  useEffect(() => {
+    const el = panelRef2.current
+    if (!el) return
+    let sy = 0
+    const onStart = (e: TouchEvent) => { sy = e.touches[0].clientY }
+    const onMove  = (e: TouchEvent) => {
+      const dy = e.touches[0].clientY - sy
+      if (dy > 0) { e.preventDefault(); el.style.transition = 'none'; el.style.transform = `translateY(${dy}px)` }
+    }
+    const onEnd = (e: TouchEvent) => {
+      const dy = e.changedTouches[0].clientY - sy
+      if (dy > 80) { onCloseRef2.current(); return }
+      el.style.transition = 'transform 0.2s'; el.style.transform = 'translateY(0)'
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove',  onMove,  { passive: false })
+    el.addEventListener('touchend',   onEnd,   { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove',  onMove)
+      el.removeEventListener('touchend',   onEnd)
+    }
+  }, [])
+
   return (
     <div
+      ref={overlayRef2}
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
       onClick={onClose}
     >
       <div
-        style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 40px' }}
+        ref={panelRef2}
+        style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 40px', transition: 'transform 0.2s', willChange: 'transform' }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }}/>
@@ -267,35 +347,26 @@ export default function MenusPage() {
   return (
     <>
     <AppLayout>
-      {/* ヘッダー */}
-      <div style={{ padding: '14px 20px 0', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button
-          onClick={() => navigate('/settings')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <polyline points="13,4 7,10 13,16" stroke={txt} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        <div>
-          <div style={{ fontSize: 17, fontWeight: 400, color: txt, fontFamily: zen }}>メニュー設定</div>
-        </div>
-      </div>
-
-      <div style={{ padding: '12px 20px 80px', display: 'flex', flexDirection: 'column', gap: 0 }}>
-
-        {/* ヒントバナー */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: greenDim, border: '1px solid rgba(109,186,142,0.2)', borderRadius: 2, marginBottom: 16, fontSize: 11, color: green, fontFamily: zen }}>
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
-            <circle cx="5" cy="5" r="4.5" stroke={green} strokeWidth="1"/>
-            <line x1="5" y1="3.5" x2="5" y2="5.5" stroke={green} strokeWidth="1" strokeLinecap="round"/>
-            <circle cx="5" cy="7" r="0.5" fill={green}/>
-          </svg>
-          ここで登録したメニューは会計入力に使用されます
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* ヘッダー + タブ（スクロールしない固定エリア） */}
+      <div style={{ flexShrink: 0, background: '#1a1816' }}>
+        {/* ヘッダー */}
+        <div style={{ padding: '14px 20px 8px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={() => navigate('/settings')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <polyline points="13,4 7,10 13,16" stroke={txt} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 400, color: txt, fontFamily: zen }}>メニュー設定</div>
+          </div>
         </div>
 
         {/* タブ */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <div style={{ padding: '0 20px 12px', display: 'flex', gap: 8 }}>
           {(['treatment', 'retail', 'shimei'] as const).map(t => {
             const label = t === 'treatment' ? '施術メニュー' : t === 'retail' ? '物販' : '指名料'
             const active = tab === t
@@ -317,6 +388,21 @@ export default function MenusPage() {
               </button>
             )
           })}
+        </div>
+      </div>
+
+      {/* スクロールコンテンツ */}
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+      <div style={{ padding: '12px 20px 80px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+        {/* ヒントバナー */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: greenDim, border: '1px solid rgba(109,186,142,0.2)', borderRadius: 2, marginBottom: 16, fontSize: 11, color: green, fontFamily: zen }}>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+            <circle cx="5" cy="5" r="4.5" stroke={green} strokeWidth="1"/>
+            <line x1="5" y1="3.5" x2="5" y2="5.5" stroke={green} strokeWidth="1" strokeLinecap="round"/>
+            <circle cx="5" cy="7" r="0.5" fill={green}/>
+          </svg>
+          ここで登録したメニューは会計入力に使用されます
         </div>
 
         {/* コンテンツ */}
@@ -398,6 +484,8 @@ export default function MenusPage() {
             </div>
           </div>
         )}
+      </div>
+      </div>
       </div>
     </AppLayout>
 

@@ -553,7 +553,6 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
   const clients        = periodSales.reduce((s, d) => s + d.client_count, 0)
   const avgUnit        = clients > 0 ? Math.round(periodTotal / clients) : 0
   const retailTotal    = periodSales.reduce((s, d) => s + d.retail_sales, 0)
-  const todayClients   = todaySales.reduce((s, d) => s + d.client_count, 0)
   const staffPeriodLabel = period === 'today' ? '本日' : period === 'week' ? '今週' : '今月'
 
   const MENUS = [
