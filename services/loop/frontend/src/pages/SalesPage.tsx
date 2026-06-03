@@ -223,19 +223,29 @@ function WeekBarChart({ bars, title, total }: { bars: BarItem[]; title: string; 
 }
 
 // ── MonthlyBarChart ───────────────────────────────────────────────────────
-type MonthBarItem = { label: string; displayAmt: string; height: number; isActive: boolean }
+type MonthBarItem = { label: string; amount: number; isActive: boolean }
 
-const MONTH_BARS: MonthBarItem[] = [
-  { label: '12月', displayAmt: '¥8,500,000', height: 87, isActive: false },
-  { label: '1月',  displayAmt: '¥7,200,000', height: 73, isActive: false },
-  { label: '2月',  displayAmt: '¥7,600,000', height: 77, isActive: false },
-  { label: '3月',  displayAmt: '¥8,000,000', height: 81, isActive: false },
-  { label: '4月',  displayAmt: '¥8,204,000', height: 83, isActive: false },
-  { label: '5月',  displayAmt: '¥8,820,400', height: 90, isActive: true  },
-]
+function buildMonthlyBars(sales: DailySales[] | StaffDailySales[], numMonths = 6): MonthBarItem[] {
+  const now = new Date()
+  const ymList = Array.from({ length: numMonths }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (numMonths - 1 - i), 1)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  })
+  const byMonth: Record<string, number> = {}
+  sales.forEach(d => {
+    const ym = ds(d.date).slice(0, 7)
+    byMonth[ym] = (byMonth[ym] || 0) + d.total_sales
+  })
+  const cur = currentYm()
+  return ymList.map(ym => ({
+    label: `${parseInt(ym.split('-')[1])}月`,
+    amount: byMonth[ym] || 0,
+    isActive: ym === cur,
+  }))
+}
 
-function MonthlyBarChart() {
-  const months = MONTH_BARS
+function MonthlyBarChart({ bars }: { bars: MonthBarItem[] }) {
+  const months = bars
   const [activeIdx, setActiveIdx] = useState(() => months.findIndex(m => m.isActive))
   const ref = useRef<HTMLDivElement>(null)
 
@@ -245,7 +255,9 @@ function MonthlyBarChart() {
     return Math.max(0, Math.min(months.length - 1, Math.floor(((clientX - r.left) / r.width) * months.length)))
   }
 
-  const tooltipText = activeIdx >= 0 ? `${months[activeIdx].label}  ${months[activeIdx].displayAmt}` : '—'
+  const active = activeIdx >= 0 ? months[activeIdx] : null
+  const tooltipText = active ? `${active.label}  ¥${fmt(active.amount)}` : '—'
+  const max = Math.max(...months.map(m => m.amount), 1)
 
   return (
     <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: 16, marginBottom: 10 }}>
@@ -266,9 +278,10 @@ function MonthlyBarChart() {
       >
         {months.map((m, i) => {
           const isAct = i === activeIdx
+          const h = Math.max(5, Math.round(m.amount / max * 90))
           return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
-              <div style={{ width: '100%', borderRadius: '2px 2px 0 0', background: isAct ? gold : goldDim, border: `1px solid ${isAct ? gold : goldBorder}`, height: `${m.height}%`, transition: 'background 0.15s' }}/>
+              <div style={{ width: '100%', borderRadius: '2px 2px 0 0', background: isAct ? gold : goldDim, border: `1px solid ${isAct ? gold : goldBorder}`, height: `${h}%`, transition: 'background 0.15s' }}/>
               <div style={{ fontSize: 8, color: isAct ? gold : muted }}>{m.label}</div>
             </div>
           )
@@ -362,13 +375,14 @@ function StaffRankRow({ rank, name, initials, meta, sales, pct, onClick }: {
   )
 }
 
-// ── 先週比計算ユーティリティ ──────────────────────────────────────────────
-function calcDiff(current: number, prev: number): { text: string; down: boolean } | undefined {
+// ── 比較ラベルユーティリティ ──────────────────────────────────────────────
+function calcDiff(current: number, prev: number, period: Period): { text: string; down: boolean } | undefined {
   if (prev === 0) return undefined
   const pct = Math.round((current - prev) / prev * 100)
+  const label = period === 'month' ? '前月比' : period === 'today' ? '前日比' : '先週比'
   return pct >= 0
-    ? { text: `↑ 先週比 +${pct}%`, down: false }
-    : { text: `↓ 先週比 ${pct}%`,  down: true  }
+    ? { text: `↑ ${label} +${pct}%`, down: false }
+    : { text: `↓ ${label} ${pct}%`,  down: true  }
 }
 
 // ── AllView ───────────────────────────────────────────────────────────────
@@ -431,7 +445,7 @@ function AllView({ period, stores, onSelectStore }: {
     : period === 'week'
     ? prevWeekData.reduce((s, d) => s + d.total_sales, 0)
     : prevMonthData.reduce((s, d) => s + d.total_sales, 0)
-  const diff = calcDiff(dispTotal, prevTotal)
+  const diff = calcDiff(dispTotal, prevTotal, period)
 
   const bars = buildWeekBars(allSales.filter(d => ds(d.date) >= wb.from))
 
@@ -704,48 +718,88 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
 }
 
 // ── CompareView ───────────────────────────────────────────────────────────
-type CompareRow = { name: string; prev: string; curr: string; diff: string; up: boolean }
-const COMPARE: Record<View, { label: string; rows: CompareRow[] }> = {
-  all: {
-    label: '全店 — 2026年5月 vs 4月',
-    rows: [
-      { name: '売上合計', prev: '¥8,204,000', curr: '¥8,820,400', diff: '↑ +7.5%',  up: true  },
-      { name: '客数',     prev: '648名',       curr: '680名',      diff: '↑ +4.9%',  up: true  },
-      { name: '客単価',   prev: '¥12,661',    curr: '¥12,971',   diff: '↑ +2.4%',  up: true  },
-      { name: '技術売上', prev: '¥6,980,000', curr: '¥7,560,000', diff: '↑ +8.3%',  up: true  },
-      { name: '物販売上', prev: '¥1,224,000', curr: '¥1,260,400', diff: '↑ +3.0%',  up: true  },
-    ],
-  },
-  store: {
-    label: '店舗 — 2026年5月 vs 4月',
-    rows: [
-      { name: '売上合計', prev: '¥2,804,000', curr: '¥3,204,000', diff: '↑ +14.3%', up: true  },
-      { name: '客数',     prev: '218名',       curr: '248名',      diff: '↑ +13.8%', up: true  },
-      { name: '客単価',   prev: '¥12,862',    curr: '¥12,919',   diff: '↑ +0.4%',  up: true  },
-      { name: '技術売上', prev: '¥2,380,000', curr: '¥2,760,000', diff: '↑ +16.0%', up: true  },
-      { name: '物販売上', prev: '¥424,000',   curr: '¥444,000',  diff: '↑ +4.7%',  up: true  },
-    ],
-  },
-  staff: {
-    label: 'スタッフ — 2026年5月 vs 4月',
-    rows: [
-      { name: '売上合計', prev: '¥1,048,000', curr: '¥1,240,000', diff: '↑ +18.3%', up: true  },
-      { name: '客数',     prev: '74名',        curr: '88名',       diff: '↑ +18.9%', up: true  },
-      { name: '客単価',   prev: '¥14,162',    curr: '¥14,091',   diff: '↓ -0.5%',  up: false },
-      { name: '技術売上', prev: '¥904,000',   curr: '¥1,072,000', diff: '↑ +18.6%', up: true  },
-      { name: '物販売上', prev: '¥144,000',   curr: '¥168,000',  diff: '↑ +16.7%', up: true  },
-    ],
-  },
-}
+function CompareView({ view, storeId, staffId, stores }: {
+  view: View; storeId: number | null; staffId: number | null; stores: Store[]
+}) {
+  const [sales, setSales] = useState<DailySales[]>([])
 
-function CompareView({ view }: { view: View }) {
-  const data = COMPARE[view]
+  const ym = currentYm()
+  const [y, mo] = ym.split('-').map(Number)
+  const prevYm     = mo === 1 ? `${y - 1}-12` : `${y}-${String(mo - 1).padStart(2, '0')}`
+  const { from: currFrom, to: currTo } = monthBoundsYm(ym)
+  const { from: prevFrom } = monthBoundsYm(prevYm)
+  const sixMoAgo   = new Date(y, mo - 6, 1)
+  const sixMoYm    = `${sixMoAgo.getFullYear()}-${String(sixMoAgo.getMonth() + 1).padStart(2, '0')}`
+  const { from: chartFrom } = monthBoundsYm(sixMoYm)
+
+  useEffect(() => {
+    if (view === 'all' && stores.length === 0) return
+    if (view === 'store' && !storeId) return
+
+    if (view === 'staff') {
+      const staffParam = staffId ? `&staff_id=${staffId}` : ''
+      apiFetch<DailySales[]>(`/api/v1/sales/staff?from=${chartFrom}&to=${currTo}${staffParam}`)
+        .then(d => setSales(Array.isArray(d) ? d : [])).catch(() => {})
+    } else if (view === 'store') {
+      apiFetch<DailySales[]>(`/api/v1/sales/store?store_id=${storeId}&from=${chartFrom}&to=${currTo}`)
+        .then(d => setSales(Array.isArray(d) ? d : [])).catch(() => {})
+    } else {
+      Promise.allSettled(
+        stores.map(s => apiFetch<DailySales[]>(`/api/v1/sales/store?store_id=${s.id}&from=${chartFrom}&to=${currTo}`))
+      ).then(results => setSales(
+        results
+          .filter((r): r is PromiseFulfilledResult<DailySales[]> => r.status === 'fulfilled')
+          .flatMap(r => r.value)
+      ))
+    }
+  }, [view, storeId, staffId, stores])
+
+  const currData = sales.filter(d => ds(d.date) >= currFrom)
+  const prevData = sales.filter(d => ds(d.date) >= prevFrom && ds(d.date) < currFrom)
+
+  function sumKey(data: DailySales[], key: keyof DailySales): number {
+    return data.reduce((acc, d) => acc + (((d[key] as number) || 0)), 0)
+  }
+
+  const currTotal   = sumKey(currData, 'total_sales')
+  const prevTotal   = sumKey(prevData, 'total_sales')
+  const currClients = sumKey(currData, 'client_count')
+  const prevClients = sumKey(prevData, 'client_count')
+  const currAvg     = currClients > 0 ? Math.round(currTotal / currClients) : 0
+  const prevAvg     = prevClients > 0 ? Math.round(prevTotal / prevClients) : 0
+  const currTech    = sumKey(currData, 'tech_sales')
+  const prevTech    = sumKey(prevData, 'tech_sales')
+  const currRetail  = sumKey(currData, 'retail_sales')
+  const prevRetail  = sumKey(prevData, 'retail_sales')
+
+  function diffStr(curr: number, prev: number): { diff: string; up: boolean } {
+    if (prev === 0) return { diff: '—', up: true }
+    const pct = Math.round((curr - prev) / prev * 100)
+    return pct >= 0 ? { diff: `↑ +${pct}%`, up: true } : { diff: `↓ ${pct}%`, up: false }
+  }
+
+  const prevLabel   = `${parseInt(prevYm.split('-')[1])}月`
+  const currLabel   = `${parseInt(ym.split('-')[1])}月`
+  const viewLabel   = view === 'all' ? '全店' : view === 'store' ? '店舗' : 'スタッフ'
+  const headerLabel = `${viewLabel} — ${y}年${currLabel} vs ${prevLabel}`
+
+  type CmpRow = { name: string; prev: string; curr: string; diff: string; up: boolean }
+  const rows: CmpRow[] = [
+    { name: '売上合計', prev: `¥${fmt(prevTotal)}`,   curr: `¥${fmt(currTotal)}`,   ...diffStr(currTotal,   prevTotal)   },
+    { name: '客数',     prev: `${prevClients}名`,      curr: `${currClients}名`,     ...diffStr(currClients, prevClients) },
+    { name: '客単価',   prev: `¥${fmt(prevAvg)}`,     curr: `¥${fmt(currAvg)}`,     ...diffStr(currAvg,     prevAvg)     },
+    ...(view !== 'staff' ? [{ name: '技術売上', prev: `¥${fmt(prevTech)}`, curr: `¥${fmt(currTech)}`, ...diffStr(currTech, prevTech) }] : []),
+    { name: '物販売上', prev: `¥${fmt(prevRetail)}`,  curr: `¥${fmt(currRetail)}`,  ...diffStr(currRetail,  prevRetail)  },
+  ]
+
+  const bars = buildMonthlyBars(sales)
+
   return (
     <div>
-      <div style={{ fontSize: 11, color: muted, padding: '8px 0 12px' }}>{data.label}</div>
+      <div style={{ fontSize: 11, color: muted, padding: '8px 0 12px' }}>{headerLabel}</div>
       <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '14px 16px', marginBottom: 8 }}>
-        {data.rows.map((row, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < data.rows.length - 1 ? `1px solid ${bdr}` : undefined }}>
+        {rows.map((row, i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < rows.length - 1 ? `1px solid ${bdr}` : undefined }}>
             <div style={{ fontSize: 12, color: muted }}>{row.name}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
               <div style={{ fontSize: 11, color: muted }}>先月 {row.prev}</div>
@@ -755,7 +809,7 @@ function CompareView({ view }: { view: View }) {
           </div>
         ))}
       </div>
-      <MonthlyBarChart/>
+      <MonthlyBarChart bars={bars}/>
     </div>
   )
 }
@@ -840,7 +894,7 @@ export default function SalesPage() {
         {/* スクロールコンテンツ（内側スクロール） */}
         <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 20px 24px' } as React.CSSProperties}>
           {showCompare ? (
-            <CompareView view={view}/>
+            <CompareView view={view} storeId={selStoreId} staffId={selStaffId} stores={stores}/>
           ) : view === 'all' ? (
             <AllView
               period={period}
