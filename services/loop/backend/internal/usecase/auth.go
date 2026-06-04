@@ -299,6 +299,58 @@ func (u *AuthUsecase) AcceptInvitation(ctx context.Context, in AcceptInvitationI
 	return staff, nil
 }
 
+type StudioRegisterInput struct {
+	DisplayName string
+	Email       string
+	Password    string
+}
+
+func (u *AuthUsecase) StudioRegister(ctx context.Context, in StudioRegisterInput) (*model.CygnusAccount, error) {
+	if existing, _ := u.accountRepo.FindByEmail(ctx, in.Email); existing != nil {
+		return nil, apierror.ErrConflict
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("StudioRegister: hash: %w", err)
+	}
+
+	cygnusID, err := u.generateUniqueCygnusID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("StudioRegister: generate id: %w", err)
+	}
+
+	account := &model.CygnusAccount{
+		CygnusID:    cygnusID,
+		Email:       in.Email,
+		PasswordHash: string(hash),
+		DisplayName: in.DisplayName,
+	}
+	if err := u.accountRepo.Create(ctx, account); err != nil {
+		return nil, fmt.Errorf("StudioRegister: create account: %w", err)
+	}
+	return account, nil
+}
+
+func (u *AuthUsecase) StudioLogin(ctx context.Context, email, password string) (string, error) {
+	account, err := u.accountRepo.FindByEmail(ctx, email)
+	if err != nil {
+		return "", apierror.ErrUnauthorized
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(password)); err != nil {
+		return "", apierror.ErrUnauthorized
+	}
+	return u.generateStudioJWT(account)
+}
+
+func (u *AuthUsecase) generateStudioJWT(a *model.CygnusAccount) (string, error) {
+	claims := jwt.MapClaims{
+		"cygnus_account_id": a.ID,
+		"exp":               time.Now().Add(24 * time.Hour).Unix(),
+	}
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(u.jwtSecret))
+}
+
 func (u *AuthUsecase) ForgotPassword(ctx context.Context, email, frontendURL string) error {
 	staff, err := u.staffRepo.FindByEmail(ctx, email)
 	if err != nil {

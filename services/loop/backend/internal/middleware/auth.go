@@ -68,3 +68,40 @@ func GetClaims(c echo.Context) *Claims {
 	v, _ := c.Get(claimsKey).(*Claims)
 	return v
 }
+
+// StudioJWT は cygnus_account_id のみを持つSTUDIO専用JWT用ミドルウェア
+func StudioJWT(secret string) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			header := c.Request().Header.Get("Authorization")
+			if !strings.HasPrefix(header, "Bearer ") {
+				return echo.NewHTTPError(http.StatusUnauthorized, "missing token")
+			}
+			tokenStr := strings.TrimPrefix(header, "Bearer ")
+
+			token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
+				if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, echo.NewHTTPError(http.StatusUnauthorized, "unexpected signing method")
+				}
+				return []byte(secret), nil
+			})
+			if err != nil || !token.Valid {
+				return echo.NewHTTPError(http.StatusUnauthorized, "invalid token")
+			}
+
+			mc, ok := token.Claims.(jwt.MapClaims)
+			if !ok {
+				return echo.NewHTTPError(http.StatusUnauthorized, "invalid claims")
+			}
+
+			v, ok := mc["cygnus_account_id"]
+			if !ok || v == nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, "missing cygnus_account_id")
+			}
+			id := uint64(v.(float64))
+			claims := &Claims{CygnusAccountID: &id}
+			c.Set(claimsKey, claims)
+			return next(c)
+		}
+	}
+}

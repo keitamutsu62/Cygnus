@@ -110,6 +110,56 @@ func (h *AuthHandler) Invite(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "invitation sent"})
 }
 
+// POST /api/v1/auth/studio/register
+func (h *AuthHandler) StudioRegister(c echo.Context) error {
+	var req struct {
+		DisplayName string `json:"display_name"`
+		Email       string `json:"email"`
+		Password    string `json:"password"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+	if req.DisplayName == "" || req.Email == "" || len(req.Password) < 8 {
+		return echo.NewHTTPError(http.StatusBadRequest, "display_name, email, password(8+) are required")
+	}
+	account, err := h.uc.StudioRegister(c.Request().Context(), usecase.StudioRegisterInput{
+		DisplayName: req.DisplayName,
+		Email:       req.Email,
+		Password:    req.Password,
+	})
+	if err != nil {
+		if errors.Is(err, apierror.ErrConflict) {
+			return echo.NewHTTPError(http.StatusConflict, "email already in use")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "registration failed")
+	}
+	return c.JSON(http.StatusCreated, map[string]any{
+		"cygnus_id":    account.CygnusID,
+		"display_name": account.DisplayName,
+		"email":        account.Email,
+	})
+}
+
+// POST /api/v1/auth/studio/login
+func (h *AuthHandler) StudioLogin(c echo.Context) error {
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+	token, err := h.uc.StudioLogin(c.Request().Context(), req.Email, req.Password)
+	if err != nil {
+		if errors.Is(err, apierror.ErrUnauthorized) {
+			return echo.NewHTTPError(http.StatusUnauthorized, "invalid email or password")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "login failed")
+	}
+	return c.JSON(http.StatusOK, map[string]string{"token": token})
+}
+
 // POST /api/v1/auth/forgot-password
 func (h *AuthHandler) ForgotPassword(c echo.Context) error {
 	var req struct {

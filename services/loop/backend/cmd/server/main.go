@@ -98,10 +98,21 @@ func main() {
 	auth.POST("/accept-invitation", authH.AcceptInvitation)
 	auth.POST("/forgot-password", authH.ForgotPassword)
 	auth.POST("/reset-password", authH.ResetPassword)
+	auth.POST("/studio/register", authH.StudioRegister)
+	auth.POST("/studio/login", authH.StudioLogin)
 
 	// 公開（RESERVE が参照）
 	pub := e.Group("/api/v1/public")
 	pub.GET("/stylists/:cygnus_id", studioH.GetPublicProfile)
+
+	// ─── STUDIO認証必要（cygnus_account_id のみ） ──────────────
+	studio := e.Group("/api/v1/studio", middleware.StudioJWT(cfg.JWTSecret))
+	studio.GET("/profile", studioH.GetMyProfile)
+	studio.PUT("/profile", studioH.UpsertProfile)
+	studio.GET("/works", studioH.ListMyWorks)
+	studio.POST("/works", studioH.CreateWork)
+	studio.PATCH("/works/:id", studioH.UpdateWork)
+	studio.DELETE("/works/:id", studioH.DeleteWork)
 
 	// ─── 認証必要 ──────────────────────────────────────────────
 	api := e.Group("/api/v1", middleware.JWT(cfg.JWTSecret))
