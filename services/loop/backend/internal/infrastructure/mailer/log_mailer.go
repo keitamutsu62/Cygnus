@@ -15,3 +15,8 @@ func (m *LogMailer) SendInvitation(ctx context.Context, to, salonName, inviteURL
 	fmt.Printf("[MAILER] 招待メール送信先: %s / サロン: %s / URL: %s\n", to, salonName, inviteURL)
 	return nil
 }
+
+func (m *LogMailer) SendPasswordReset(ctx context.Context, to, resetURL string) error {
+	fmt.Printf("[MAILER] パスワードリセットメール送信先: %s / URL: %s\n", to, resetURL)
+	return nil
+}

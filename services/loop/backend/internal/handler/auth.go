@@ -110,6 +110,40 @@ func (h *AuthHandler) Invite(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "invitation sent"})
 }
 
+// POST /api/v1/auth/forgot-password
+func (h *AuthHandler) ForgotPassword(c echo.Context) error {
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+	// メールアドレス存在有無を漏らさないため、エラーを無視して常に200を返す
+	_ = h.uc.ForgotPassword(c.Request().Context(), req.Email, h.frontendURL)
+	return c.JSON(http.StatusOK, map[string]string{"message": "if the email exists, a reset link has been sent"})
+}
+
+// POST /api/v1/auth/reset-password
+func (h *AuthHandler) ResetPassword(c echo.Context) error {
+	var req struct {
+		Token       string `json:"token"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+	if len(req.NewPassword) < 8 {
+		return echo.NewHTTPError(http.StatusBadRequest, "new_password must be at least 8 characters")
+	}
+	if err := h.uc.ResetPassword(c.Request().Context(), req.Token, req.NewPassword); err != nil {
+		if errors.Is(err, apierror.ErrInvalidToken) {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid or expired reset token")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to reset password")
+	}
+	return c.NoContent(http.StatusNoContent)
+}
+
 // PATCH /api/v1/auth/change-password
 func (h *AuthHandler) ChangePassword(c echo.Context) error {
 	claims := claimsFrom(c)

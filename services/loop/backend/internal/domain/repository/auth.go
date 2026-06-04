@@ -37,3 +37,9 @@ type InvitationRepository interface {
 	FindByToken(ctx context.Context, token string) (*model.Invitation, error)
 	UpdateStatus(ctx context.Context, id uint64, status model.InvitationStatus) error
 }
+
+type PasswordResetTokenRepository interface {
+	Create(ctx context.Context, t *model.PasswordResetToken) error
+	FindByToken(ctx context.Context, token string) (*model.PasswordResetToken, error)
+	MarkUsed(ctx context.Context, id uint64) error
+}

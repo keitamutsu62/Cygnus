@@ -27,6 +27,7 @@ func main() {
 	subRepo          := mysql.NewSubscriptionRepository(db)
 	staffRepo        := mysql.NewStaffRepository(db)
 	invRepo          := mysql.NewInvitationRepository(db)
+	resetTokenRepo   := mysql.NewPasswordResetTokenRepository(db)
 	accountRepo      := mysql.NewCygnusAccountRepository(db)
 	membershipRepo   := mysql.NewSalonMembershipRepository(db)
 	profileRepo      := mysql.NewProfileRepository(db)
@@ -49,7 +50,7 @@ func main() {
 	// ─── ユースケース ──────────────────────────────────────────
 	m := mailer.NewLogMailer()
 
-	authUC       := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, accountRepo, membershipRepo, m, cfg.JWTSecret)
+	authUC       := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, accountRepo, membershipRepo, resetTokenRepo, m, cfg.JWTSecret)
 	staffUC      := usecase.NewStaffUsecase(staffRepo)
 	invtUC       := usecase.NewInventoryUsecase(invtRepo)
 	studioUC     := usecase.NewStudioUsecase(accountRepo, profileRepo, workRepo)
@@ -95,6 +96,8 @@ func main() {
 	auth.POST("/register", authH.Register)
 	auth.POST("/login", authH.Login)
 	auth.POST("/accept-invitation", authH.AcceptInvitation)
+	auth.POST("/forgot-password", authH.ForgotPassword)
+	auth.POST("/reset-password", authH.ResetPassword)
 
 	// 公開（RESERVE が参照）
 	pub := e.Group("/api/v1/public")

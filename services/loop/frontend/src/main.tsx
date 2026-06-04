@@ -6,6 +6,8 @@ import AuthGuard from './components/AuthGuard'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import AcceptInvitationPage from './pages/AcceptInvitationPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import DashboardPage from './pages/DashboardPage'
 import InventoryPage from './pages/InventoryPage'
 import SalesPage from './pages/SalesPage'
@@ -21,6 +23,8 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
         <Route path="/inventory" element={<AuthGuard><InventoryPage /></AuthGuard>} />
         <Route path="/sales" element={<AuthGuard><SalesPage /></AuthGuard>} />

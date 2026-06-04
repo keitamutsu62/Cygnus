@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 const S = {
   bg:          '#1a1816',
@@ -126,14 +126,15 @@ export default function LoginPage() {
             onChange={setPassword}
             placeholder="••••••••"
             extra={
-              <div style={{
+              <Link to="/forgot-password" style={{
                 fontSize: 11,
                 color: S.gold,
                 textAlign: 'right',
-                cursor: 'pointer',
+                textDecoration: 'none',
+                display: 'block',
                 opacity: 0.8,
                 fontFamily: S.zen,
-              }}>パスワードを忘れた場合</div>
+              }}>パスワードを忘れた場合</Link>
             }
           />
 

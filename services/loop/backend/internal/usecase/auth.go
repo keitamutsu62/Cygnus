@@ -24,12 +24,14 @@ type AuthUsecase struct {
 	invitationRepo   repository.InvitationRepository
 	accountRepo      repository.CygnusAccountRepository
 	membershipRepo   repository.SalonMembershipRepository
+	resetTokenRepo   repository.PasswordResetTokenRepository
 	mailer           Mailer
 	jwtSecret        string
 }
 
 type Mailer interface {
 	SendInvitation(ctx context.Context, to, salonName, inviteURL string) error
+	SendPasswordReset(ctx context.Context, to, resetURL string) error
 }
 
 func NewAuthUsecase(
@@ -40,6 +42,7 @@ func NewAuthUsecase(
 	invitationRepo repository.InvitationRepository,
 	accountRepo repository.CygnusAccountRepository,
 	membershipRepo repository.SalonMembershipRepository,
+	resetTokenRepo repository.PasswordResetTokenRepository,
 	mailer Mailer,
 	jwtSecret string,
 ) *AuthUsecase {
@@ -51,6 +54,7 @@ func NewAuthUsecase(
 		invitationRepo:   invitationRepo,
 		accountRepo:      accountRepo,
 		membershipRepo:   membershipRepo,
+		resetTokenRepo:   resetTokenRepo,
 		mailer:           mailer,
 		jwtSecret:        jwtSecret,
 	}
@@ -280,6 +284,54 @@ func (u *AuthUsecase) AcceptInvitation(ctx context.Context, in AcceptInvitationI
 	_ = u.invitationRepo.UpdateStatus(ctx, inv.ID, model.InvitationAccepted)
 
 	return staff, nil
+}
+
+func (u *AuthUsecase) ForgotPassword(ctx context.Context, email, frontendURL string) error {
+	staff, err := u.staffRepo.FindByEmail(ctx, email)
+	if err != nil {
+		// メールアドレスの存在有無を漏らさないため常に成功扱い
+		return nil
+	}
+
+	token, err := generateToken()
+	if err != nil {
+		return fmt.Errorf("ForgotPassword: generate token: %w", err)
+	}
+
+	prt := &model.PasswordResetToken{
+		StaffID:   staff.ID,
+		Token:     token,
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+	}
+	if err := u.resetTokenRepo.Create(ctx, prt); err != nil {
+		return fmt.Errorf("ForgotPassword: create token: %w", err)
+	}
+
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", frontendURL, token)
+	if err := u.mailer.SendPasswordReset(ctx, email, resetURL); err != nil {
+		return fmt.Errorf("ForgotPassword: send mail: %w", err)
+	}
+
+	return nil
+}
+
+func (u *AuthUsecase) ResetPassword(ctx context.Context, token, newPassword string) error {
+	prt, err := u.resetTokenRepo.FindByToken(ctx, token)
+	if err != nil || prt.UsedAt != nil || prt.ExpiresAt.Before(time.Now()) {
+		return apierror.ErrInvalidToken
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("ResetPassword: hash: %w", err)
+	}
+
+	if err := u.staffRepo.UpdatePassword(ctx, prt.StaffID, string(hash)); err != nil {
+		return fmt.Errorf("ResetPassword: update password: %w", err)
+	}
+
+	_ = u.resetTokenRepo.MarkUsed(ctx, prt.ID)
+	return nil
 }
 
 func (u *AuthUsecase) ChangePassword(ctx context.Context, staffID uint64, currentPassword, newPassword string) error {
