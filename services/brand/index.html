@@ -960,6 +960,7 @@
     .problem-desc { grid-column: 2; }
     .orbit-diagram { max-width: 100%; margin: 60px auto 40px; }
     .roadmap-inner { padding: 0 40px; }
+    .section-photo-panel { width: 35%; }
   }
 
   @media (max-width: 640px) {
@@ -1013,10 +1014,6 @@
     .product-card { padding: 36px 28px; }
     .product-card.last-full { grid-column: auto !important; }
 
-    /* photo panel: タブレット縮小・モバイル非表示 */
-    .section-photo-panel { width: 35%; }
-    section:not(.hero) > *:not(.section-photo-panel):not(.section-shimmer) { max-width: 60%; }
-
     .product-name { font-size: 28px; }
 
     /* ロードマップ */
@@ -1032,9 +1029,6 @@
     .contact-sub { font-size: 14px; margin-bottom: 40px; }
     .contact-btn { padding: 16px 40px; font-size: 11px; letter-spacing: 0.3em; }
 
-  }
-    33%       { transform: rotate(2.5deg) translateX(4px) translateY(-6px); }
-    66%       { transform: rotate(-1.5deg) translateX(-3px) translateY(4px); }
   }
 
   /* ============ Organic parallax — light shimmer ============ */
