@@ -986,7 +986,6 @@
     /* ヒーロー */
     .hero-content { padding-top: 80px; }
 
-    .section-photo-panel { width: 0; display: none; }
     section:not(.hero) > *:not(.section-photo-panel):not(.section-shimmer) { max-width: 100%; }
 
     .hero-title { margin-bottom: 28px; }
@@ -1110,6 +1109,24 @@
   section:not(.hero) > *:not(.section-photo-panel):not(.section-shimmer) {
     position: relative;
     z-index: 1;
+  }
+
+
+  /* ============ Mobile: section photo panel as full-width strip ============ */
+  @media (max-width: 640px) {
+    .section-photo-panel {
+      position: relative;
+      right: auto; top: auto; bottom: auto;
+      width: calc(100% + 40px);
+      margin-left: -20px;
+      margin-top: -60px;
+      margin-bottom: 36px;
+      height: 260px;
+    }
+    .section-photo-panel::after {
+      background: linear-gradient(to bottom, transparent 50%, rgba(10,10,10,0.92) 100%);
+      z-index: 3;
+    }
   }
 
 </style>
