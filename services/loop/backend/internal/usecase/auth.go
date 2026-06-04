@@ -104,33 +104,39 @@ func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (*model.St
 		return nil, fmt.Errorf("Register: create owner: %w", err)
 	}
 
-	// cygnus_accounts 作成
-	cygnusID, err := u.generateUniqueCygnusID(ctx)
+	// cygnus_accounts — STUDIOで先に作成済みの場合は使い回す
+	account, err := u.accountRepo.FindByEmail(ctx, in.OwnerEmail)
 	if err != nil {
-		return nil, fmt.Errorf("Register: generate cygnus id: %w", err)
-	}
-	account := &model.CygnusAccount{
-		CygnusID:     cygnusID,
-		Email:        in.OwnerEmail,
-		PasswordHash: string(hash),
-		DisplayName:  in.OwnerName,
-	}
-	if err := u.accountRepo.Create(ctx, account); err != nil {
-		return nil, fmt.Errorf("Register: create cygnus account: %w", err)
+		cygnusID, err := u.generateUniqueCygnusID(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("Register: generate cygnus id: %w", err)
+		}
+		account = &model.CygnusAccount{
+			CygnusID:     cygnusID,
+			Email:        in.OwnerEmail,
+			PasswordHash: string(hash),
+			DisplayName:  in.OwnerName,
+		}
+		if err := u.accountRepo.Create(ctx, account); err != nil {
+			return nil, fmt.Errorf("Register: create cygnus account: %w", err)
+		}
 	}
 	if err := u.staffRepo.LinkCygnusAccount(ctx, owner.ID, account.ID); err != nil {
 		return nil, fmt.Errorf("Register: link cygnus account: %w", err)
 	}
 	owner.CygnusAccountID = &account.ID
 
-	membership := &model.SalonMembership{
-		CygnusAccountID: account.ID,
-		SalonID:         salon.ID,
-		Role:            model.StaffRoleOwner,
-		IsActive:        true,
-	}
-	if err := u.membershipRepo.Create(ctx, membership); err != nil {
-		return nil, fmt.Errorf("Register: create membership: %w", err)
+	// salon_memberships — 既存の場合は重複作成しない
+	if _, err := u.membershipRepo.FindByAccountAndSalon(ctx, account.ID, salon.ID); err != nil {
+		membership := &model.SalonMembership{
+			CygnusAccountID: account.ID,
+			SalonID:         salon.ID,
+			Role:            model.StaffRoleOwner,
+			IsActive:        true,
+		}
+		if err := u.membershipRepo.Create(ctx, membership); err != nil {
+			return nil, fmt.Errorf("Register: create membership: %w", err)
+		}
 	}
 
 	return owner, nil
@@ -253,32 +259,39 @@ func (u *AuthUsecase) AcceptInvitation(ctx context.Context, in AcceptInvitationI
 		return nil, fmt.Errorf("AcceptInvitation: create staff: %w", err)
 	}
 
-	cygnusID, err := u.generateUniqueCygnusID(ctx)
+	// cygnus_accounts — STUDIOで先に作成済みの場合は使い回す
+	account, err := u.accountRepo.FindByEmail(ctx, inv.Email)
 	if err != nil {
-		return nil, fmt.Errorf("AcceptInvitation: generate cygnus id: %w", err)
-	}
-	account := &model.CygnusAccount{
-		CygnusID:     cygnusID,
-		Email:        inv.Email,
-		PasswordHash: string(hash),
-		DisplayName:  in.Name,
-	}
-	if err := u.accountRepo.Create(ctx, account); err != nil {
-		return nil, fmt.Errorf("AcceptInvitation: create cygnus account: %w", err)
+		cygnusID, err := u.generateUniqueCygnusID(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("AcceptInvitation: generate cygnus id: %w", err)
+		}
+		account = &model.CygnusAccount{
+			CygnusID:     cygnusID,
+			Email:        inv.Email,
+			PasswordHash: string(hash),
+			DisplayName:  in.Name,
+		}
+		if err := u.accountRepo.Create(ctx, account); err != nil {
+			return nil, fmt.Errorf("AcceptInvitation: create cygnus account: %w", err)
+		}
 	}
 	if err := u.staffRepo.LinkCygnusAccount(ctx, staff.ID, account.ID); err != nil {
 		return nil, fmt.Errorf("AcceptInvitation: link cygnus account: %w", err)
 	}
 	staff.CygnusAccountID = &account.ID
 
-	membership := &model.SalonMembership{
-		CygnusAccountID: account.ID,
-		SalonID:         inv.SalonID,
-		Role:            inv.Role,
-		IsActive:        true,
-	}
-	if err := u.membershipRepo.Create(ctx, membership); err != nil {
-		return nil, fmt.Errorf("AcceptInvitation: create membership: %w", err)
+	// salon_memberships — 既存の場合は重複作成しない
+	if _, err := u.membershipRepo.FindByAccountAndSalon(ctx, account.ID, inv.SalonID); err != nil {
+		membership := &model.SalonMembership{
+			CygnusAccountID: account.ID,
+			SalonID:         inv.SalonID,
+			Role:            inv.Role,
+			IsActive:        true,
+		}
+		if err := u.membershipRepo.Create(ctx, membership); err != nil {
+			return nil, fmt.Errorf("AcceptInvitation: create membership: %w", err)
+		}
 	}
 
 	_ = u.invitationRepo.UpdateStatus(ctx, inv.ID, model.InvitationAccepted)
