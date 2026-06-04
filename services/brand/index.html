@@ -403,7 +403,7 @@
 
   /* ============ Philosophy ============ */
   .philosophy {
-    background: var(--bg-deep);
+    background: #0F141C;
     position: relative;
   }
 
@@ -461,7 +461,7 @@
 
   /* ============ Industry challenge ============ */
   .challenge {
-    background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-warm) 100%);
+    background: linear-gradient(180deg, #0A0A0A 0%, #141820 100%);
   }
 
   .challenge-stats {
@@ -582,7 +582,7 @@
 
   /* ============ Ecosystem ============ */
   .ecosystem {
-    background: var(--bg-deep);
+    background: #0F141C;
     text-align: center;
     overflow: hidden;
   }
@@ -645,7 +645,7 @@
 
   /* ============ Products ============ */
   .products {
-    background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-deep) 100%);
+    background: linear-gradient(180deg, #141820 0%, #0F141C 100%);
   }
 
   .product-grid {
@@ -657,7 +657,7 @@
   }
 
   .product-card {
-    background: var(--bg-deep);
+    background: #0A0D12;
     padding: 56px 48px;
     transition: all 0.8s ease;
     position: relative;
@@ -1018,6 +1018,84 @@
     .contact-btn { padding: 16px 40px; font-size: 11px; letter-spacing: 0.3em; }
 
   }
+
+  /* ============ Organic parallax — botanical ============ */
+  .botanical-el {
+    position: absolute;
+    pointer-events: none;
+    color: var(--gold);
+    opacity: 0.055;
+    z-index: 0;
+    animation: botanical-sway 12s ease-in-out infinite;
+  }
+  .botanical-el.rev {
+    animation-direction: reverse;
+    animation-duration: 16s;
+  }
+  @keyframes botanical-sway {
+    0%, 100% { transform: rotate(-3deg) translateX(0px) translateY(0px); }
+    33%       { transform: rotate(2.5deg) translateX(4px) translateY(-6px); }
+    66%       { transform: rotate(-1.5deg) translateX(-3px) translateY(4px); }
+  }
+
+  /* ============ Organic parallax — light shimmer ============ */
+  .section-shimmer {
+    position: absolute;
+    inset: -50%;
+    background: linear-gradient(
+      135deg,
+      transparent 25%,
+      rgba(198, 164, 122, 0.028) 42%,
+      transparent 58%
+    );
+    animation: shimmer-drift 22s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .section-shimmer.slow { animation-duration: 32s; animation-direction: reverse; }
+
+  @keyframes shimmer-drift {
+    0%        { transform: translate(-15%, -8%) rotate(0deg); }
+    50%       { transform: translate(15%, 8%) rotate(3deg); }
+    100%      { transform: translate(-15%, -8%) rotate(0deg); }
+  }
+
+  /* ============ Marquee band ============ */
+  .marquee-band {
+    overflow: hidden;
+    padding: 18px 0;
+    border-top: 1px solid var(--line-gold);
+    border-bottom: 1px solid var(--line-gold);
+    background: #0A0A0A;
+    position: relative;
+    z-index: 2;
+  }
+  .marquee-track {
+    display: flex;
+    gap: 64px;
+    white-space: nowrap;
+    width: max-content;
+    animation: marquee-scroll 28s linear infinite;
+  }
+  .marquee-band.rev .marquee-track { animation-direction: reverse; }
+  .marquee-track span {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 200;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.7;
+  }
+  .marquee-track span.dot {
+    opacity: 0.3;
+    letter-spacing: 0;
+  }
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
 </style>
 </head>
 <body>
@@ -1063,7 +1141,27 @@
 </section>
 
 <!-- =============== PHILOSOPHY =============== -->
+<div class="marquee-band" aria-hidden="true">
+  <div class="marquee-track">
+    <span>LOOP</span><span class="dot">·</span><span>RESERVE</span><span class="dot">·</span><span>STUDIO</span><span class="dot">·</span><span>ACADEMY</span><span class="dot">·</span><span>CYGNUS ID</span><span class="dot">·</span>
+    <span>LOOP</span><span class="dot">·</span><span>RESERVE</span><span class="dot">·</span><span>STUDIO</span><span class="dot">·</span><span>ACADEMY</span><span class="dot">·</span><span>CYGNUS ID</span><span class="dot">·</span>
+    <span>LOOP</span><span class="dot">·</span><span>RESERVE</span><span class="dot">·</span><span>STUDIO</span><span class="dot">·</span><span>ACADEMY</span><span class="dot">·</span><span>CYGNUS ID</span><span class="dot">·</span>
+  </div>
+</div>
+
 <section class="philosophy" id="philosophy">
+  <div class="botanical-el" style="right:-20px;top:60px;width:180px;" aria-hidden="true">
+    <svg viewBox="0 0 120 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60 260 Q58 220 54 190 Q44 155 18 128" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M54 190 Q32 178 12 168" stroke="currentColor" stroke-width="1" fill="none"/>
+      <path d="M57 215 Q76 204 88 188" stroke="currentColor" stroke-width="1" fill="none"/>
+      <ellipse cx="12" cy="166" rx="14" ry="6" transform="rotate(-30 12 166)" fill="currentColor" opacity=".8"/>
+      <ellipse cx="88" cy="186" rx="11" ry="5" transform="rotate(20 88 186)" fill="currentColor" opacity=".8"/>
+      <ellipse cx="18" cy="126" rx="16" ry="7" transform="rotate(-45 18 126)" fill="currentColor" opacity=".8"/>
+      <ellipse cx="60" cy="80" rx="10" ry="18" transform="rotate(-10 60 80)" fill="currentColor" opacity=".5"/>
+    </svg>
+  </div>
+  <div class="section-shimmer" aria-hidden="true"></div>
   <div class="reveal">
     <div class="section-eyebrow">// 01 — PHILOSOPHY</div>
     <h2 class="section-title">私たちが<em>大切にすること</em></h2>
@@ -1132,6 +1230,17 @@
 
 <!-- =============== ECOSYSTEM =============== -->
 <section class="ecosystem" id="ecosystem">
+  <div class="botanical-el rev" style="left:-10px;bottom:80px;width:140px;" aria-hidden="true">
+    <svg viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 220 Q52 185 56 158 Q66 120 88 98" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M56 158 Q74 146 92 138" stroke="currentColor" stroke-width="1" fill="none"/>
+      <path d="M54 180 Q36 170 24 156" stroke="currentColor" stroke-width="1" fill="none"/>
+      <ellipse cx="92" cy="136" rx="13" ry="5.5" transform="rotate(30 92 136)" fill="currentColor" opacity=".8"/>
+      <ellipse cx="24" cy="154" rx="12" ry="5" transform="rotate(-20 24 154)" fill="currentColor" opacity=".8"/>
+      <ellipse cx="88" cy="96" rx="15" ry="7" transform="rotate(45 88 96)" fill="currentColor" opacity=".7"/>
+    </svg>
+  </div>
+  <div class="section-shimmer slow" aria-hidden="true"></div>
   <div class="reveal">
     <div class="section-eyebrow">// 03 — ECOSYSTEM</div>
     <h2 class="section-title">7つのプロダクトが<br><em>軌道を描くように</em></h2>
@@ -1223,6 +1332,14 @@
 </section>
 
 <!-- =============== PRODUCTS =============== -->
+<div class="marquee-band rev" aria-hidden="true">
+  <div class="marquee-track">
+    <span>LOOP</span><span class="dot">·</span><span>RESERVE</span><span class="dot">·</span><span>STUDIO</span><span class="dot">·</span><span>ACADEMY</span><span class="dot">·</span><span>CYGNUS ID</span><span class="dot">·</span>
+    <span>LOOP</span><span class="dot">·</span><span>RESERVE</span><span class="dot">·</span><span>STUDIO</span><span class="dot">·</span><span>ACADEMY</span><span class="dot">·</span><span>CYGNUS ID</span><span class="dot">·</span>
+    <span>LOOP</span><span class="dot">·</span><span>RESERVE</span><span class="dot">·</span><span>STUDIO</span><span class="dot">·</span><span>ACADEMY</span><span class="dot">·</span><span>CYGNUS ID</span><span class="dot">·</span>
+  </div>
+</div>
+
 <section class="products" id="products">
   <div class="reveal">
     <div class="section-eyebrow">// 04 — PRODUCTS</div>
@@ -1337,6 +1454,18 @@
 
 <!-- =============== FOUNDER =============== -->
 <section class="founder" id="founder">
+  <div class="botanical-el" style="right:-20px;top:60px;width:180px;" aria-hidden="true">
+    <svg viewBox="0 0 120 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60 260 Q58 220 54 190 Q44 155 18 128" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M54 190 Q32 178 12 168" stroke="currentColor" stroke-width="1" fill="none"/>
+      <path d="M57 215 Q76 204 88 188" stroke="currentColor" stroke-width="1" fill="none"/>
+      <ellipse cx="12" cy="166" rx="14" ry="6" transform="rotate(-30 12 166)" fill="currentColor" opacity=".8"/>
+      <ellipse cx="88" cy="186" rx="11" ry="5" transform="rotate(20 88 186)" fill="currentColor" opacity=".8"/>
+      <ellipse cx="18" cy="126" rx="16" ry="7" transform="rotate(-45 18 126)" fill="currentColor" opacity=".8"/>
+      <ellipse cx="60" cy="80" rx="10" ry="18" transform="rotate(-10 60 80)" fill="currentColor" opacity=".5"/>
+    </svg>
+  </div>
+  <div class="section-shimmer" aria-hidden="true"></div>
   <div class="reveal">
     <div class="section-eyebrow">// 06 — FOUNDER</div>
     <h2 class="section-title">創業者からの<em>メッセージ</em></h2>
@@ -1440,6 +1569,40 @@
       lightPillars.style.transform = `translateY(${y * 0.5}px)`;
     }
   });
+
+  // ============ Organic parallax — light + botanical ============
+  (function () {
+    const botanicals = document.querySelectorAll('.botanical-el');
+    const shimmers   = document.querySelectorAll('.section-shimmer');
+    let raf;
+
+    const tick = () => {
+      const sy = window.scrollY;
+      const vh = window.innerHeight;
+
+      botanicals.forEach((el) => {
+        const rect   = el.closest('section').getBoundingClientRect();
+        const prog   = (-rect.top + vh * 0.5) / (rect.height + vh); // 0〜1
+        const speed  = el.classList.contains('rev') ? -0.18 : 0.14;
+        const drift  = prog * speed * vh;
+        el.style.transform = `translateY(${drift}px) rotate(${el.classList.contains('rev') ? -3 + prog * 5 : 3 - prog * 5}deg)`;
+      });
+
+      shimmers.forEach((el) => {
+        const rect  = el.closest('section').getBoundingClientRect();
+        const prog  = (-rect.top) / rect.height;
+        const slow  = el.classList.contains('slow') ? 0.06 : 0.10;
+        el.style.transform = `translate(${prog * slow * 100}%, ${prog * slow * 40}%) rotate(${prog * 4}deg)`;
+      });
+    };
+
+    window.addEventListener('scroll', () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(tick);
+    }, { passive: true });
+    tick();
+  })();
+
 </script>
 
 </body>
