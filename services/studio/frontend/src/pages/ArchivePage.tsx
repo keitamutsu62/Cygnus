@@ -3,6 +3,8 @@ import { apiFetch, api } from '../lib/api'
 import type { Work } from '../types'
 import BottomSheet, { useBottomSheetDismiss } from '../components/BottomSheet'
 
+type Menu = { id: number; name: string; price: number; duration_minutes: number | null; menu_type: string }
+
 const S = {
   bg: '#1a1816', surface: '#272422', gold: '#c8a882', text: '#e8e4dc',
   muted: 'rgba(232,228,220,0.5)', border: 'rgba(232,228,220,0.08)',
@@ -14,12 +16,14 @@ const GENRES = ['すべて', 'カラー', 'カット', 'パーマ', '縮毛矯�
 
 export default function ArchivePage() {
   const [works, setWorks] = useState<Work[]>([])
+  const [menus, setMenus] = useState<Menu[]>([])
   const [filter, setFilter] = useState('すべて')
   const [selected, setSelected] = useState<Work | null>(null)
   const [showAdd, setShowAdd] = useState(false)
 
   useEffect(() => {
     apiFetch<Work[] | null>('/api/v1/studio/works').then(data => setWorks(data ?? [])).catch(() => {})
+    apiFetch<Menu[] | null>('/api/v1/studio/menus').then(data => setMenus(data ?? [])).catch(() => {})
   }, [])
 
   const filtered = filter === 'すべて' ? works : works.filter(w => {
@@ -46,8 +50,15 @@ export default function ArchivePage() {
 
   return (
     <div style={{ paddingBottom: 20 }}>
-      <div style={{ padding: '16px 20px 12px', fontSize: 11, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
-        作品はRESERVEのスタイリストページに公開されます。
+      <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 11, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
+          作品はRESERVEのスタイリストページに公開されます。
+        </div>
+        {works.length > 0 && (
+          <div style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em', flexShrink: 0, marginLeft: 12 }}>
+            {works.length} works
+          </div>
+        )}
       </div>
 
       {/* フィルター */}
@@ -93,13 +104,13 @@ export default function ArchivePage() {
                 }}>{tags[0]}</div>
               ) : null
             })()}
-            {!w.is_published && (
-              <div style={{
-                position: 'absolute', top: 4, right: 4,
-                fontSize: 8, fontFamily: S.josefin, letterSpacing: '0.08em',
-                background: 'rgba(26,24,22,0.85)', color: S.muted, padding: '2px 5px', borderRadius: 1,
-              }}>非公開</div>
-            )}
+            <div style={{
+              position: 'absolute', top: 4, right: 4,
+              fontSize: 8, fontFamily: S.josefin, letterSpacing: '0.08em',
+              background: 'rgba(26,24,22,0.85)',
+              color: w.is_published ? S.gold : S.muted,
+              padding: '2px 5px', borderRadius: 1,
+            }}>{w.is_published ? '公開中' : '非公開'}</div>
           </div>
         ))}
 
@@ -115,6 +126,7 @@ export default function ArchivePage() {
         <BottomSheet onClose={() => setSelected(null)} maxHeight="90vh">
           <WorkDetail
             work={selected}
+            menus={menus}
             onDelete={handleDelete}
             onTogglePublish={handleTogglePublish}
           />
@@ -123,20 +135,22 @@ export default function ArchivePage() {
 
       {showAdd && (
         <BottomSheet onClose={() => setShowAdd(false)} maxHeight="95vh">
-          <AddWork onAdded={w => { setWorks(ws => [w, ...ws]); setShowAdd(false) }} />
+          <AddWork menus={menus} onAdded={w => { setWorks(ws => [w, ...ws]); setShowAdd(false) }} />
         </BottomSheet>
       )}
     </div>
   )
 }
 
-function WorkDetail({ work, onDelete, onTogglePublish }: {
+function WorkDetail({ work, menus, onDelete, onTogglePublish }: {
   work: Work
+  menus: Menu[]
   onDelete: (id: number) => void
   onTogglePublish: (w: Work) => void
 }) {
   const dismiss = useBottomSheetDismiss()
   const tags = work.tags ? JSON.parse(work.tags) as string[] : []
+  const menuName = work.menu_id ? menus.find(m => m.id === work.menu_id)?.name : undefined
 
   return (
     <>
@@ -148,6 +162,13 @@ function WorkDetail({ work, onDelete, onTogglePublish }: {
       <div style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em', marginBottom: 20 }}>
         {new Date(work.created_at).toLocaleDateString('ja-JP')}
       </div>
+
+      {menuName && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', marginBottom: 4, borderBottom: `1px solid ${S.border}` }}>
+          <div style={{ fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.gold, fontFamily: S.josefin }}>対応メニュー</div>
+          <div style={{ fontSize: 13, color: S.text, fontFamily: S.zen }}>{menuName}</div>
+        </div>
+      )}
 
       <div onClick={() => onTogglePublish(work)} style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -168,11 +189,12 @@ function WorkDetail({ work, onDelete, onTogglePublish }: {
   )
 }
 
-function AddWork({ onAdded }: { onAdded: (w: Work) => void }) {
+function AddWork({ menus, onAdded }: { menus: Menu[]; onAdded: (w: Work) => void }) {
   const dismiss = useBottomSheetDismiss()
   const [imageUrl, setImageUrl] = useState('')
   const [description, setDescription] = useState('')
   const [tag, setTag] = useState('')
+  const [menuId, setMenuId] = useState<number | null>(null)
   const [isPublished, setIsPublished] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -212,6 +234,7 @@ function AddWork({ onAdded }: { onAdded: (w: Work) => void }) {
           description: description || undefined,
           tags: tag ? JSON.stringify([tag]) : undefined,
           is_published: isPublished,
+          menu_id: menuId || undefined,
         }),
       })
       if (!res.ok) { setError('投稿に失敗しました'); return }
@@ -260,6 +283,22 @@ function AddWork({ onAdded }: { onAdded: (w: Work) => void }) {
           ))}
         </div>
       </div>
+
+      {menus.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.muted, fontFamily: S.josefin, marginBottom: 8 }}>メニュー（任意）</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {menus.map(m => (
+              <div key={m.id} onClick={() => setMenuId(menuId === m.id ? null : m.id)} style={{
+                padding: '7px 14px', border: `1px solid ${menuId === m.id ? S.goldBorder : S.border}`,
+                borderRadius: 2, fontSize: 11, color: menuId === m.id ? S.gold : S.muted,
+                background: menuId === m.id ? S.goldDim : 'transparent',
+                cursor: 'pointer', fontFamily: S.josefin,
+              }}>{m.name}</div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ marginBottom: 14 }}>
         <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.muted, fontFamily: S.josefin, marginBottom: 8 }}>コメント（任意）</div>

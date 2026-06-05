@@ -17,11 +17,12 @@ func NewProfileRepository(db *sqlx.DB) *ProfileRepository { return &ProfileRepos
 
 func (r *ProfileRepository) Upsert(ctx context.Context, p *model.Profile) error {
 	res, err := r.db.ExecContext(ctx,
-		`INSERT INTO profiles (cygnus_account_id, bio, specialties, instagram_url, is_published)
-		 VALUES (?, ?, ?, ?, ?)
-		 ON DUPLICATE KEY UPDATE bio=VALUES(bio), specialties=VALUES(specialties),
-		   instagram_url=VALUES(instagram_url), is_published=VALUES(is_published)`,
-		p.CygnusAccountID, p.Bio, p.Specialties, p.InstagramURL, p.IsPublished)
+		`INSERT INTO profiles (cygnus_account_id, avatar_url, bio, specialties, instagram_url, is_published, shimei_charge)
+		 VALUES (?, ?, ?, ?, ?, ?, ?)
+		 ON DUPLICATE KEY UPDATE avatar_url=VALUES(avatar_url), bio=VALUES(bio), specialties=VALUES(specialties),
+		   instagram_url=VALUES(instagram_url), is_published=VALUES(is_published),
+		   shimei_charge=VALUES(shimei_charge)`,
+		p.CygnusAccountID, p.AvatarURL, p.Bio, p.Specialties, p.InstagramURL, p.IsPublished, p.ShimeiCharge)
 	if err != nil {
 		return fmt.Errorf("ProfileRepository.Upsert: %w", err)
 	}
@@ -51,6 +52,74 @@ func (r *ProfileRepository) FindByCygnusID(ctx context.Context, cygnusID string)
 		return nil, apierror.ErrNotFound
 	}
 	return &p, nil
+}
+
+// ─── MembershipRepository（LOOP在籍履歴） ─────────────────────
+
+type LoopMembership struct {
+	SalonName  string  `db:"salon_name"`
+	Role       string  `db:"role"`
+	IsActive   bool    `db:"is_active"`
+	JoinedAt   string  `db:"joined_at"`
+	LeftAt     *string `db:"left_at"`
+}
+
+func FetchLoopMemberships(ctx context.Context, db *sqlx.DB, accountID uint64) ([]*LoopMembership, error) {
+	list := make([]*LoopMembership, 0)
+	err := db.SelectContext(ctx, &list,
+		`SELECT s.name AS salon_name, sm.role, sm.is_active,
+		        DATE_FORMAT(sm.joined_at, '%Y-%m-%d') AS joined_at,
+		        DATE_FORMAT(sm.left_at,   '%Y-%m-%d') AS left_at
+		 FROM salon_memberships sm
+		 JOIN salons s ON s.id = sm.salon_id
+		 WHERE sm.cygnus_account_id = ?
+		 ORDER BY sm.is_active DESC, sm.joined_at DESC`, accountID)
+	return list, err
+}
+
+// ─── CareerRepository ────────────────────────────────────────
+
+type CareerRepository struct{ db *sqlx.DB }
+
+func NewCareerRepository(db *sqlx.DB) *CareerRepository { return &CareerRepository{db: db} }
+
+func (r *CareerRepository) Create(ctx context.Context, c *model.Career) error {
+	res, err := r.db.ExecContext(ctx,
+		`INSERT INTO studio_careers (cygnus_account_id, salon_name, role, start_year, start_month, end_year, end_month, is_current)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		c.CygnusAccountID, c.SalonName, c.Role, c.StartYear, c.StartMonth, c.EndYear, c.EndMonth, c.IsCurrent)
+	if err != nil {
+		return fmt.Errorf("CareerRepository.Create: %w", err)
+	}
+	id, _ := res.LastInsertId()
+	c.ID = uint64(id)
+	return nil
+}
+
+func (r *CareerRepository) FindByAccountID(ctx context.Context, accountID uint64) ([]*model.Career, error) {
+	list := make([]*model.Career, 0)
+	err := r.db.SelectContext(ctx, &list,
+		`SELECT * FROM studio_careers WHERE cygnus_account_id = ?
+		 ORDER BY is_current DESC, start_year DESC, start_month DESC`, accountID)
+	if err != nil {
+		return nil, fmt.Errorf("CareerRepository.FindByAccountID: %w", err)
+	}
+	return list, nil
+}
+
+func (r *CareerRepository) Update(ctx context.Context, c *model.Career) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE studio_careers SET salon_name=?, role=?, start_year=?, start_month=?,
+		 end_year=?, end_month=?, is_current=? WHERE id=? AND cygnus_account_id=?`,
+		c.SalonName, c.Role, c.StartYear, c.StartMonth, c.EndYear, c.EndMonth, c.IsCurrent,
+		c.ID, c.CygnusAccountID)
+	return err
+}
+
+func (r *CareerRepository) Delete(ctx context.Context, id, accountID uint64) error {
+	_, err := r.db.ExecContext(ctx,
+		`DELETE FROM studio_careers WHERE id=? AND cygnus_account_id=?`, id, accountID)
+	return err
 }
 
 // ─── WorkRepository ──────────────────────────────────────────

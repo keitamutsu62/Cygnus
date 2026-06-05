@@ -12,6 +12,13 @@ type ProfileRepository interface {
 	FindByCygnusID(ctx context.Context, cygnusID string) (*model.Profile, error)
 }
 
+type CareerRepository interface {
+	Create(ctx context.Context, c *model.Career) error
+	FindByAccountID(ctx context.Context, accountID uint64) ([]*model.Career, error)
+	Update(ctx context.Context, c *model.Career) error
+	Delete(ctx context.Context, id, accountID uint64) error
+}
+
 type WorkRepository interface {
 	Create(ctx context.Context, w *model.Work) error
 	FindByID(ctx context.Context, id uint64) (*model.Work, error)

@@ -7,7 +7,7 @@ import { api, apiFetch } from '../lib/api'
 import { getClaims, getSalonName } from '../lib/auth'
 import { businessDaysToClosing } from '../lib/businessDays'
 import { Toast, useToast } from '../components/Toast'
-import type { DailySales, StaffSalesSummary } from '../types'
+import type { DailySales, Staff, StaffSalesSummary } from '../types'
 
 const josefin = "'Josefin Sans', sans-serif"
 const zen     = "'Zen Kaku Gothic New', sans-serif"
@@ -434,6 +434,7 @@ export default function DashboardPage() {
   const [salesDays,   setSalesDays]   = useState<DayEntry[]>(days)
   const [dayOffset,   setDayOffset]   = useState(0)
   const [staffList,   setStaffList]   = useState<StaffSalesSummary[]>([])
+  const [myAvatarUrl, setMyAvatarUrl] = useState<string | null>(null)
   const [invAlerts,   setInvAlerts]   = useState<InvAlert[]>([])
   const [dealers,     setDealers]     = useState<Dealer[]>([])
   const [orderTarget, setOrderTarget] = useState<InvAlert | null>(null)
@@ -447,6 +448,15 @@ export default function DashboardPage() {
   const dayOffsetRef = useRef(0)
 
   function goToDay(n: number) { dayOffsetRef.current = n; setDayOffset(n) }
+
+  useEffect(() => {
+    apiFetch<Staff[]>('/api/v1/staffs')
+      .then(list => {
+        const me = (Array.isArray(list) ? list : []).find(s => s.id === claims?.staff_id)
+        setMyAvatarUrl(me?.avatar_url ?? null)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!storeId) return
@@ -591,9 +601,12 @@ export default function DashboardPage() {
                 background: goldDim, border: '1px solid rgba(200,168,130,0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: josefin, fontWeight: 100, fontSize: 12, color: gold, cursor: 'pointer',
+                overflow: 'hidden',
               }}
             >
-              {claims?.avatar_initials ?? (claims?.role === 'owner' ? 'OW' : '??')}
+              {myAvatarUrl
+                ? <img src={myAvatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : (claims?.avatar_initials ?? (claims?.role === 'owner' ? 'OW' : '??'))}
             </div>
           </div>
         </div>

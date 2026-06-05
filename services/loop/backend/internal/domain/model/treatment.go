@@ -23,6 +23,7 @@ type Treatment struct {
 	Price           uint32          `db:"price"`
 	DurationMinutes *uint16         `db:"duration_minutes"`
 	Source          TreatmentSource `db:"source"`
+	IsShimei        bool            `db:"is_shimei"`
 	AppointmentID   *uint64         `db:"appointment_id"`
 	PerformedAt     time.Time       `db:"performed_at"`
 	Notes           *string         `db:"notes"`

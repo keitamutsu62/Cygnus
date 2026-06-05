@@ -276,6 +276,7 @@ export default function CheckoutPage() {
               menu_name: item.name,
               price: item.price,
               source,
+              is_shimei: shimei,
               performed_at: now,
               notes: item.note ?? null,
             }),

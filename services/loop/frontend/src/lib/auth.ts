@@ -10,7 +10,9 @@ export function getSalonName(): string {
 export function decodeClaims(token: string): AuthClaims | null {
   try {
     const payload = token.split('.')[1]
-    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+    const binary = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0))
+    const json = new TextDecoder().decode(bytes)
     return JSON.parse(json) as AuthClaims
   } catch {
     return null

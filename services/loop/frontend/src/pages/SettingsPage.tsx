@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppLayout from '../components/AppLayout'
 import BottomSheet, { useBottomSheetDismiss } from '../components/BottomSheet'
@@ -875,17 +875,54 @@ function ProfileSettings({ onBack }: { onBack: () => void }) {
   const [myStaff,          setMyStaff]          = useState<Staff | null>(null)
   const [myStore,          setMyStore]           = useState<Store | null>(null)
   const [showPasswordSheet, setShowPasswordSheet] = useState(false)
+  const [avatarUploading,  setAvatarUploading]  = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  async function fetchStaff() {
+    const list = await apiFetch<Staff[]>('/api/v1/staffs').catch(() => [] as Staff[])
+    setMyStaff((Array.isArray(list) ? list : []).find(s => s.id === claims?.staff_id) ?? null)
+  }
 
   useEffect(() => {
-    apiFetch<Staff[]>('/api/v1/staffs')
-      .then(list => setMyStaff((Array.isArray(list) ? list : []).find(s => s.id === claims?.staff_id) ?? null))
-      .catch(() => {})
+    fetchStaff()
     apiFetch<Store[]>('/api/v1/stores')
       .then(list => setMyStore((Array.isArray(list) ? list : []).find(s => s.id === claims?.store_id) ?? null))
       .catch(() => {})
   }, [])
 
   const initials = myStaff?.avatar_initials ?? (myStaff?.name ? myStaff.name.slice(0, 2) : '—')
+  const avatarUrl = myStaff?.avatar_url ?? null
+
+  function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => {
+      const src = ev.target?.result as string
+      const img = new Image()
+      img.onload = async () => {
+        const MAX = 400
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height))
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(img.width * scale)
+        canvas.height = Math.round(img.height * scale)
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+        setAvatarUploading(true)
+        try {
+          await api('/api/v1/staffs/me/avatar', {
+            method: 'PATCH',
+            body: JSON.stringify({ avatar_url: dataUrl }),
+          })
+          await fetchStaff()
+        } finally {
+          setAvatarUploading(false)
+        }
+      }
+      img.src = src
+    }
+    reader.readAsDataURL(file)
+  }
 
   function handleLogout() {
     logout()
@@ -897,9 +934,22 @@ function ProfileSettings({ onBack }: { onBack: () => void }) {
       <BackHeader title="プロフィール" onBack={onBack} />
 
       {/* アバター */}
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatarFile} style={{ display: 'none' }} />
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '24px 0 32px' }}>
-        <div style={{ width: 72, height: 72, borderRadius: '50%', background: goldDim, border: `2px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 24, color: gold }}>
-          {initials}
+        <div
+          onClick={() => !avatarUploading && fileRef.current?.click()}
+          style={{ position: 'relative', cursor: 'pointer' }}
+        >
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: goldDim, border: `2px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 24, color: gold, overflow: 'hidden' }}>
+            {avatarUrl
+              ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : initials}
+          </div>
+          <div style={{ position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderRadius: '50%', background: gold, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <path d="M5.5 2v7M2 5.5h7" stroke="#1a1816" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 18, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 4 }}>{myStaff?.name ?? '—'}</div>

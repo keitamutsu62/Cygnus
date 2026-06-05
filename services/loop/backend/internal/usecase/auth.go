@@ -346,6 +346,8 @@ func (u *AuthUsecase) StudioLogin(ctx context.Context, email, password string) (
 func (u *AuthUsecase) generateStudioJWT(a *model.CygnusAccount) (string, error) {
 	claims := jwt.MapClaims{
 		"cygnus_account_id": a.ID,
+		"cygnus_id":         a.CygnusID,
+		"display_name":      a.DisplayName,
 		"exp":               time.Now().Add(24 * time.Hour).Unix(),
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(u.jwtSecret))
@@ -427,6 +429,15 @@ func (u *AuthUsecase) generateJWT(s *model.Staff, salonName string) (string, err
 	}
 	if s.CygnusAccountID != nil {
 		claims["cygnus_account_id"] = *s.CygnusAccountID
+	}
+	if s.AvatarInitials != nil {
+		claims["avatar_initials"] = *s.AvatarInitials
+	} else {
+		// nameの先頭1文字をフォールバックとして使う
+		runes := []rune(s.Name)
+		if len(runes) > 0 {
+			claims["avatar_initials"] = string(runes[0])
+		}
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(u.jwtSecret))
 }

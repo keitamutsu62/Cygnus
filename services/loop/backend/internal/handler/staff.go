@@ -26,6 +26,7 @@ type staffRes struct {
 	Role           string  `json:"role"`
 	IsActive       bool    `json:"is_active"`
 	AvatarInitials *string `json:"avatar_initials"`
+	AvatarURL      *string `json:"avatar_url"`
 	ShimeiCharge   *uint32 `json:"shimei_charge"`
 	CreatedAt      string  `json:"created_at"`
 }
@@ -34,7 +35,7 @@ func toStaffRes(s *model.Staff) staffRes {
 	return staffRes{
 		ID: s.ID, SalonID: s.SalonID, StoreID: s.StoreID,
 		Name: s.Name, Email: s.Email, Role: string(s.Role), IsActive: s.IsActive,
-		AvatarInitials: s.AvatarInitials, ShimeiCharge: s.ShimeiCharge,
+		AvatarInitials: s.AvatarInitials, AvatarURL: s.AvatarURL, ShimeiCharge: s.ShimeiCharge,
 		CreatedAt: s.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 }

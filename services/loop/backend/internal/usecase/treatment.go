@@ -33,6 +33,7 @@ type CreateTreatmentInput struct {
 	Price           uint32
 	DurationMinutes *uint16
 	Source          model.TreatmentSource
+	IsShimei        bool
 	AppointmentID   *uint64
 	PerformedAt     string // RFC3339
 	Notes           *string
@@ -51,6 +52,7 @@ func (u *TreatmentUsecase) Create(ctx context.Context, in CreateTreatmentInput) 
 		Price:           in.Price,
 		DurationMinutes: in.DurationMinutes,
 		Source:          in.Source,
+		IsShimei:        in.IsShimei,
 		AppointmentID:   in.AppointmentID,
 		Notes:           in.Notes,
 	}

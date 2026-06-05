@@ -19,10 +19,10 @@ func (r *TreatmentRepository) Create(ctx context.Context, t *model.Treatment) er
 	res, err := r.db.ExecContext(ctx,
 		`INSERT INTO treatments
 		   (staff_id, customer_id, salon_id, store_id, menu_id, menu_name,
-		    price, duration_minutes, source, appointment_id, performed_at, notes)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		    price, duration_minutes, source, is_shimei, appointment_id, performed_at, notes)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		t.StaffID, t.CustomerID, t.SalonID, t.StoreID, t.MenuID, t.MenuName,
-		t.Price, t.DurationMinutes, t.Source, t.AppointmentID, t.PerformedAt, t.Notes)
+		t.Price, t.DurationMinutes, t.Source, t.IsShimei, t.AppointmentID, t.PerformedAt, t.Notes)
 	if err != nil {
 		return fmt.Errorf("TreatmentRepository.Create: %w", err)
 	}

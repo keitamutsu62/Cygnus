@@ -30,6 +30,7 @@ func (h *TreatmentHandler) Create(c echo.Context) error {
 		Price           uint32                   `json:"price"`
 		DurationMinutes *uint16                  `json:"duration_minutes"`
 		Source          model.TreatmentSource    `json:"source"`
+		IsShimei        bool                     `json:"is_shimei"`
 		AppointmentID   *uint64                  `json:"appointment_id"`
 		PerformedAt     string                   `json:"performed_at"` // RFC3339
 		Notes           *string                  `json:"notes"`
@@ -63,6 +64,7 @@ func (h *TreatmentHandler) Create(c echo.Context) error {
 		Price:           req.Price,
 		DurationMinutes: req.DurationMinutes,
 		Source:          req.Source,
+		IsShimei:        req.IsShimei,
 		AppointmentID:   req.AppointmentID,
 		PerformedAt:     req.PerformedAt,
 		Notes:           req.Notes,

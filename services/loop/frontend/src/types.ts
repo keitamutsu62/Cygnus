@@ -20,6 +20,7 @@ export type Staff = {
   role: StaffRole
   is_active: boolean
   avatar_initials: string | null
+  avatar_url: string | null
   shimei_charge: number | null
   created_at: string
 }

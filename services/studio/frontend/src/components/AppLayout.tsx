@@ -1,4 +1,5 @@
 import { useLocation, useNavigate, Outlet } from 'react-router-dom'
+import { getClaims } from '../lib/auth'
 
 const gold = '#c8a882'
 const white = '#e8e4dc'
@@ -56,6 +57,8 @@ const NAV = [
 export default function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const claims = getClaims()
+  const displayName = claims?.display_name ?? ''
 
   return (
     <div style={{
@@ -64,16 +67,25 @@ export default function AppLayout() {
     }}>
       {/* ヘッダー */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 20px',
         borderBottom: `1px solid ${border}`,
         flexShrink: 0,
+        background: 'rgba(26,24,22,0.95)',
+        backdropFilter: 'blur(16px)',
       }}>
-        <OrbitSVG />
-        <div style={{ lineHeight: 1 }}>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', color: white }}>CYGNUS</div>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', color: gold }}>STUDIO</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <OrbitSVG />
+          <div style={{ lineHeight: 1 }}>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', color: white }}>CYGNUS</div>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', color: gold }}>STUDIO</div>
+          </div>
         </div>
+        {displayName && (
+          <div style={{ fontSize: 11, color: 'rgba(232,228,220,0.5)', fontFamily: josefin, letterSpacing: '0.1em' }}>
+            {displayName}
+          </div>
+        )}
       </div>
 
       {/* コンテンツ */}

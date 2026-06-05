@@ -13,6 +13,7 @@ type Staff struct {
 	Role            StaffRole `db:"role"`
 	IsActive        bool      `db:"is_active"`
 	AvatarInitials  *string   `db:"avatar_initials"`
+	AvatarURL       *string   `db:"avatar_url"`
 	ShimeiCharge    *uint32   `db:"shimei_charge"`
 	CreatedAt       time.Time `db:"created_at"`
 	UpdatedAt       time.Time `db:"updated_at"`

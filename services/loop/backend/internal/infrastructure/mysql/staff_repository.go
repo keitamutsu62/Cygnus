@@ -28,7 +28,11 @@ func (r *StaffRepository) Create(ctx context.Context, s *model.Staff) error {
 
 func (r *StaffRepository) FindByID(ctx context.Context, id uint64) (*model.Staff, error) {
 	var s model.Staff
-	if err := r.db.GetContext(ctx, &s, `SELECT * FROM staffs WHERE id = ?`, id); err != nil {
+	if err := r.db.GetContext(ctx, &s, `
+		SELECT s.*, p.avatar_url
+		FROM staffs s
+		LEFT JOIN profiles p ON s.cygnus_account_id = p.cygnus_account_id
+		WHERE s.id = ?`, id); err != nil {
 		return nil, apierror.ErrNotFound
 	}
 	return &s, nil
@@ -44,7 +48,11 @@ func (r *StaffRepository) FindByEmail(ctx context.Context, email string) (*model
 
 func (r *StaffRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Staff, error) {
 	var list []*model.Staff
-	if err := r.db.SelectContext(ctx, &list, `SELECT * FROM staffs WHERE salon_id = ?`, salonID); err != nil {
+	if err := r.db.SelectContext(ctx, &list, `
+		SELECT s.*, p.avatar_url
+		FROM staffs s
+		LEFT JOIN profiles p ON s.cygnus_account_id = p.cygnus_account_id
+		WHERE s.salon_id = ?`, salonID); err != nil {
 		return nil, fmt.Errorf("StaffRepository.FindBySalonID: %w", err)
 	}
 	return list, nil

@@ -10,14 +10,21 @@ const S = {
 }
 
 type Memo = { id: number; memo_date: string; text: string }
+type MonthlyStats = { total_sales: number; treatment_count: number; repeat_rate: number; new_clients: number; sales_diff_pct: number | null; nomination_rate: number | null }
+type RecentTreatment = { id: number; menu_name: string; price: number; performed_at: string; performed_time: string; notes: string | null; client_name: string | null }
+
+function fmt(n: number) { return n.toLocaleString('ja-JP') }
 
 export default function HomePage() {
   const now = new Date()
-  const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`
+  const days = ['日', '月', '火', '水', '木', '金', '土']
+  const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 · ${days[now.getDay()]}曜日`
 
   const [showMemoEdit, setShowMemoEdit] = useState(false)
   const [showMemoLog, setShowMemoLog] = useState(false)
   const [allMemos, setAllMemos] = useState<Memo[]>([])
+  const [stats, setStats] = useState<MonthlyStats | null>(null)
+  const [recentTreatments, setRecentTreatments] = useState<RecentTreatment[]>([])
 
   async function fetchAllMemos() {
     try {
@@ -26,12 +33,18 @@ export default function HomePage() {
     } catch {}
   }
 
-  useEffect(() => { fetchAllMemos() }, [])
+  useEffect(() => {
+    fetchAllMemos()
+    apiFetch<MonthlyStats>('/api/v1/studio/stats/monthly').then(setStats).catch(() => {})
+    apiFetch<RecentTreatment[]>('/api/v1/studio/treatments/recent').then(d => setRecentTreatments(d ?? [])).catch(() => {})
+  }, [])
 
   async function handleMemoSaved() {
     await fetchAllMemos()
     setShowMemoEdit(false)
   }
+
+  const hasStats = stats && (stats.total_sales > 0 || stats.treatment_count > 0)
 
   return (
     <div>
@@ -46,19 +59,44 @@ export default function HomePage() {
         </div>
       </Section>
 
-      <Section title="今月の記録" badge="LOOP 連携予定">
+      <Section title="今月の記録">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 16px 16px' }}>
-          <StatCard label="売上" value="—" unit="¥" />
-          <StatCard label="施術件数" value="—" unit="件" />
-          <StatCard label="リピート率" value="—" unit="%" />
-          <StatCard label="新規顧客" value="—" unit="名" />
+          <StatCard
+            label="売上" value={hasStats ? fmt(stats!.total_sales) : '—'} unit="¥"
+            sub={hasStats ? (stats!.sales_diff_pct != null ? `${stats!.sales_diff_pct > 0 ? '+' : ''}${stats!.sales_diff_pct}% 先月比` : '先月比 —') : undefined}
+          />
+          <StatCard
+            label="施術件数" value={hasStats ? String(stats!.treatment_count) : '—'} unit="件"
+            sub={hasStats && stats!.nomination_rate != null ? `指名率 ${stats!.nomination_rate}%` : undefined}
+          />
+          <StatCard label="リピート率" value={hasStats ? String(Math.round(stats!.repeat_rate)) : '—'} unit="%" />
+          <StatCard label="新規顧客" value={hasStats ? String(stats!.new_clients) : '—'} unit="名" />
         </div>
       </Section>
 
-      <Section title="最近の施術" badge="LOOP 連携予定">
-        <div style={{ padding: '20px 16px', textAlign: 'center', color: S.muted, fontSize: 12, fontFamily: S.zen, lineHeight: 1.8 }}>
-          LOOP連携後に施術記録が表示されます。
-        </div>
+      <Section title="最近の施術">
+        {recentTreatments.length === 0 ? (
+          <div style={{ padding: '20px 16px', textAlign: 'center', color: S.muted, fontSize: 12, fontFamily: S.zen, lineHeight: 1.8 }}>
+            LOOPで施術を記録すると表示されます。
+          </div>
+        ) : (
+          <div style={{ padding: '0 16px 16px' }}>
+            {recentTreatments.map(t => (
+              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${S.border}` }}>
+                <div>
+                  <div style={{ fontSize: 13, color: S.text, fontFamily: S.zen, marginBottom: 3 }}>{t.menu_name}</div>
+                  <div style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.05em' }}>
+                    {t.performed_at} {t.performed_time}
+                    {t.client_name && ` · ${t.client_name}`}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+                  <div style={{ fontSize: 13, color: S.gold, fontFamily: S.josefin }}>¥{fmt(t.price)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Section>
 
       {/* 今日のメモ */}
@@ -275,7 +313,7 @@ function Section({ title, badge, children }: { title: string; badge?: string; ch
   )
 }
 
-function StatCard({ label, value, unit }: { label: string; value: string; unit: string }) {
+function StatCard({ label, value, unit, sub }: { label: string; value: string; unit: string; sub?: string }) {
   return (
     <div style={{ background: S.surface, border: `1px solid ${S.border}`, borderRadius: 2, padding: 16 }}>
       <div style={{ fontSize: 10, letterSpacing: '0.1em', color: S.muted, marginBottom: 6, fontFamily: S.josefin }}>{label}</div>
@@ -284,6 +322,7 @@ function StatCard({ label, value, unit }: { label: string; value: string; unit: 
         {value}
         {unit !== '¥' && <span style={{ fontSize: 13, color: S.muted, marginLeft: 2 }}>{unit}</span>}
       </div>
+      {sub && <div style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, marginTop: 4, letterSpacing: '0.05em' }}>{sub}</div>}
     </div>
   )
 }
