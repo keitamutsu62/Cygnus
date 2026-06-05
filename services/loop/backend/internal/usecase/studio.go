@@ -9,6 +9,7 @@ import (
 
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/model"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/repository"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/infrastructure/storage"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/pkg/apierror"
 )
 
@@ -17,6 +18,7 @@ type StudioUsecase struct {
 	profileRepo repository.ProfileRepository
 	workRepo    repository.WorkRepository
 	memoRepo    repository.StudioMemoRepository
+	imgStorage  storage.ImageStorage
 }
 
 func NewStudioUsecase(
@@ -24,8 +26,15 @@ func NewStudioUsecase(
 	profileRepo repository.ProfileRepository,
 	workRepo repository.WorkRepository,
 	memoRepo repository.StudioMemoRepository,
+	imgStorage storage.ImageStorage,
 ) *StudioUsecase {
-	return &StudioUsecase{accountRepo: accountRepo, profileRepo: profileRepo, workRepo: workRepo, memoRepo: memoRepo}
+	return &StudioUsecase{
+		accountRepo: accountRepo,
+		profileRepo: profileRepo,
+		workRepo:    workRepo,
+		memoRepo:    memoRepo,
+		imgStorage:  imgStorage,
+	}
 }
 
 // ─── Profile ─────────────────────────────────────────────────
@@ -89,12 +98,16 @@ type CreateWorkInput struct {
 }
 
 func (u *StudioUsecase) CreateWork(ctx context.Context, in CreateWorkInput) (*model.Work, error) {
+	url, err := u.imgStorage.Upload(ctx, in.ImageURL)
+	if err != nil {
+		return nil, fmt.Errorf("CreateWork upload: %w", err)
+	}
 	w := &model.Work{
 		CygnusAccountID: in.AccountID,
 		MenuID:          in.MenuID,
 		Title:           in.Title,
 		Description:     in.Description,
-		ImageURL:        in.ImageURL,
+		ImageURL:        url,
 		Tags:            in.Tags,
 		IsPublished:     in.IsPublished,
 	}

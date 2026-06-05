@@ -81,7 +81,7 @@ func (r *WorkRepository) FindByID(ctx context.Context, id uint64) (*model.Work, 
 }
 
 func (r *WorkRepository) FindByAccountID(ctx context.Context, accountID uint64) ([]*model.Work, error) {
-	var list []*model.Work
+	list := make([]*model.Work, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM works WHERE cygnus_account_id = ? ORDER BY created_at DESC`, accountID)
 	if err != nil {
@@ -91,7 +91,7 @@ func (r *WorkRepository) FindByAccountID(ctx context.Context, accountID uint64) 
 }
 
 func (r *WorkRepository) FindPublishedByAccountID(ctx context.Context, accountID uint64) ([]*model.Work, error) {
-	var list []*model.Work
+	list := make([]*model.Work, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM works WHERE cygnus_account_id = ? AND is_published = 1 ORDER BY created_at DESC`,
 		accountID)

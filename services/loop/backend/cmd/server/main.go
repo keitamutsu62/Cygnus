@@ -7,6 +7,7 @@ import (
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/handler"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/infrastructure/mailer"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/infrastructure/mysql"
+	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/infrastructure/storage"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/middleware"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/usecase"
 	"github.com/labstack/echo/v4"
@@ -48,13 +49,21 @@ func main() {
 	dealerRepo       := mysql.NewDealerRepository(db)
 	orderRepo        := mysql.NewOrderRepository(db)
 
+	// ─── ストレージ（R2環境変数が揃っていればR2、未設定ならLocalにフォールバック）──
+	var imgStorage storage.ImageStorage
+	if cfg.R2AccountID != "" && cfg.R2AccessKey != "" && cfg.R2SecretKey != "" {
+		imgStorage = storage.NewR2Storage(cfg.R2AccountID, cfg.R2AccessKey, cfg.R2SecretKey, cfg.R2Bucket, cfg.R2PublicURL)
+	} else {
+		imgStorage = storage.NewLocalStorage()
+	}
+
 	// ─── ユースケース ──────────────────────────────────────────
 	m := mailer.NewLogMailer()
 
 	authUC       := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, accountRepo, membershipRepo, resetTokenRepo, m, cfg.JWTSecret)
 	staffUC      := usecase.NewStaffUsecase(staffRepo)
 	invtUC       := usecase.NewInventoryUsecase(invtRepo)
-	studioUC     := usecase.NewStudioUsecase(accountRepo, profileRepo, workRepo, memoRepo)
+	studioUC     := usecase.NewStudioUsecase(accountRepo, profileRepo, workRepo, memoRepo, imgStorage)
 	treatmentUC  := usecase.NewTreatmentUsecase(treatmentRepo, salesRepo, appointmentRepo)
 	menuUC       := usecase.NewMenuUsecase(menuRepo)
 	customerUC   := usecase.NewCustomerUsecase(customerRepo)
@@ -199,13 +208,6 @@ func main() {
 	api.GET("/settings", settingsH.Get)
 	api.PATCH("/settings", settingsH.Update)
 
-	// STUDIO
-	api.GET("/studio/profile", studioH.GetMyProfile)
-	api.PUT("/studio/profile", studioH.UpsertProfile)
-	api.GET("/studio/works", studioH.ListMyWorks)
-	api.POST("/studio/works", studioH.CreateWork)
-	api.PATCH("/studio/works/:id", studioH.UpdateWork)
-	api.DELETE("/studio/works/:id", studioH.DeleteWork)
 
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 }

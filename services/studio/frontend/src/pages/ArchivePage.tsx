@@ -19,7 +19,7 @@ export default function ArchivePage() {
   const [showAdd, setShowAdd] = useState(false)
 
   useEffect(() => {
-    apiFetch<Work[]>('/api/v1/studio/works').then(setWorks).catch(() => {})
+    apiFetch<Work[] | null>('/api/v1/studio/works').then(data => setWorks(data ?? [])).catch(() => {})
   }, [])
 
   const filtered = filter === 'すべて' ? works : works.filter(w => {
@@ -182,7 +182,22 @@ function AddWork({ onAdded }: { onAdded: (w: Work) => void }) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = ev => setImageUrl(ev.target?.result as string)
+    reader.onload = ev => {
+      const original = ev.target?.result as string
+      const img = new Image()
+      img.onload = () => {
+        const MAX = 1080
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height))
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+        setImageUrl(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.src = original
+    }
     reader.readAsDataURL(file)
   }
 
@@ -211,7 +226,7 @@ function AddWork({ onAdded }: { onAdded: (w: Work) => void }) {
     <>
       <div style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: S.gold, marginBottom: 16, fontFamily: S.josefin }}>作品を追加</div>
 
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleFileChange} style={{ display: 'none' }} />
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
       <div onClick={() => fileRef.current?.click()} style={{
         width: '100%', aspectRatio: '4/3', background: S.surface,
         border: `1px dashed ${imageUrl ? S.goldBorder : S.border}`,
