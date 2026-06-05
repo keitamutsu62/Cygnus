@@ -32,6 +32,7 @@ func main() {
 	membershipRepo   := mysql.NewSalonMembershipRepository(db)
 	profileRepo      := mysql.NewProfileRepository(db)
 	workRepo         := mysql.NewWorkRepository(db)
+	memoRepo         := mysql.NewStudioMemoRepository(db)
 	invtRepo         := mysql.NewInventoryRepository(db)
 	invtWriteRepo    := mysql.NewInventoryWriteRepository(db)
 	treatmentRepo    := mysql.NewTreatmentRepository(db)
@@ -53,7 +54,7 @@ func main() {
 	authUC       := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, accountRepo, membershipRepo, resetTokenRepo, m, cfg.JWTSecret)
 	staffUC      := usecase.NewStaffUsecase(staffRepo)
 	invtUC       := usecase.NewInventoryUsecase(invtRepo)
-	studioUC     := usecase.NewStudioUsecase(accountRepo, profileRepo, workRepo)
+	studioUC     := usecase.NewStudioUsecase(accountRepo, profileRepo, workRepo, memoRepo)
 	treatmentUC  := usecase.NewTreatmentUsecase(treatmentRepo, salesRepo, appointmentRepo)
 	menuUC       := usecase.NewMenuUsecase(menuRepo)
 	customerUC   := usecase.NewCustomerUsecase(customerRepo)
@@ -113,6 +114,10 @@ func main() {
 	studio.POST("/works", studioH.CreateWork)
 	studio.PATCH("/works/:id", studioH.UpdateWork)
 	studio.DELETE("/works/:id", studioH.DeleteWork)
+	studio.POST("/bio-suggest", studioH.SuggestBio)
+	studio.GET("/memos/today", studioH.GetTodayMemo)
+	studio.GET("/memos", studioH.ListMemos)
+	studio.POST("/memos", studioH.UpsertMemo)
 
 	// ─── 認証必要 ──────────────────────────────────────────────
 	api := e.Group("/api/v1", middleware.JWT(cfg.JWTSecret))

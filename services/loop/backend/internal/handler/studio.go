@@ -179,6 +179,67 @@ func (h *StudioHandler) DeleteWork(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// GET /api/v1/studio/memos/today
+func (h *StudioHandler) GetTodayMemo(c echo.Context) error {
+	claims := claimsFrom(c)
+	if claims.CygnusAccountID == nil {
+		return echo.NewHTTPError(http.StatusForbidden, "cygnus account required")
+	}
+	m, err := h.uc.GetTodayMemo(c.Request().Context(), *claims.CygnusAccountID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	if m == nil {
+		return c.JSON(http.StatusOK, nil)
+	}
+	return c.JSON(http.StatusOK, m)
+}
+
+// POST /api/v1/studio/memos
+func (h *StudioHandler) UpsertMemo(c echo.Context) error {
+	claims := claimsFrom(c)
+	if claims.CygnusAccountID == nil {
+		return echo.NewHTTPError(http.StatusForbidden, "cygnus account required")
+	}
+	var req struct {
+		Text string `json:"text"`
+	}
+	if err := c.Bind(&req); err != nil || req.Text == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "text required")
+	}
+	m, err := h.uc.UpsertMemo(c.Request().Context(), *claims.CygnusAccountID, req.Text)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, m)
+}
+
+// GET /api/v1/studio/memos
+func (h *StudioHandler) ListMemos(c echo.Context) error {
+	claims := claimsFrom(c)
+	if claims.CygnusAccountID == nil {
+		return echo.NewHTTPError(http.StatusForbidden, "cygnus account required")
+	}
+	memos, err := h.uc.ListMemos(c.Request().Context(), *claims.CygnusAccountID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, memos)
+}
+
+// POST /api/v1/studio/bio-suggest
+func (h *StudioHandler) SuggestBio(c echo.Context) error {
+	claims := claimsFrom(c)
+	if claims.CygnusAccountID == nil {
+		return echo.NewHTTPError(http.StatusForbidden, "cygnus account required")
+	}
+	bio, err := h.uc.SuggestBio(c.Request().Context(), *claims.CygnusAccountID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, map[string]string{"bio": bio})
+}
+
 // GET /api/v1/public/stylists/:cygnus_id
 func (h *StudioHandler) GetPublicProfile(c echo.Context) error {
 	cygnusID := c.Param("cygnus_id")
