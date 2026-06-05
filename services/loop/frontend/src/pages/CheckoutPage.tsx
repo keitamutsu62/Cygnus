@@ -59,9 +59,9 @@ function MenuPickerModal({
   const active = items.filter(m => m.is_active)
   return (
     <BottomSheet onClose={onClose} maxHeight="70vh">
-      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold, marginBottom: 16 }}>{title}</div>
+      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold, marginBottom: 16 }}>{title}</div>
       {active.length === 0 && (
-        <div style={{ fontSize: 12, color: muted, fontFamily: zen, padding: '20px 0', textAlign: 'center' }}>登録データがありません</div>
+        <div style={{ fontSize: 14, color: muted, fontFamily: zen, padding: '20px 0', textAlign: 'center' }}>登録データがありません</div>
       )}
       {active.map(m => (
         <div
@@ -69,11 +69,11 @@ function MenuPickerModal({
           onClick={() => { onSelect({ menuId: m.id, name: m.name, price: m.price }); onClose() }}
           style={{ padding: '14px 0', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
         >
-          <div style={{ fontSize: 14, color: txt, fontFamily: zen }}>{m.name}</div>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 13, color: gold }}>¥{m.price.toLocaleString()}</div>
+          <div style={{ fontSize: 15, color: txt, fontFamily: zen }}>{m.name}</div>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: gold }}>¥{m.price.toLocaleString()}</div>
         </div>
       ))}
-      <button onClick={onClose} style={{ width: '100%', padding: '14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, color: muted, fontSize: 13, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: josefin, marginTop: 16 }}>キャンセル</button>
+      <button onClick={onClose} style={{ width: '100%', padding: '14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, color: muted, fontSize: 15, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: josefin, marginTop: 16 }}>キャンセル</button>
     </BottomSheet>
   )
 }
@@ -100,38 +100,38 @@ function ItemEditModal({
   return (
     <BottomSheet onClose={onClose}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold }}>メニューを編集</div>
-        <div style={{ fontFamily: josefin, fontSize: 9, letterSpacing: '0.12em', color: muted, padding: '3px 8px', border: `1px solid ${border}`, borderRadius: 2 }}>{label}</div>
+        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold }}>メニューを編集</div>
+        <div style={{ fontFamily: josefin, fontSize: 11, letterSpacing: '0.12em', color: muted, padding: '3px 8px', border: `1px solid ${border}`, borderRadius: 2 }}>{label}</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
-          <div style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, fontFamily: josefin, marginBottom: 6 }}>メニュー名</div>
+          <div style={{ fontSize: 13, letterSpacing: '0.1em', color: muted, fontFamily: josefin, marginBottom: 6 }}>メニュー名</div>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="例：カット + カラー" style={inputStyle} />
         </div>
         <div>
-          <div style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, fontFamily: josefin, marginBottom: 6 }}>金額（税込）</div>
+          <div style={{ fontSize: 13, letterSpacing: '0.1em', color: muted, fontFamily: josefin, marginBottom: 6 }}>金額（税込）</div>
           <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: muted, fontSize: 14 }}>¥</span>
+            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: muted, fontSize: 15 }}>¥</span>
             <input value={price} onChange={e => setPrice(e.target.value)} type="number" placeholder="0" style={inputStylePrefixed} />
           </div>
         </div>
         {type === 'menu' && (
           <div>
-            <div style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, fontFamily: josefin, marginBottom: 6 }}>備考</div>
+            <div style={{ fontSize: 13, letterSpacing: '0.1em', color: muted, fontFamily: josefin, marginBottom: 6 }}>備考</div>
             <input value={note} onChange={e => setNote(e.target.value)} placeholder="例：○○クーポン適用など" style={inputStyle} />
           </div>
         )}
       </div>
       <button onClick={() => { onSave({ ...item, name, price: Number(price) || 0, note: note || undefined }); onClose() }}
-        style={{ width: '100%', marginTop: 20, padding: '14px', background: gold, border: 'none', borderRadius: 2, color: bg, fontSize: 13, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: josefin }}>
+        style={{ width: '100%', marginTop: 20, padding: '14px', background: gold, border: 'none', borderRadius: 2, color: bg, fontSize: 15, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: josefin }}>
         保存する
       </button>
       <button onClick={onClose}
-        style={{ width: '100%', marginTop: 8, padding: '14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, color: muted, fontSize: 13, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: josefin }}>
+        style={{ width: '100%', marginTop: 8, padding: '14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, color: muted, fontSize: 15, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: josefin }}>
         キャンセル
       </button>
       <button onClick={() => { onDelete(); onClose() }}
-        style={{ width: '100%', marginTop: 4, padding: '12px', background: 'transparent', border: 'none', color: 'rgba(255,90,90,0.7)', fontSize: 12, letterSpacing: '0.12em', cursor: 'pointer', fontFamily: josefin }}>
+        style={{ width: '100%', marginTop: 4, padding: '12px', background: 'transparent', border: 'none', color: 'rgba(255,90,90,0.7)', fontSize: 14, letterSpacing: '0.12em', cursor: 'pointer', fontFamily: josefin }}>
         このメニューを削除
       </button>
     </BottomSheet>
@@ -154,7 +154,7 @@ function StaffPickerModal({
 }) {
   return (
     <BottomSheet onClose={onClose} maxHeight="60vh">
-      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold, marginBottom: 16 }}>担当スタッフを選択</div>
+      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold, marginBottom: 16 }}>担当スタッフを選択</div>
       {staffList.filter(s => s.is_active).map(s => {
         const storeName = storeList.find(st => st.id === s.store_id)?.name ?? '—'
         const av = s.avatar_initials ?? s.name.slice(0, 1)
@@ -162,10 +162,10 @@ function StaffPickerModal({
         return (
           <div key={s.id} onClick={() => { onSelect(s.id); onClose() }}
             style={{ padding: '12px 0', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: isSelected ? gold : goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 11, color: isSelected ? bg : gold, flexShrink: 0 }}>{av}</div>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: isSelected ? gold : goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 13, color: isSelected ? bg : gold, flexShrink: 0 }}>{av}</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, color: isSelected ? gold : txt, fontFamily: zen }}>{s.name}</div>
-              <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[s.role]}</div>
+              <div style={{ fontSize: 15, color: isSelected ? gold : txt, fontFamily: zen }}>{s.name}</div>
+              <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[s.role]}</div>
             </div>
             {isSelected && <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,7 6,11 12,3" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           </div>
@@ -180,21 +180,21 @@ function ShimeiEditModal({ current, onSave, onClose }: { current: number; onSave
   const [val, setVal] = useState(String(current))
   return (
     <BottomSheet onClose={onClose}>
-      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold, marginBottom: 20 }}>指名料を設定</div>
+      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: gold, marginBottom: 20 }}>指名料を設定</div>
       <div>
-        <div style={{ fontSize: 11, letterSpacing: '0.1em', color: muted, fontFamily: josefin, marginBottom: 6 }}>指名料（税込）</div>
+        <div style={{ fontSize: 13, letterSpacing: '0.1em', color: muted, fontFamily: josefin, marginBottom: 6 }}>指名料（税込）</div>
         <div style={{ position: 'relative' }}>
-          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: muted, fontSize: 14 }}>¥</span>
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: muted, fontSize: 15 }}>¥</span>
           <input value={val} onChange={e => setVal(e.target.value)} type="number" placeholder="0" style={inputStylePrefixed} />
         </div>
-        <div style={{ fontSize: 12, color: muted, marginTop: 10, lineHeight: 1.6, fontFamily: zen }}>設定した金額は「指名」を選択すると自動加算されます</div>
+        <div style={{ fontSize: 14, color: muted, marginTop: 10, lineHeight: 1.6, fontFamily: zen }}>設定した金額は「指名」を選択すると自動加算されます</div>
       </div>
       <button onClick={() => { onSave(Number(val) || 0); onClose() }}
-        style={{ width: '100%', marginTop: 20, padding: '14px', background: gold, border: 'none', borderRadius: 2, color: bg, fontSize: 13, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: josefin }}>
+        style={{ width: '100%', marginTop: 20, padding: '14px', background: gold, border: 'none', borderRadius: 2, color: bg, fontSize: 15, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: josefin }}>
         保存する
       </button>
       <button onClick={onClose}
-        style={{ width: '100%', marginTop: 8, padding: '14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, color: muted, fontSize: 13, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: josefin }}>
+        style={{ width: '100%', marginTop: 8, padding: '14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, color: muted, fontSize: 15, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: josefin }}>
         キャンセル
       </button>
     </BottomSheet>
@@ -310,7 +310,7 @@ export default function CheckoutPage() {
   }
 
   const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: muted, fontFamily: josefin, marginBottom: 10 }}>{children}</div>
+    <div style={{ fontSize: 12, letterSpacing: '0.15em', textTransform: 'uppercase', color: muted, fontFamily: josefin, marginBottom: 10 }}>{children}</div>
   )
 
   const Section = ({ children }: { children: React.ReactNode }) => (
@@ -321,7 +321,7 @@ export default function CheckoutPage() {
     <button onClick={onClick} style={{
       flex: 1, padding: '11px 0', background: active ? goldDim : 'transparent',
       border: `1px solid ${active ? goldBorder : border}`, borderRadius: 2,
-      color: active ? gold : muted, fontSize: 13, letterSpacing: '0.08em',
+      color: active ? gold : muted, fontSize: 15, letterSpacing: '0.08em',
       cursor: 'pointer', fontFamily: josefin, fontWeight: active ? 400 : 100,
     }}>{children}</button>
   )
@@ -329,7 +329,7 @@ export default function CheckoutPage() {
   const AddBtn = ({ onClick, label }: { onClick: () => void; label: string }) => (
     <button onClick={onClick} style={{
       width: '100%', padding: '11px', background: 'transparent',
-      border: `1px dashed ${border}`, borderRadius: 2, color: muted, fontSize: 12, letterSpacing: '0.08em',
+      border: `1px dashed ${border}`, borderRadius: 2, color: muted, fontSize: 14, letterSpacing: '0.08em',
       cursor: 'pointer', fontFamily: josefin, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
     }}>
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
@@ -345,12 +345,12 @@ export default function CheckoutPage() {
             <polyline points="6,14 11,20 22,9" stroke={green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.2em', color: txt }}>会計完了</div>
+        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, letterSpacing: '0.2em', color: txt }}>会計完了</div>
         <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 32, color: gold }}>¥{successAmount.toLocaleString()}</div>
-        <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>{successSub}</div>
+        <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>{successSub}</div>
         <button onClick={() => navigate(-1)} style={{
           marginTop: 24, padding: '14px 48px', background: goldDim, border: `1px solid ${goldBorder}`,
-          borderRadius: 2, color: gold, fontSize: 12, letterSpacing: '0.12em', cursor: 'pointer', fontFamily: josefin,
+          borderRadius: 2, color: gold, fontSize: 14, letterSpacing: '0.12em', cursor: 'pointer', fontFamily: josefin,
         }}>閉じる</button>
       </div>
     )
@@ -364,7 +364,7 @@ export default function CheckoutPage() {
           <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="11,4 6,9 11,14" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
-          <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 13, letterSpacing: '0.2em', color: txt }}>会計入力</div>
+          <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 15, letterSpacing: '0.2em', color: txt }}>会計入力</div>
           <div style={{ width: 18 }} />
         </div>
 
@@ -375,7 +375,7 @@ export default function CheckoutPage() {
           {storeName && (
             <div style={{ margin: '12px 20px 0', padding: '10px 14px', background: surface, border: `1px solid ${border}`, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: green, flexShrink: 0 }} />
-              <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>{storeName} · 施術 {treatmentMenus.filter(m => m.is_active).length}件 / 物販 {retailMenus.filter(m => m.is_active).length}件</div>
+              <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>{storeName} · 施術 {treatmentMenus.filter(m => m.is_active).length}件 / 物販 {retailMenus.filter(m => m.is_active).length}件</div>
             </div>
           )}
 
@@ -384,12 +384,12 @@ export default function CheckoutPage() {
             <SectionTitle>担当スタッフ</SectionTitle>
             <div onClick={() => setShowStaffPicker(true)} style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 30, height: 30, borderRadius: '50%', background: goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 11, color: gold, flexShrink: 0 }}>
+                <div style={{ width: 30, height: 30, borderRadius: '50%', background: goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 13, color: gold, flexShrink: 0 }}>
                   {selectedStaff ? (selectedStaff.avatar_initials ?? selectedStaff.name.slice(0, 1)) : '?'}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, color: txt, fontFamily: zen }}>{selectedStaff?.name ?? '選択してください'}</div>
-                  <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>{storeName}{selectedStaff ? ` · ${ROLE_LABEL[selectedStaff.role]}` : ''}</div>
+                  <div style={{ fontSize: 15, color: txt, fontFamily: zen }}>{selectedStaff?.name ?? '選択してください'}</div>
+                  <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>{storeName}{selectedStaff ? ` · ${ROLE_LABEL[selectedStaff.role]}` : ''}</div>
                 </div>
               </div>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="4,2 8,6 4,10" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -405,8 +405,8 @@ export default function CheckoutPage() {
             </div>
             {shimei && (
               <div onClick={() => setShowShimeiEdit(true)} style={{ marginTop: 8, padding: '12px 16px', background: surface, border: `1px solid ${border}`, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
-                <div style={{ fontSize: 13, color: txt, fontFamily: zen }}>指名料</div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold }}>¥{effectiveShimeiRyo.toLocaleString()}</div>
+                <div style={{ fontSize: 15, color: txt, fontFamily: zen }}>指名料</div>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: gold }}>¥{effectiveShimeiRyo.toLocaleString()}</div>
               </div>
             )}
           </Section>
@@ -428,10 +428,10 @@ export default function CheckoutPage() {
               <div key={i} onClick={() => setEditItem({ type: 'menu', index: i })}
                 style={{ padding: '12px 0', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                 <div>
-                  <div style={{ fontSize: 13, color: txt, fontFamily: zen }}>{item.name}</div>
-                  {item.note && <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginTop: 2 }}>{item.note}</div>}
+                  <div style={{ fontSize: 15, color: txt, fontFamily: zen }}>{item.name}</div>
+                  {item.note && <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginTop: 2 }}>{item.note}</div>}
                 </div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 13, color: gold }}>¥{item.price.toLocaleString()}</div>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: gold }}>¥{item.price.toLocaleString()}</div>
               </div>
             ))}
             <div style={{ marginTop: menuItems.length > 0 ? 8 : 0 }}>
@@ -445,8 +445,8 @@ export default function CheckoutPage() {
             {retailItems.map((item, i) => (
               <div key={i} onClick={() => setEditItem({ type: 'retail', index: i })}
                 style={{ padding: '12px 0', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
-                <div style={{ fontSize: 13, color: txt, fontFamily: zen }}>{item.name}</div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 13, color: gold }}>¥{item.price.toLocaleString()}</div>
+                <div style={{ fontSize: 15, color: txt, fontFamily: zen }}>{item.name}</div>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: gold }}>¥{item.price.toLocaleString()}</div>
               </div>
             ))}
             <div style={{ marginTop: retailItems.length > 0 ? 8 : 0 }}>
@@ -457,13 +457,13 @@ export default function CheckoutPage() {
           {/* 合計金額 */}
           <div style={{ margin: '20px 20px 0', padding: '16px 20px', background: surface2, border: `1px solid ${goldBorder}`, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontSize: 10, letterSpacing: '0.15em', color: muted, fontFamily: josefin }}>合計金額</div>
+              <div style={{ fontSize: 12, letterSpacing: '0.15em', color: muted, fontFamily: josefin }}>合計金額</div>
               {shimei && effectiveShimeiRyo > 0 && (
-                <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginTop: 3 }}>指名料 ¥{effectiveShimeiRyo.toLocaleString()} 含む</div>
+                <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginTop: 3 }}>指名料 ¥{effectiveShimeiRyo.toLocaleString()} 含む</div>
               )}
             </div>
             <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 28, color: gold }}>
-              <span style={{ fontSize: 14 }}>¥</span>{total.toLocaleString()}
+              <span style={{ fontSize: 15 }}>¥</span>{total.toLocaleString()}
             </div>
           </div>
 
@@ -481,7 +481,7 @@ export default function CheckoutPage() {
           <div style={{ padding: '24px 20px 0' }}>
             <button onClick={submit} disabled={submitting} style={{
               width: '100%', padding: '16px', background: gold, border: 'none', borderRadius: 2,
-              color: bg, fontSize: 13, letterSpacing: '0.12em', cursor: submitting ? 'not-allowed' : 'pointer',
+              color: bg, fontSize: 15, letterSpacing: '0.12em', cursor: submitting ? 'not-allowed' : 'pointer',
               fontFamily: josefin, opacity: submitting ? 0.6 : 1,
             }}>
               {submitting ? '送信中...' : '会計完了'}

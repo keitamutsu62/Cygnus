@@ -24,7 +24,7 @@ export function Toast({ msg }: { msg: string | null }) {
       position: 'fixed', bottom: 90, left: 20, right: 20, zIndex: 2000,
       background: '#1a1816', border: '1px solid rgba(224,112,96,0.4)',
       borderRadius: 4, padding: '12px 16px',
-      fontSize: 13, color: alert, fontFamily: zen, lineHeight: 1.5,
+      fontSize: 15, color: alert, fontFamily: zen, lineHeight: 1.5,
       boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
     }}>
       {msg}

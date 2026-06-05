@@ -101,7 +101,7 @@ export default function LoginPage() {
             fontFamily: S.zen,
           }}>ようこそ、Cygnus LOOPへ。</div>
           <div style={{
-            fontSize: 12,
+            fontSize: 14,
             color: S.muted,
             lineHeight: 1.7,
             letterSpacing: '0.05em',
@@ -127,7 +127,7 @@ export default function LoginPage() {
             placeholder="••••••••"
             extra={
               <Link to="/forgot-password" style={{
-                fontSize: 11,
+                fontSize: 13,
                 color: S.gold,
                 textAlign: 'right',
                 textDecoration: 'none',
@@ -140,7 +140,7 @@ export default function LoginPage() {
 
           {error && (
             <div style={{
-              fontSize: 12,
+              fontSize: 14,
               color: '#e07060',
               background: 'rgba(224,112,96,0.1)',
               border: '1px solid rgba(224,112,96,0.2)',
@@ -160,7 +160,7 @@ export default function LoginPage() {
               borderRadius: 2,
               fontFamily: S.josefin,
               fontWeight: 200,
-              fontSize: 12,
+              fontSize: 14,
               letterSpacing: '0.25em',
               textTransform: 'uppercase',
               color: '#1a1816',
@@ -176,7 +176,7 @@ export default function LoginPage() {
 
         {/* フッター */}
         <div style={{ marginTop: 'auto', paddingTop: 24, textAlign: 'center' }}>
-          <div style={{ fontSize: 11, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
+          <div style={{ fontSize: 13, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
             アカウントをお持ちでない場合は<br />
             <span style={{ color: S.gold, cursor: 'pointer', opacity: 0.8 }}>
               サロンオーナーに招待を依頼してください
@@ -211,7 +211,7 @@ function Field({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       <div style={{
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
         color: S.muted,

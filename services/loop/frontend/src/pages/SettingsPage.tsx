@@ -30,7 +30,7 @@ function SheetCancel({ label = 'キャンセル', style }: { label?: string; sty
   return (
     <button
       onClick={dismiss}
-      style={{ width: '100%', padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer', ...style }}
+      style={{ width: '100%', padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer', ...style }}
     >
       {label}
     </button>
@@ -74,15 +74,15 @@ function InviteModal({ onClose }: { onClose: () => void }) {
     <BottomSheet onClose={onClose}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
         <OrbitSVG size={10}/>
-        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>スタッフを招待</span>
+        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>スタッフを招待</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
-          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>メールアドレス</div>
+          <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>メールアドレス</div>
           <input type="email" placeholder="staff@salon.com" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle}/>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>役職</div>
+          <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>役職</div>
           <select value={role} onChange={e => setRole(e.target.value as StaffRole)} style={{ ...inputStyle, WebkitAppearance: 'none' }}>
             <option style={{ background: '#1a1816' }} value="staff">スタッフ</option>
             <option style={{ background: '#1a1816' }} value="admin">店長</option>
@@ -91,9 +91,9 @@ function InviteModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
       <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2 }}>
-        <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>招待メールが送信されます。受け取った方は<br/>メール内のURLからアカウントを登録できます。</div>
+        <div style={{ fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>招待メールが送信されます。受け取った方は<br/>メール内のURLからアカウントを登録できます。</div>
       </div>
-      <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
+      <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
         {sending ? '送信中...' : '招待メールを送信する'}
       </button>
       <SheetCancel style={{ marginTop: 8 }} />
@@ -143,28 +143,28 @@ function PasswordChangeSheet({ onClose }: { onClose: () => void }) {
     <BottomSheet onClose={onClose}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
         <OrbitSVG size={10} />
-        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>パスワード変更</span>
+        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>パスワード変更</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>現在のパスワード</div>
+          <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>現在のパスワード</div>
           <input type="password" value={current} onChange={e => setCurrent(e.target.value)} style={inputStyle} />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>新しいパスワード（8文字以上）</div>
+          <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>新しいパスワード（8文字以上）</div>
           <input type="password" value={next} onChange={e => setNext(e.target.value)} style={inputStyle} />
         </div>
         <div>
-          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>新しいパスワード（確認）</div>
+          <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>新しいパスワード（確認）</div>
           <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} style={inputStyle} />
         </div>
       </div>
       {errMsg && (
-        <div style={{ marginTop: 10, fontSize: 12, color: alertColor, fontFamily: zen }}>{errMsg}</div>
+        <div style={{ marginTop: 10, fontSize: 14, color: alertColor, fontFamily: zen }}>{errMsg}</div>
       )}
       <button
         onClick={save} disabled={saving}
-        style={{ width: '100%', marginTop: 16, padding: 14, background: saving ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: saving ? 'default' : 'pointer' }}
+        style={{ width: '100%', marginTop: 16, padding: 14, background: saving ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: saving ? 'default' : 'pointer' }}
       >
         {saving ? '変更中...' : '変更する'}
       </button>
@@ -228,7 +228,7 @@ function SpecialClosureSheet({ storeId, onClose }: { storeId: number; onClose: (
     <BottomSheet onClose={onClose}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
         <OrbitSVG size={10} />
-        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>臨時休業日</span>
+        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>臨時休業日</span>
       </div>
 
       {/* 既存の臨時休業日リスト */}
@@ -237,12 +237,12 @@ function SpecialClosureSheet({ storeId, onClose }: { storeId: number; onClose: (
           {closures.map(c => (
             <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(232,228,220,0.04)', border: `1px solid ${border}`, borderRadius: 2 }}>
               <div style={{ flex: 1 }}>
-                <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold }}>{c.date}</span>
-                {c.note && <span style={{ marginLeft: 8, fontSize: 12, color: muted, fontFamily: zen }}>{c.note}</span>}
+                <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: gold }}>{c.date}</span>
+                {c.note && <span style={{ marginLeft: 8, fontSize: 14, color: muted, fontFamily: zen }}>{c.note}</span>}
               </div>
               <button
                 onClick={() => remove(c.id)}
-                style={{ padding: '4px 10px', background: 'transparent', border: `1px solid rgba(224,112,96,0.3)`, borderRadius: 2, fontSize: 11, color: alertColor, fontFamily: zen, cursor: 'pointer' }}
+                style={{ padding: '4px 10px', background: 'transparent', border: `1px solid rgba(224,112,96,0.3)`, borderRadius: 2, fontSize: 13, color: alertColor, fontFamily: zen, cursor: 'pointer' }}
               >削除</button>
             </div>
           ))}
@@ -250,11 +250,11 @@ function SpecialClosureSheet({ storeId, onClose }: { storeId: number; onClose: (
       )}
 
       {closures.length === 0 && (
-        <div style={{ textAlign: 'center', color: muted, fontSize: 12, fontFamily: zen, marginBottom: 16, padding: '12px 0' }}>臨時休業日は登録されていません</div>
+        <div style={{ textAlign: 'center', color: muted, fontSize: 14, fontFamily: zen, marginBottom: 16, padding: '12px 0' }}>臨時休業日は登録されていません</div>
       )}
 
       {/* 新規追加 */}
-      <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>日付を追加</div>
+      <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>日付を追加</div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
         <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }} />
       </div>
@@ -267,7 +267,7 @@ function SpecialClosureSheet({ storeId, onClose }: { storeId: number; onClose: (
       </div>
       <button
         onClick={add} disabled={adding || !newDate}
-        style={{ width: '100%', padding: 14, background: (!newDate || adding) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: (!newDate || adding) ? 'default' : 'pointer' }}
+        style={{ width: '100%', padding: 14, background: (!newDate || adding) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: (!newDate || adding) ? 'default' : 'pointer' }}
       >
         {adding ? '追加中...' : '追加する'}
       </button>
@@ -360,7 +360,7 @@ const ChevronLeft = () => (
 // ─── 共通 UI ──────────────────────────────────────────────────────────────────
 function GroupLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: muted, padding: '0 4px 8px', display: 'flex', alignItems: 'center', gap: 7 }}>
+    <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: muted, padding: '0 4px 8px', display: 'flex', alignItems: 'center', gap: 7 }}>
       <OrbitSVG size={10} /> {children}
     </div>
   )
@@ -395,8 +395,8 @@ function SettingRow({
         </div>
       )}
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 400, color: danger ? alertColor : txt, fontFamily: zen, marginBottom: value ? 2 : 0 }}>{label}</div>
-        {value && <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>{value}</div>}
+        <div style={{ fontSize: 15, fontWeight: 400, color: danger ? alertColor : txt, fontFamily: zen, marginBottom: value ? 2 : 0 }}>{label}</div>
+        {value && <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>{value}</div>}
       </div>
       {badge}
       {action}
@@ -411,7 +411,7 @@ function SBadge({ type }: { type: 'connected' | 'warning' }) {
     warning:   { background: goldDim,  color: gold,  border: `1px solid ${goldBorder}` },
   }
   return (
-    <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1, ...s[type] }}>
+    <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1, ...s[type] }}>
       {type === 'connected' ? '接続中' : '未接続'}
     </div>
   )
@@ -449,8 +449,8 @@ function SalonCard({ salonName }: { salonName: string }) {
         <BellIcon color={gold} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 2 }}>{salonName}</div>
-        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: gold }}>Cygnus LOOP · Standard Plan · ¥14,700/月</div>
+        <div style={{ fontSize: 15, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 2 }}>{salonName}</div>
+        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: gold }}>Cygnus LOOP · Standard Plan · ¥14,700/月</div>
       </div>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <polyline points="6,4 10,8 6,12" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
@@ -507,12 +507,12 @@ function DealerEditModal({
 
   return (
     <BottomSheet onClose={onClose}>
-      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 16 }}>{dealer.name}</div>
+      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: txt, marginBottom: 16 }}>{dealer.name}</div>
 
       {/* 締日 */}
-      <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>締日（1〜28日、空欄で未設定）</div>
+      <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>締日（1〜28日、空欄で未設定）</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: 13, color: muted, fontFamily: zen }}>毎月</span>
+        <span style={{ fontSize: 15, color: muted, fontFamily: zen }}>毎月</span>
         <input
           type="number" min="1" max="28"
           value={input}
@@ -520,11 +520,11 @@ function DealerEditModal({
           placeholder="例: 20"
           style={{ flex: 1, background: 'rgba(232,228,220,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '10px 12px', color: txt, fontSize: 16, fontFamily: josefin, fontWeight: 100, outline: 'none' }}
         />
-        <span style={{ fontSize: 13, color: muted, fontFamily: zen }}>日</span>
+        <span style={{ fontSize: 15, color: muted, fontFamily: zen }}>日</span>
       </div>
       <button
         onClick={saveClosingDay} disabled={saving}
-        style={{ width: '100%', padding: 12, background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, fontFamily: zen, fontSize: 13, color: gold, cursor: 'pointer', marginBottom: 16 }}
+        style={{ width: '100%', padding: 12, background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, fontFamily: zen, fontSize: 15, color: gold, cursor: 'pointer', marginBottom: 16 }}
       >
         {saving ? '保存中...' : '締日を保存する'}
       </button>
@@ -533,19 +533,19 @@ function DealerEditModal({
       <div style={{ borderTop: `1px solid ${border}`, paddingTop: 14 }}>
         {confirmDel ? (
           <>
-            <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 10, textAlign: 'center' as const }}>
+            <div style={{ fontSize: 14, color: muted, fontFamily: zen, marginBottom: 10, textAlign: 'center' as const }}>
               本当に削除しますか？この操作は取り消せません。
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button
                 onClick={() => setConfirmDel(false)}
-                style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}
               >
                 やめる
               </button>
               <button
                 onClick={deleteDealer} disabled={saving}
-                style={{ flex: 2, padding: '11px 0', background: 'rgba(224,112,96,0.15)', border: '1px solid rgba(224,112,96,0.4)', borderRadius: 2, fontFamily: zen, fontSize: 12, color: alertColor, cursor: 'pointer' }}
+                style={{ flex: 2, padding: '11px 0', background: 'rgba(224,112,96,0.15)', border: '1px solid rgba(224,112,96,0.4)', borderRadius: 2, fontFamily: zen, fontSize: 14, color: alertColor, cursor: 'pointer' }}
               >
                 {saving ? '削除中...' : '削除する'}
               </button>
@@ -554,7 +554,7 @@ function DealerEditModal({
         ) : (
           <button
             onClick={() => setConfirmDel(true)}
-            style={{ width: '100%', padding: 12, background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}
+            style={{ width: '100%', padding: 12, background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}
           >
             このディーラーを削除する
           </button>
@@ -607,7 +607,7 @@ function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
           {(['LINE', 'email'] as const).map(m => (
             <button key={m} onClick={() => setMethod(m)} style={{
               flex: 1, padding: '8px 0', borderRadius: 2, cursor: 'pointer',
-              fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.1em',
+              fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.1em',
               border: `1px solid ${method === m ? goldBorder : border}`,
               background: method === m ? goldDim : 'transparent',
               color: method === m ? gold : muted,
@@ -622,19 +622,19 @@ function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
           style={inputStyle}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, color: muted, fontFamily: zen, whiteSpace: 'nowrap' as const }}>締日（任意）</span>
+          <span style={{ fontSize: 14, color: muted, fontFamily: zen, whiteSpace: 'nowrap' as const }}>締日（任意）</span>
           <input
             type="number" min="1" max="28"
             placeholder="例: 20"
             value={closingDay} onChange={e => setClosingDay(e.target.value)}
             style={{ ...inputStyle, width: 80, flexShrink: 0 }}
           />
-          <span style={{ fontSize: 12, color: muted, fontFamily: zen }}>日</span>
+          <span style={{ fontSize: 14, color: muted, fontFamily: zen }}>日</span>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={onCancel} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}>キャンセル</button>
-        <button onClick={save} disabled={saving || !canSave} style={{ flex: 2, padding: '10px 0', background: (!canSave || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 12, color: '#1a1816', cursor: canSave && !saving ? 'pointer' : 'default' }}>
+        <button onClick={onCancel} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}>キャンセル</button>
+        <button onClick={save} disabled={saving || !canSave} style={{ flex: 2, padding: '10px 0', background: (!canSave || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 14, color: '#1a1816', cursor: canSave && !saving ? 'pointer' : 'default' }}>
           {saving ? '保存中...' : '追加する'}
         </button>
       </div>
@@ -734,10 +734,10 @@ function StaffDetail({
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 18, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 4 }}>{staff.name}</div>
-          <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[staff.role]}</div>
+          <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[staff.role]}</div>
         </div>
         {/* ステータスバッジ（is_active 連動） */}
-        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1,
+        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1,
           background: isActive ? greenDim : 'rgba(224,112,96,0.1)',
           color: isActive ? green : alertColor,
           border: isActive ? '1px solid rgba(109,186,142,0.3)' : '1px solid rgba(224,112,96,0.3)',
@@ -785,20 +785,20 @@ function StaffDetail({
       )}
 
       {saving && (
-        <div style={{ textAlign: 'center', color: muted, fontSize: 11, fontFamily: josefin, padding: '8px 0' }}>更新中...</div>
+        <div style={{ textAlign: 'center', color: muted, fontSize: 13, fontFamily: josefin, padding: '8px 0' }}>更新中...</div>
       )}
 
       {/* 役職変更ピッカー */}
       {rolePickerOpen && (
         <BottomSheet onClose={() => setRolePickerOpen(false)}>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 16 }}>役職を変更</div>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: txt, marginBottom: 16 }}>役職を変更</div>
           {(['owner', 'admin', 'staff'] as StaffRole[]).map(r => (
             <div
               key={r}
               onClick={() => changeRole(r)}
               style={{ padding: '14px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
             >
-              <div style={{ fontSize: 13, color: r === staff.role ? gold : txt, fontFamily: zen }}>{ROLE_LABEL[r]}</div>
+              <div style={{ fontSize: 15, color: r === staff.role ? gold : txt, fontFamily: zen }}>{ROLE_LABEL[r]}</div>
               {r === staff.role && (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <polyline points="2.5,7 5.5,10.5 11.5,3.5" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -813,10 +813,10 @@ function StaffDetail({
       {/* 指名料編集 */}
       {shimeiEditOpen && (
         <BottomSheet onClose={() => setShimeiEditOpen(false)}>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 4 }}>指名料（個別設定）</div>
-          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 16 }}>未設定の場合、サロン共通の指名料が適用されます</div>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: txt, marginBottom: 4 }}>指名料（個別設定）</div>
+          <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 16 }}>未設定の場合、サロン共通の指名料が適用されます</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <span style={{ fontSize: 14, color: muted }}>¥</span>
+            <span style={{ fontSize: 15, color: muted }}>¥</span>
             <input
               type="number"
               min="0"
@@ -827,13 +827,13 @@ function StaffDetail({
           </div>
           <button
             onClick={() => changeShimei(Math.max(0, parseInt(shimeiInput) || 0))}
-            style={{ width: '100%', padding: 12, background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, fontFamily: zen, fontSize: 13, color: gold, cursor: 'pointer', marginBottom: 8 }}
+            style={{ width: '100%', padding: 12, background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, fontFamily: zen, fontSize: 15, color: gold, cursor: 'pointer', marginBottom: 8 }}
           >
             この金額で設定する
           </button>
           <button
             onClick={() => changeShimei(null)}
-            style={{ width: '100%', padding: 12, background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer', marginBottom: 8 }}
+            style={{ width: '100%', padding: 12, background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer', marginBottom: 8 }}
           >
             共通設定に戻す（¥{salonShimeiCharge.toLocaleString('ja-JP')}）
           </button>
@@ -847,7 +847,7 @@ function StaffDetail({
           <div style={{ fontSize: 15, color: txt, fontFamily: zen, marginBottom: 8 }}>
             {isActive ? 'アカウントを無効にしますか？' : 'アカウントを有効に戻しますか？'}
           </div>
-          <div style={{ fontSize: 12, color: muted, fontFamily: zen, lineHeight: 1.8, marginBottom: 20 }}>
+          <div style={{ fontSize: 14, color: muted, fontFamily: zen, lineHeight: 1.8, marginBottom: 20 }}>
             {isActive
               ? <>{staff.name} のアクセスを停止します。<br/>この操作は後から取り消せます。</>
               : <>{staff.name} のログインを再び許可します。</>
@@ -857,7 +857,7 @@ function StaffDetail({
             <SheetCancel style={{ flex: 1, width: 'auto', padding: '11px 0', border: `1px solid ${border}`, borderRadius: 2 }} />
             <button
               onClick={toggleActive}
-              style={{ flex: 2, padding: '11px 0', background: isActive ? 'rgba(224,112,96,0.15)' : greenDim, border: `1px solid ${isActive ? 'rgba(224,112,96,0.4)' : 'rgba(109,186,142,0.3)'}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: isActive ? alertColor : green, cursor: 'pointer' }}
+              style={{ flex: 2, padding: '11px 0', background: isActive ? 'rgba(224,112,96,0.15)' : greenDim, border: `1px solid ${isActive ? 'rgba(224,112,96,0.4)' : 'rgba(109,186,142,0.3)'}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: isActive ? alertColor : green, cursor: 'pointer' }}
             >
               {isActive ? '無効にする' : '有効に戻す'}
             </button>
@@ -953,7 +953,7 @@ function ProfileSettings({ onBack }: { onBack: () => void }) {
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 18, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 4 }}>{myStaff?.name ?? '—'}</div>
-          <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>
+          <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>
             {ROLE_LABEL[claims?.role ?? 'staff']} · {myStore?.name ?? '—'}
           </div>
         </div>
@@ -1037,7 +1037,8 @@ function HoursSettings({ onBack }: { onBack: () => void }) {
   }
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
+    display: 'block', width: '100%', maxWidth: '100%', boxSizing: 'border-box',
+    background: 'rgba(232,228,220,0.04)',
     border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
     fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
   }
@@ -1046,19 +1047,23 @@ function HoursSettings({ onBack }: { onBack: () => void }) {
     <div>
       <BackHeader title="営業時間・定休日" onBack={onBack} />
 
-      {!loaded && <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 12, fontFamily: josefin }}>Loading...</div>}
+      {!loaded && <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 14, fontFamily: josefin }}>Loading...</div>}
 
       {loaded && (
         <>
           <GroupLabel>営業時間</GroupLabel>
           <SettingGroup>
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
-              <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>開始時刻</div>
-              <input type="time" value={openTime} onChange={e => setOpenTime(e.target.value)} style={inputStyle} />
+              <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>開始時刻</div>
+              <div style={{ display: 'flex' }}>
+                <input type="time" value={openTime} onChange={e => setOpenTime(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 0 }} />
+              </div>
             </div>
             <div style={{ padding: '14px 16px' }}>
-              <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>終了時刻</div>
-              <input type="time" value={closeTime} onChange={e => setCloseTime(e.target.value)} style={inputStyle} />
+              <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>終了時刻</div>
+              <div style={{ display: 'flex' }}>
+                <input type="time" value={closeTime} onChange={e => setCloseTime(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 0 }} />
+              </div>
             </div>
           </SettingGroup>
 
@@ -1069,12 +1074,12 @@ function HoursSettings({ onBack }: { onBack: () => void }) {
                 {WEEKDAYS.map((day, i) => {
                   const active = closedDay === i
                   return (
-                    <button key={i} onClick={() => setClosedDay(active ? null : i)} style={{ padding: '8px 14px', borderRadius: 2, cursor: 'pointer', fontFamily: zen, fontSize: 13, border: `1px solid ${active ? goldBorder : border}`, background: active ? goldDim : 'transparent', color: active ? gold : muted }}>
+                    <button key={i} onClick={() => setClosedDay(active ? null : i)} style={{ padding: '8px 14px', borderRadius: 2, cursor: 'pointer', fontFamily: zen, fontSize: 15, border: `1px solid ${active ? goldBorder : border}`, background: active ? goldDim : 'transparent', color: active ? gold : muted }}>
                       {day}曜
                     </button>
                   )
                 })}
-                <button onClick={() => setClosedDay(null)} style={{ padding: '8px 14px', borderRadius: 2, cursor: 'pointer', fontFamily: zen, fontSize: 13, border: `1px solid ${closedDay === null ? goldBorder : border}`, background: closedDay === null ? goldDim : 'transparent', color: closedDay === null ? gold : muted }}>
+                <button onClick={() => setClosedDay(null)} style={{ padding: '8px 14px', borderRadius: 2, cursor: 'pointer', fontFamily: zen, fontSize: 15, border: `1px solid ${closedDay === null ? goldBorder : border}`, background: closedDay === null ? goldDim : 'transparent', color: closedDay === null ? gold : muted }}>
                   なし
                 </button>
               </div>
@@ -1083,7 +1088,7 @@ function HoursSettings({ onBack }: { onBack: () => void }) {
 
           <button
             onClick={save} disabled={saving}
-            style={{ width: '100%', padding: 14, background: saved ? greenDim : saving ? 'rgba(200,168,130,0.4)' : gold, border: saved ? '1px solid rgba(109,186,142,0.3)' : 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: saved ? green : '#1a1816', cursor: saving ? 'default' : 'pointer' }}
+            style={{ width: '100%', padding: 14, background: saved ? greenDim : saving ? 'rgba(200,168,130,0.4)' : gold, border: saved ? '1px solid rgba(109,186,142,0.3)' : 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: saved ? green : '#1a1816', cursor: saving ? 'default' : 'pointer' }}
           >
             {saving ? '保存中...' : saved ? '保存しました ✓' : '保存する'}
           </button>
@@ -1121,15 +1126,15 @@ function StaffListSettings({
               onClick={() => onSelectStaff(s)}
               style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
             >
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 11, color: gold, flexShrink: 0, opacity: s.is_active ? 1 : 0.4 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: goldDim, border: `1px solid ${goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: josefin, fontWeight: 100, fontSize: 13, color: gold, flexShrink: 0, opacity: s.is_active ? 1 : 0.4 }}>
                 {av}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 400, color: s.is_active ? txt : muted, fontFamily: zen, marginBottom: 2 }}>{s.name}</div>
-                <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[s.role]}</div>
+                <div style={{ fontSize: 15, fontWeight: 400, color: s.is_active ? txt : muted, fontFamily: zen, marginBottom: 2 }}>{s.name}</div>
+                <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>{storeName} · {ROLE_LABEL[s.role]}</div>
               </div>
               <div style={{
-                fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em',
+                fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em',
                 textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1,
                 background: s.is_active ? greenDim : 'rgba(224,112,96,0.1)',
                 color: s.is_active ? green : alertColor,
@@ -1148,7 +1153,7 @@ function StaffListSettings({
             <line x1="7" y1="2" x2="7" y2="12" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
             <line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
-          <div style={{ fontSize: 13, color: gold, fontFamily: zen }}>スタッフを招待する</div>
+          <div style={{ fontSize: 15, color: gold, fontFamily: zen }}>スタッフを招待する</div>
         </div>
       </SettingGroup>
     </div>
@@ -1167,7 +1172,7 @@ function SquareSettings({ inputStyle }: { inputStyle: React.CSSProperties }) {
   return (
     <SettingGroup>
       <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
-        <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>Location ID</div>
+        <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>Location ID</div>
         <input
           type="text" value={locationId} onChange={e => setLocationId(e.target.value)}
           placeholder="例: LXXXXXXXXXXXXXXXXX"
@@ -1176,10 +1181,10 @@ function SquareSettings({ inputStyle }: { inputStyle: React.CSSProperties }) {
       </div>
       <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>Access Token</div>
+          <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>Access Token</div>
           <button
             onClick={() => setShowToken(v => !v)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em' }}
           >
             {showToken ? '隠す' : '表示'}
           </button>
@@ -1192,7 +1197,7 @@ function SquareSettings({ inputStyle }: { inputStyle: React.CSSProperties }) {
         />
       </div>
       <div style={{ padding: '12px 16px' }}>
-        <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
+        <div style={{ fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
           Square DeveloperダッシュボードからAccess TokenとLocation IDを発行・確認できます。
         </div>
       </div>
@@ -1229,7 +1234,7 @@ function PosStoreSettings({ store, onBack }: { store: Store; onBack: () => void 
             onClick={() => setPosType(t)}
             style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: i < arr.length - 1 ? `1px solid ${border}` : 'none', cursor: 'pointer' }}
           >
-            <div style={{ flex: 1, fontSize: 13, color: posType === t ? gold : txt, fontFamily: zen }}>{POS_LABEL[t]}</div>
+            <div style={{ flex: 1, fontSize: 15, color: posType === t ? gold : txt, fontFamily: zen }}>{POS_LABEL[t]}</div>
             {posType === t && (
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <polyline points="2.5,7 5.5,10.5 11.5,3.5" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1244,7 +1249,7 @@ function PosStoreSettings({ store, onBack }: { store: Store; onBack: () => void 
           <GroupLabel>スマレジ設定</GroupLabel>
           <SettingGroup>
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
-              <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 8 }}>Store ID</div>
+              <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>Store ID</div>
               <input
                 type="text" inputMode="numeric" value={storeId} onChange={e => setStoreId(e.target.value)}
                 placeholder="例: 00123"
@@ -1252,7 +1257,7 @@ function PosStoreSettings({ store, onBack }: { store: Store; onBack: () => void 
               />
             </div>
             <div style={{ padding: '12px 16px' }}>
-              <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
+              <div style={{ fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
                 スマレジのStore IDはスマレジ管理画面の「設定 → 店舗」から確認できます。
               </div>
             </div>
@@ -1270,7 +1275,7 @@ function PosStoreSettings({ store, onBack }: { store: Store; onBack: () => void 
       {posType !== 'none' && (
         <button
           onClick={save}
-          style={{ width: '100%', padding: 14, background: saved ? greenDim : gold, border: saved ? '1px solid rgba(109,186,142,0.3)' : 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: saved ? green : '#1a1816', cursor: 'pointer' }}
+          style={{ width: '100%', padding: 14, background: saved ? greenDim : gold, border: saved ? '1px solid rgba(109,186,142,0.3)' : 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: saved ? green : '#1a1816', cursor: 'pointer' }}
         >
           {saved ? '保存しました ✓' : '保存する'}
         </button>
@@ -1296,13 +1301,13 @@ function PosSettings({
   return (
     <div>
       <BackHeader title="POS連携" onBack={onBack} />
-      <div style={{ padding: '10px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, marginBottom: 20, fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
+      <div style={{ padding: '10px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, marginBottom: 20, fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
         店舗ごとにPOSシステムとの連携を設定できます。
       </div>
       <GroupLabel>店舗を選択</GroupLabel>
       <SettingGroup>
         {storeList.length === 0 ? (
-          <div style={{ padding: '20px 16px', textAlign: 'center', color: muted, fontSize: 12, fontFamily: zen }}>店舗が登録されていません</div>
+          <div style={{ padding: '20px 16px', textAlign: 'center', color: muted, fontSize: 14, fontFamily: zen }}>店舗が登録されていません</div>
         ) : (
           storeList.map((store, i) => (
             <SettingRow
@@ -1516,17 +1521,17 @@ export default function SettingsPage() {
               onClick={() => setClosingEditDealer(d)}
               style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
             >
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, color: muted, minWidth: 16, textAlign: 'center' }}>{i + 1}</div>
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: muted, minWidth: 16, textAlign: 'center' }}>{i + 1}</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 2 }}>{d.name}</div>
-                <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>
+                <div style={{ fontSize: 15, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 2 }}>{d.name}</div>
+                <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>
                   {d.contact_method === 'LINE' ? 'LINE' : 'メール'} · {d.contact_info}
                 </div>
-                <div style={{ fontSize: 10, color: d.closing_day !== null ? gold : muted, fontFamily: josefin, fontWeight: 100, marginTop: 2 }}>
+                <div style={{ fontSize: 12, color: d.closing_day !== null ? gold : muted, fontFamily: josefin, fontWeight: 100, marginTop: 2 }}>
                   {d.closing_day !== null ? `締日: 毎月${d.closing_day}日` : '締日: 未設定'}
                 </div>
               </div>
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1, background: greenDim, color: green, border: '1px solid rgba(109,186,142,0.3)' }}>
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1, background: greenDim, color: green, border: '1px solid rgba(109,186,142,0.3)' }}>
                 有効
               </div>
             </div>
@@ -1542,7 +1547,7 @@ export default function SettingsPage() {
                 <line x1="7" y1="2" x2="7" y2="12" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
-              <div style={{ fontSize: 13, color: gold, fontFamily: zen }}>ディーラーを追加</div>
+              <div style={{ fontSize: 15, color: gold, fontFamily: zen }}>ディーラーを追加</div>
             </div>
           )}
         </SettingGroup>
@@ -1568,12 +1573,7 @@ export default function SettingsPage() {
         <SettingGroup>
           <SettingRow
             icon={<ClockIcon color={gold} />} iconBg="gold"
-            label="営業時間" value={hoursLabel}
-            onClick={() => setSub('hours')}
-          />
-          <SettingRow
-            icon={<CalIcon color={gold} />} iconBg="gold"
-            label="定休日" value={closedLabel}
+            label="営業時間・定休日" value={hoursLabel}
             onClick={() => setSub('hours')}
           />
           <SettingRow
@@ -1604,10 +1604,10 @@ export default function SettingsPage() {
         {/* バージョン情報 */}
         <div style={{ textAlign: 'center', padding: '20px 0 10px' }}>
           <div>
-            <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', color: txt, opacity: 0.3 }}>CYGNUS </span>
-            <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', color: gold, opacity: 0.3 }}>LOOP</span>
+            <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.22em', color: txt, opacity: 0.3 }}>CYGNUS </span>
+            <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.22em', color: gold, opacity: 0.3 }}>LOOP</span>
           </div>
-          <div style={{ fontSize: 10, color: muted, opacity: 0.4, marginTop: 6 }}>Version 1.0.0</div>
+          <div style={{ fontSize: 12, color: muted, opacity: 0.4, marginTop: 6 }}>Version 1.0.0</div>
         </div>
 
       </div>

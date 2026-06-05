@@ -88,7 +88,7 @@ export default function AcceptInvitationPage() {
           <div style={{ fontSize: 19, fontWeight: 300, color: text, marginBottom: 6, fontFamily: zen }}>
             チームへようこそ。
           </div>
-          <div style={{ fontSize: 12, color: muted, lineHeight: 1.7, letterSpacing: '0.05em', fontFamily: josefin, fontWeight: 100 }}>
+          <div style={{ fontSize: 14, color: muted, lineHeight: 1.7, letterSpacing: '0.05em', fontFamily: josefin, fontWeight: 100 }}>
             名前とパスワードを設定してください。
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function AcceptInvitationPage() {
 
           {error && (
             <div style={{
-              fontSize: 12,
+              fontSize: 14,
               color: '#e07060',
               background: 'rgba(224,112,96,0.1)',
               border: '1px solid rgba(224,112,96,0.2)',
@@ -122,7 +122,7 @@ export default function AcceptInvitationPage() {
               borderRadius: 2,
               fontFamily: josefin,
               fontWeight: 200,
-              fontSize: 12,
+              fontSize: 14,
               letterSpacing: '0.25em',
               textTransform: 'uppercase',
               color: '#1a1816',
@@ -138,7 +138,7 @@ export default function AcceptInvitationPage() {
 
         {/* フッター */}
         <div style={{ marginTop: 'auto', paddingTop: 24, textAlign: 'center' }}>
-          <div style={{ fontSize: 11, color: muted, lineHeight: 1.7, fontFamily: zen }}>
+          <div style={{ fontSize: 13, color: muted, lineHeight: 1.7, fontFamily: zen }}>
             招待に心当たりがない場合は無視してください
           </div>
         </div>
@@ -160,7 +160,7 @@ function FieldInput({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       <div style={{
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
         color: 'rgba(232,228,220,0.55)',

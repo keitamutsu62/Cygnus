@@ -159,10 +159,10 @@ function MenuEditModal({
         {/* ヘッダー */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt }}>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: txt }}>
               {mode === 'add' ? `${typeLabel}を追加` : `${typeLabel}を編集`}
             </div>
-            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em', padding: '2px 8px', borderRadius: 1, border: `1px solid ${goldBorder}`, color: gold }}>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em', padding: '2px 8px', borderRadius: 1, border: `1px solid ${goldBorder}`, color: gold }}>
               {typeLabel}
             </div>
           </div>
@@ -170,7 +170,7 @@ function MenuEditModal({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>
+            <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>
               {tab === 'treatment' ? 'メニュー名' : '商品名'}
             </div>
             <input
@@ -180,7 +180,7 @@ function MenuEditModal({
             />
           </div>
           <div>
-            <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>金額（税込）</div>
+            <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>金額（税込）</div>
             <input
               type="number" inputMode="numeric" value={price}
               onChange={e => setPrice(e.target.value)}
@@ -190,7 +190,7 @@ function MenuEditModal({
           </div>
           {tab === 'treatment' && (
             <div>
-              <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>施術時間（分）</div>
+              <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>施術時間（分）</div>
               <input
                 type="number" inputMode="numeric" value={duration}
                 onChange={e => setDuration(e.target.value)}
@@ -204,7 +204,7 @@ function MenuEditModal({
         <button
           onClick={save}
           disabled={saving || !canSave}
-          style={{ width: '100%', marginTop: 20, padding: 14, background: (!canSave || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: canSave && !saving ? 'pointer' : 'default' }}
+          style={{ width: '100%', marginTop: 20, padding: 14, background: (!canSave || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: canSave && !saving ? 'pointer' : 'default' }}
         >
           {saving ? '保存中...' : '保存する'}
         </button>
@@ -213,7 +213,7 @@ function MenuEditModal({
           <button
             onClick={del}
             disabled={deleting}
-            style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', border: `1px solid ${alert}`, borderRadius: 2, fontFamily: zen, fontSize: 12, color: alert, cursor: 'pointer' }}
+            style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', border: `1px solid ${alert}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: alert, cursor: 'pointer' }}
           >
             {deleting ? '削除中...' : 'このメニューを削除する'}
           </button>
@@ -221,7 +221,7 @@ function MenuEditModal({
 
         <button
           onClick={onClose}
-          style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}
+          style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}
         >
           キャンセル
         </button>
@@ -294,8 +294,8 @@ function ShimeiEditModal({
         onClick={e => e.stopPropagation()}
       >
         <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }}/>
-        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: txt, marginBottom: 20 }}>指名料を変更</div>
-        <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>金額（税込）</div>
+        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: txt, marginBottom: 20 }}>指名料を変更</div>
+        <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>金額（税込）</div>
         <input
           type="number" inputMode="numeric" value={price}
           onChange={e => setPrice(e.target.value)}
@@ -305,11 +305,11 @@ function ShimeiEditModal({
         <button
           onClick={() => ok && onSaved(num)}
           disabled={!ok}
-          style={{ width: '100%', marginTop: 16, padding: 14, background: ok ? gold : 'rgba(200,168,130,0.4)', border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: ok ? 'pointer' : 'default' }}
+          style={{ width: '100%', marginTop: 16, padding: 14, background: ok ? gold : 'rgba(200,168,130,0.4)', border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: ok ? 'pointer' : 'default' }}
         >
           保存する
         </button>
-        <button onClick={onClose} style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 12, color: muted, cursor: 'pointer' }}>
+        <button onClick={onClose} style={{ width: '100%', marginTop: 8, padding: 12, background: 'transparent', border: 'none', fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}>
           キャンセル
         </button>
       </div>
@@ -383,7 +383,7 @@ export default function MenusPage() {
                 onClick={() => setTab(t)}
                 style={{
                   flex: 1, padding: '9px 4px', textAlign: 'center',
-                  fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.15em',
+                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em',
                   background: 'transparent',
                   border: `1px solid ${active ? goldBorder : border}`,
                   borderRadius: 2,
@@ -403,7 +403,7 @@ export default function MenusPage() {
       <div style={{ padding: '12px 20px 80px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
         {/* ヒントバナー */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: greenDim, border: '1px solid rgba(109,186,142,0.2)', borderRadius: 2, marginBottom: 16, fontSize: 11, color: green, fontFamily: zen }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', background: greenDim, border: '1px solid rgba(109,186,142,0.2)', borderRadius: 2, marginBottom: 16, fontSize: 13, color: green, fontFamily: zen }}>
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
             <circle cx="5" cy="5" r="4.5" stroke={green} strokeWidth="1"/>
             <line x1="5" y1="3.5" x2="5" y2="5.5" stroke={green} strokeWidth="1" strokeLinecap="round"/>
@@ -414,14 +414,14 @@ export default function MenusPage() {
 
         {/* コンテンツ */}
         {loading ? (
-          <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 12, fontFamily: josefin }}>Loading...</div>
+          <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 14, fontFamily: josefin }}>Loading...</div>
         ) : tab === 'shimei' ? (
           /* 指名料タブ */
           <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, overflow: 'hidden' }}>
             <div style={{ padding: '16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${border}` }}>
               <div>
-                <div style={{ fontSize: 13, color: txt, fontFamily: zen, marginBottom: 3 }}>指名料</div>
-                <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>会計時に「指名」選択で自動加算</div>
+                <div style={{ fontSize: 15, color: txt, fontFamily: zen, marginBottom: 3 }}>指名料</div>
+                <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>会計時に「指名」選択で自動加算</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 20, color: gold }}>
@@ -429,14 +429,14 @@ export default function MenusPage() {
                 </div>
                 <button
                   onClick={() => setShimeiEdit(true)}
-                  style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.1em', padding: '4px 10px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, color: gold, cursor: 'pointer' }}
+                  style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.1em', padding: '4px 10px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, color: gold, cursor: 'pointer' }}
                 >
                   編集
                 </button>
               </div>
             </div>
             <div style={{ padding: '12px 16px', borderTop: `1px solid ${border}` }}>
-              <div style={{ fontSize: 11, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
+              <div style={{ fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
                 指名料は店舗全体に適用される一律金額です。
               </div>
             </div>
@@ -445,7 +445,7 @@ export default function MenusPage() {
           /* 施術/物販タブ */
           <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, overflow: 'hidden' }}>
             {currentList.length === 0 && (
-              <div style={{ padding: '24px 16px', textAlign: 'center', color: muted, fontSize: 12, fontFamily: zen }}>
+              <div style={{ padding: '24px 16px', textAlign: 'center', color: muted, fontSize: 14, fontFamily: zen }}>
                 まだ{tab === 'treatment' ? 'メニュー' : '商品'}が登録されていません
               </div>
             )}
@@ -454,24 +454,24 @@ export default function MenusPage() {
                 key={item.id}
                 style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${border}` }}
               >
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, color: muted, minWidth: 20, textAlign: 'center' }}>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: muted, minWidth: 20, textAlign: 'center' }}>
                   {i + 1}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, color: txt, fontFamily: zen, marginBottom: 2 }}>{item.name}</div>
-                  <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>
+                  <div style={{ fontSize: 15, color: txt, fontFamily: zen, marginBottom: 2 }}>{item.name}</div>
+                  <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>
                     ¥{item.price.toLocaleString()}
                     {item.duration_minutes ? ` · ${item.duration_minutes}分` : ''}
                   </div>
                 </div>
                 {!item.is_active && (
-                  <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, letterSpacing: '0.12em', padding: '2px 8px', borderRadius: 1, background: alertDim, color: alert, border: `1px solid rgba(224,112,96,0.3)` }}>
+                  <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em', padding: '2px 8px', borderRadius: 1, background: alertDim, color: alert, border: `1px solid rgba(224,112,96,0.3)` }}>
                     無効
                   </div>
                 )}
                 <button
                   onClick={() => setEditMenu(item)}
-                  style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.1em', padding: '4px 10px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, color: gold, cursor: 'pointer', flexShrink: 0 }}
+                  style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.1em', padding: '4px 10px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, color: gold, cursor: 'pointer', flexShrink: 0 }}
                 >
                   編集
                 </button>
@@ -485,7 +485,7 @@ export default function MenusPage() {
                 <line x1="7" y1="2" x2="7" y2="12" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
                 <line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
-              <div style={{ fontSize: 13, color: gold, fontFamily: zen }}>
+              <div style={{ fontSize: 15, color: gold, fontFamily: zen }}>
                 {tab === 'treatment' ? 'メニューを追加' : '商品を追加'}
               </div>
             </div>

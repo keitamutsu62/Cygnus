@@ -125,15 +125,15 @@ function KpiCard({
       padding: '14px 12px', position: 'relative', overflow: 'hidden',
     }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${gold}, transparent)` }}/>
-      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: muted, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: muted, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
         {label}
       </div>
       <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: large ? 32 : 26, color: txt, lineHeight: 1 }}>
         {isYen && <span style={{ fontSize: large ? 16 : 13, color: muted, marginRight: 2 }}>¥</span>}
         {fmt(val)}
-        {!isYen && numUnit && <span style={{ fontSize: 13, color: muted, marginLeft: 2 }}>{numUnit}</span>}
+        {!isYen && numUnit && <span style={{ fontSize: 15, color: muted, marginLeft: 2 }}>{numUnit}</span>}
       </div>
-      {diff && <div style={{ fontSize: 11, color: diffDown ? alertC : green, marginTop: 4 }}>{diff}</div>}
+      {diff && <div style={{ fontSize: 13, color: diffDown ? alertC : green, marginTop: 4 }}>{diff}</div>}
     </div>
   )
 }
@@ -146,10 +146,10 @@ function KpiGrid({ children }: { children: React.ReactNode }) {
 function SectionTitle({ text, link, onLink }: { text: string; link?: string; onLink?: () => void }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 12px' }}>
-      <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: txt, display: 'flex', alignItems: 'center', gap: 7 }}>
+      <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: txt, display: 'flex', alignItems: 'center', gap: 7 }}>
         <OrbitSVG size={12}/> {text}
       </div>
-      {link && <div style={{ fontSize: 12, color: gold, opacity: 0.8, cursor: 'pointer' }} onClick={onLink}>{link}</div>}
+      {link && <div style={{ fontSize: 14, color: gold, opacity: 0.8, cursor: 'pointer' }} onClick={onLink}>{link}</div>}
     </div>
   )
 }
@@ -177,15 +177,15 @@ function WeekBarChart({ bars, title, total }: { bars: BarItem[]; title: string; 
   return (
     <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: 16, marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: muted, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: muted, display: 'flex', alignItems: 'center', gap: 6 }}>
           <OrbitSVG size={10}/> {title}
         </div>
         <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: txt }}>
-          <span style={{ fontSize: 11, color: muted, marginRight: 2 }}>¥</span>{fmt(total)}
+          <span style={{ fontSize: 13, color: muted, marginRight: 2 }}>¥</span>{fmt(total)}
         </div>
       </div>
       <div style={{ textAlign: 'center', height: 22, marginBottom: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: 13, color: gold, fontFamily: josefin, fontWeight: 100 }}>{tip}</div>
+        <div style={{ fontSize: 15, color: gold, fontFamily: josefin, fontWeight: 100 }}>{tip}</div>
       </div>
       <div
         ref={ref}
@@ -211,7 +211,7 @@ function WeekBarChart({ bars, title, total }: { bars: BarItem[]; title: string; 
                 opacity: b.isFuture ? (i === 6 ? 0.12 : 0.2) : dimmed ? 0.45 : 1,
                 transition: 'opacity 0.1s',
               }}/>
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 8, color: b.isToday ? gold : muted, opacity: b.isFuture ? (i === 6 ? 0.25 : 0.35) : 1 }}>
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, color: b.isToday ? gold : muted, opacity: b.isFuture ? (i === 6 ? 0.25 : 0.35) : 1 }}>
                 {b.day}
               </div>
             </div>
@@ -262,7 +262,7 @@ function MonthlyBarChart({ bars }: { bars: MonthBarItem[] }) {
   return (
     <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: 16, marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: muted, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: muted, display: 'flex', alignItems: 'center', gap: 6 }}>
           <OrbitSVG size={10}/> 月次推移（過去6ヶ月）
         </div>
       </div>
@@ -282,7 +282,7 @@ function MonthlyBarChart({ bars }: { bars: MonthBarItem[] }) {
           return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
               <div style={{ width: '100%', borderRadius: '2px 2px 0 0', background: isAct ? gold : goldDim, border: `1px solid ${isAct ? gold : goldBorder}`, height: `${h}%`, transition: 'background 0.15s' }}/>
-              <div style={{ fontSize: 8, color: isAct ? gold : muted }}>{m.label}</div>
+              <div style={{ fontSize: 10, color: isAct ? gold : muted }}>{m.label}</div>
             </div>
           )
         })}
@@ -307,9 +307,9 @@ function Picker({ label, selectedId, items, onSelect, myId }: {
         style={{ background: surface, border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '12px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
         onClick={() => setOpen(o => !o)}
       >
-        <div style={{ fontSize: 12, color: muted }}>{label}</div>
+        <div style={{ fontSize: 14, color: muted }}>{label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: gold, fontSize: 13, fontFamily: josefin, fontWeight: 100 }}>{selected?.name ?? '—'}</span>
+          <span style={{ color: gold, fontSize: 15, fontFamily: josefin, fontWeight: 100 }}>{selected?.name ?? '—'}</span>
           <ChevronDown/>
         </div>
       </div>
@@ -318,11 +318,11 @@ function Picker({ label, selectedId, items, onSelect, myId }: {
           {items.map((item, i) => (
             <div
               key={item.id}
-              style={{ padding: '12px 16px', fontSize: 13, color: item.id === selectedId ? gold : txt, borderBottom: i < items.length - 1 ? `1px solid ${bdr}` : undefined, cursor: 'pointer' }}
+              style={{ padding: '12px 16px', fontSize: 15, color: item.id === selectedId ? gold : txt, borderBottom: i < items.length - 1 ? `1px solid ${bdr}` : undefined, cursor: 'pointer' }}
               onClick={() => { onSelect(item.id); setOpen(false) }}
             >
               {item.name}
-              {myId !== undefined && item.id === myId && <span style={{ fontSize: 11, color: muted }}> （自店舗）</span>}
+              {myId !== undefined && item.id === myId && <span style={{ fontSize: 13, color: muted }}> （自店舗）</span>}
             </div>
           ))}
         </div>
@@ -339,14 +339,14 @@ function StoreRankRow({ rank, name, meta, sales, pct, onClick }: {
     <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={onClick}>
       <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 16, color: rank === 1 ? gold : muted, minWidth: 18, textAlign: 'center' }}>{rank}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 400, color: txt, marginBottom: 2 }}>{name}</div>
-        <div style={{ fontSize: 11, color: muted }}>{meta}</div>
+        <div style={{ fontSize: 15, fontWeight: 400, color: txt, marginBottom: 2 }}>{name}</div>
+        <div style={{ fontSize: 13, color: muted }}>{meta}</div>
       </div>
       <div style={{ textAlign: 'right' }}>
         <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: txt, lineHeight: 1 }}>
-          <span style={{ fontSize: 11, color: muted, marginRight: 1 }}>¥</span>{fmt(sales)}
+          <span style={{ fontSize: 13, color: muted, marginRight: 1 }}>¥</span>{fmt(sales)}
         </div>
-        <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{pct}</div>
+        <div style={{ fontSize: 13, color: muted, marginTop: 2 }}>{pct}</div>
       </div>
     </div>
   )
@@ -360,16 +360,16 @@ function StaffRankRow({ rank, name, initials, meta, sales, pct, onClick }: {
   return (
     <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={onClick}>
       <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 16, color: rank === 1 ? gold : muted, minWidth: 18, textAlign: 'center' }}>{rank}</div>
-      <div style={{ width: 32, height: 32, background: '#272422', border: `1px solid ${bdr}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: muted, flexShrink: 0 }}>{ini}</div>
+      <div style={{ width: 32, height: 32, background: '#272422', border: `1px solid ${bdr}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: muted, flexShrink: 0 }}>{ini}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 400, color: txt, marginBottom: 2 }}>{name}</div>
-        <div style={{ fontSize: 11, color: muted }}>{meta}</div>
+        <div style={{ fontSize: 15, fontWeight: 400, color: txt, marginBottom: 2 }}>{name}</div>
+        <div style={{ fontSize: 13, color: muted }}>{meta}</div>
       </div>
       <div style={{ textAlign: 'right' }}>
         <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: txt, lineHeight: 1 }}>
-          <span style={{ fontSize: 11, color: muted, marginRight: 1 }}>¥</span>{fmt(sales)}
+          <span style={{ fontSize: 13, color: muted, marginRight: 1 }}>¥</span>{fmt(sales)}
         </div>
-        <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{pct}</div>
+        <div style={{ fontSize: 13, color: muted, marginTop: 2 }}>{pct}</div>
       </div>
     </div>
   )
@@ -483,7 +483,7 @@ function AllView({ period, stores, onSelectStore }: {
       ))}
       {ranking.length > 3 && (
         <div
-          style={{ textAlign: 'center', padding: 12, fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold, cursor: 'pointer', opacity: 0.8 }}
+          style={{ textAlign: 'center', padding: 12, fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold, cursor: 'pointer', opacity: 0.8 }}
           onClick={() => setMoreOpen(o => !o)}
         >
           {moreOpen ? '閉じる ↑' : 'もっと見る ↓'}
@@ -623,9 +623,9 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
         />
       ) : (
         <div style={{ background: surface, border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '12px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: 12, color: muted }}>表示中のスタッフ</div>
+          <div style={{ fontSize: 14, color: muted }}>表示中のスタッフ</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ color: gold, fontSize: 13, fontFamily: josefin, fontWeight: 100 }}>{displayStaff?.name ?? '—'}</span>
+            <span style={{ color: gold, fontSize: 15, fontFamily: josefin, fontWeight: 100 }}>{displayStaff?.name ?? '—'}</span>
           </div>
         </div>
       )}
@@ -633,21 +633,21 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
       {/* my-header */}
       <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '18px 16px', marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${gold}, transparent)` }}/>
-        <div style={{ fontSize: 12, color: muted, marginBottom: 4 }}>{staffPeriodLabel}の売上</div>
+        <div style={{ fontSize: 14, color: muted, marginBottom: 4 }}>{staffPeriodLabel}の売上</div>
         <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 40, color: txt, lineHeight: 1, marginBottom: 14 }}>
           <span style={{ fontSize: 17, color: muted, marginRight: 3 }}>¥</span>{fmt(periodTotal)}
         </div>
         <div style={{ display: 'flex', gap: 20, paddingTop: 12, borderTop: `1px solid ${bdr}` }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <div style={{ fontSize: 10, color: muted }}>担当客数</div>
+            <div style={{ fontSize: 12, color: muted }}>担当客数</div>
             <div style={{ fontSize: 15, fontWeight: 400, color: txt }}>{clients}名</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <div style={{ fontSize: 10, color: muted }}>客単価</div>
+            <div style={{ fontSize: 12, color: muted }}>客単価</div>
             <div style={{ fontSize: 15, fontWeight: 400, color: txt }}>¥{fmt(avgUnit)}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <div style={{ fontSize: 10, color: muted }}>物販</div>
+            <div style={{ fontSize: 12, color: muted }}>物販</div>
             <div style={{ fontSize: 15, fontWeight: 400, color: txt }}>¥{fmt(retailTotal)}</div>
           </div>
         </div>
@@ -655,16 +655,16 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
 
       <SectionTitle text="メニュー別内訳"/>
       {menus.length === 0 ? (
-        <div style={{ fontSize: 12, color: muted, padding: '4px 0 12px', fontFamily: josefin }}>データがありません</div>
+        <div style={{ fontSize: 14, color: muted, padding: '4px 0 12px', fontFamily: josefin }}>データがありません</div>
       ) : menus.map((m, i) => (
         <div key={i}>
           <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '12px 16px', marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 400, color: txt, marginBottom: 2 }}>{m.menu_name}</div>
-              <div style={{ fontSize: 11, color: muted }}>{m.total_count}件</div>
+              <div style={{ fontSize: 15, fontWeight: 400, color: txt, marginBottom: 2 }}>{m.menu_name}</div>
+              <div style={{ fontSize: 13, color: muted }}>{m.total_count}件</div>
             </div>
             <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: txt }}>
-              <span style={{ fontSize: 11, color: muted, marginRight: 1 }}>¥</span>{fmt(m.total_amount)}
+              <span style={{ fontSize: 13, color: muted, marginRight: 1 }}>¥</span>{fmt(m.total_amount)}
             </div>
           </div>
           <div style={{ height: 2, background: 'rgba(232,228,220,0.06)', borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
@@ -679,19 +679,19 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
       {aiResult && (
         <div style={{ background: surface, border: `1px solid ${goldBorder}`, borderRadius: 2, padding: 16, position: 'relative', overflow: 'hidden', marginBottom: 16 }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${gold}, transparent)` }}/>
-          <div style={{ fontSize: 13, color: txt, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{aiResult}</div>
+          <div style={{ fontSize: 15, color: txt, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{aiResult}</div>
         </div>
       )}
 
       {/* エラー表示 */}
       {aiError && (
-        <div style={{ fontSize: 12, color: alertC, marginBottom: 12, padding: '8px 0' }}>{aiError}</div>
+        <div style={{ fontSize: 14, color: alertC, marginBottom: 12, padding: '8px 0' }}>{aiError}</div>
       )}
 
       {/* 生成ボタン */}
       <button
         disabled={aiLoading}
-        style={{ width: '100%', padding: 14, background: 'transparent', border: `1px solid ${aiLoading ? bdr : goldBorder}`, borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: aiLoading ? muted : gold, cursor: aiLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+        style={{ width: '100%', padding: 14, background: 'transparent', border: `1px solid ${aiLoading ? bdr : goldBorder}`, borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: aiLoading ? muted : gold, cursor: aiLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
         onClick={async () => {
           setAiLoading(true)
           setAiError(null)
@@ -796,15 +796,15 @@ function CompareView({ view, storeId, staffId, stores }: {
 
   return (
     <div>
-      <div style={{ fontSize: 11, color: muted, padding: '8px 0 12px' }}>{headerLabel}</div>
+      <div style={{ fontSize: 13, color: muted, padding: '8px 0 12px' }}>{headerLabel}</div>
       <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '14px 16px', marginBottom: 8 }}>
         {rows.map((row, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < rows.length - 1 ? `1px solid ${bdr}` : undefined }}>
-            <div style={{ fontSize: 12, color: muted }}>{row.name}</div>
+            <div style={{ fontSize: 14, color: muted }}>{row.name}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-              <div style={{ fontSize: 11, color: muted }}>先月 {row.prev}</div>
+              <div style={{ fontSize: 13, color: muted }}>先月 {row.prev}</div>
               <div style={{ fontSize: 17, fontWeight: 300, color: txt }}>{row.curr}</div>
-              <div style={{ fontSize: 11, color: row.up ? green : alertC }}>{row.diff}</div>
+              <div style={{ fontSize: 13, color: row.up ? green : alertC }}>{row.diff}</div>
             </div>
           </div>
         ))}
@@ -866,7 +866,7 @@ export default function SalesPage() {
                   <button
                     key={v}
                     onClick={() => setView(v)}
-                    style={{ flex: 1, padding: 10, fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: active ? gold : muted, textAlign: 'center', cursor: 'pointer', border: active ? `1px solid ${goldBorder}` : 'none', background: active ? goldDim : 'transparent' } as React.CSSProperties}
+                    style={{ flex: 1, padding: 10, fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: active ? gold : muted, textAlign: 'center', cursor: 'pointer', border: active ? `1px solid ${goldBorder}` : 'none', background: active ? goldDim : 'transparent' } as React.CSSProperties}
                   >
                     {label}
                   </button>
@@ -882,7 +882,7 @@ export default function SalesPage() {
                   <button
                     key={p}
                     onClick={() => setPeriod(p)}
-                    style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase' as const, padding: '5px 12px', borderRadius: 2, cursor: 'pointer', border: `1px solid ${active ? goldBorder : bdr}`, color: active ? gold : muted, background: active ? goldDim : 'transparent' } as React.CSSProperties}
+                    style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em', textTransform: 'uppercase' as const, padding: '5px 12px', borderRadius: 2, cursor: 'pointer', border: `1px solid ${active ? goldBorder : bdr}`, color: active ? gold : muted, background: active ? goldDim : 'transparent' } as React.CSSProperties}
                   >
                     {label}
                   </button>

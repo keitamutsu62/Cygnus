@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
               <div style={{ fontSize: 19, fontWeight: 300, color: S.text, marginBottom: 6, fontFamily: S.zen }}>
                 パスワードをリセット
               </div>
-              <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.7, letterSpacing: '0.04em', fontFamily: S.zen }}>
+              <div style={{ fontSize: 14, color: S.muted, lineHeight: 1.7, letterSpacing: '0.04em', fontFamily: S.zen }}>
                 登録済みのメールアドレスを入力してください。<br />
                 リセット用のリンクをお送りします。
               </div>
@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
                   borderRadius: 2,
                   fontFamily: S.josefin,
                   fontWeight: 200,
-                  fontSize: 12,
+                  fontSize: 14,
                   letterSpacing: '0.25em',
                   textTransform: 'uppercase',
                   color: '#1a1816',
@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
             <div style={{ fontSize: 15, fontWeight: 300, color: S.gold, fontFamily: S.zen }}>
               メールを送信しました
             </div>
-            <div style={{ fontSize: 13, color: S.muted, lineHeight: 1.8, fontFamily: S.zen }}>
+            <div style={{ fontSize: 15, color: S.muted, lineHeight: 1.8, fontFamily: S.zen }}>
               {email} 宛にリセット用のリンクを送りました。<br />
               メールが届かない場合はスパムフォルダをご確認ください。
             </div>
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
         <div style={{ marginTop: 'auto', paddingTop: 24, textAlign: 'center' }}>
           <span
             onClick={() => navigate('/login')}
-            style={{ fontSize: 12, color: S.gold, cursor: 'pointer', opacity: 0.8, fontFamily: S.zen }}
+            style={{ fontSize: 14, color: S.gold, cursor: 'pointer', opacity: 0.8, fontFamily: S.zen }}
           >
             ログインに戻る
           </span>
@@ -127,7 +127,7 @@ function EmailField({ value, onChange }: { value: string; onChange: (v: string) 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       <div style={{
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
         color: S.muted,

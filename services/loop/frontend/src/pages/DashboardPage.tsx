@@ -187,7 +187,7 @@ function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => voi
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
             <OrbitSVG />
-            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>通知</div>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>通知</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {items.map(n => (
@@ -195,9 +195,9 @@ function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => voi
                 background: '#211f1d', border: `1px solid ${border}`,
                 borderLeft: `3px solid ${n.borderColor}`, borderRadius: 2, padding: '14px 16px',
               }}>
-                <div style={{ fontSize: 11, color: muted, fontFamily: josefin, marginBottom: 4 }}>{n.meta}</div>
-                <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{n.title}</div>
-                <div style={{ fontSize: 12, color: muted, fontFamily: josefin, fontWeight: 100, marginTop: 3 }}>{n.sub}</div>
+                <div style={{ fontSize: 13, color: muted, fontFamily: josefin, marginBottom: 4 }}>{n.meta}</div>
+                <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{n.title}</div>
+                <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100, marginTop: 3 }}>{n.sub}</div>
               </div>
             ))}
           </div>
@@ -206,7 +206,7 @@ function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => voi
             style={{
               width: '100%', padding: 13, marginTop: 16,
               background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
-              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em',
+              fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.15em',
               textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
             }}
           >閉じる</button>
@@ -280,16 +280,16 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
               pointerEvents: confirmed ? 'none' : 'all',
             }}>
               {showWarn && (
-                <div style={{ background: alertDim, border: `1px solid rgba(224,112,96,0.2)`, borderRadius: 2, padding: '10px 12px', marginBottom: 16, fontSize: 12, color: alertC, fontFamily: zen, lineHeight: 1.7 }}>
+                <div style={{ background: alertDim, border: `1px solid rgba(224,112,96,0.2)`, borderRadius: 2, padding: '10px 12px', marginBottom: 16, fontSize: 14, color: alertC, fontFamily: zen, lineHeight: 1.7 }}>
                   あと<strong style={{ margin: '0 4px' }}>{daysLeft}</strong>営業日で翌月伝票になります。このまま発注しますか？
                 </div>
               )}
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
               <div style={{ fontSize: 19, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
               <div style={{ background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
                 <div style={{ paddingBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 12, color: muted }}>発注数</span>
+                    <span style={{ fontSize: 14, color: muted }}>発注数</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <input
                         type="number" value={qty} min="1"
@@ -300,7 +300,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                           color: '#e8e4dc', fontFamily: josefin, fontSize: 16, outline: 'none',
                         }}
                       />
-                      <span style={{ fontSize: 12, color: muted }}>{item.stock_unit}</span>
+                      <span style={{ fontSize: 14, color: muted }}>{item.stock_unit}</span>
                     </div>
                   </div>
                 </div>
@@ -317,7 +317,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                     {dealers.map(d => <option key={d.id} value={d.id} style={{ background: '#1a1816' }}>{d.name}</option>)}
                   </select>
                 </ModalRow>
-                <ModalRow label="送信方法"><span style={{ fontSize: 14, color: '#e8e4dc', fontWeight: 400 }}>LINE</span></ModalRow>
+                <ModalRow label="送信方法"><span style={{ fontSize: 15, color: '#e8e4dc', fontWeight: 400 }}>LINE</span></ModalRow>
               </div>
               <button
                 onClick={submit}
@@ -326,7 +326,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   width: '100%', padding: 15, marginBottom: 10,
                   background: (loading || confirmed) ? 'rgba(200,168,130,0.3)' : gold,
                   border: 'none', borderRadius: 2,
-                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.25em',
+                  fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.25em',
                   textTransform: 'uppercase' as const,
                   color: (loading || confirmed) ? muted : '#1a1816',
                   cursor: (loading || confirmed) ? 'default' : 'pointer',
@@ -337,7 +337,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                 style={{
                   width: '100%', padding: 13,
                   background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
-                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em',
+                  fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.15em',
                   textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
                 }}
               >キャンセル</button>
@@ -377,7 +377,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   </svg>
                 </div>
                 <div style={{
-                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
+                  fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.12em',
                   color: green, textAlign: 'center' as const,
                   opacity: 0,
                   animation: 'checkFade 0.25s ease both 0.7s',
@@ -395,7 +395,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
 function ModalRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: `1px solid ${border}` }}>
-      <span style={{ fontSize: 12, color: muted }}>{label}</span>
+      <span style={{ fontSize: 14, color: muted }}>{label}</span>
       {children}
     </div>
   )
@@ -406,11 +406,11 @@ function SectionTitle({ label, sub, link, onLink }: {
 }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: josefin, fontWeight: 200, fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: '#e8e4dc' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: josefin, fontWeight: 200, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: '#e8e4dc' }}>
         <OrbitSVG />{label}
-        <span style={{ fontSize: 11, color: muted, fontWeight: 300, letterSpacing: '0.05em', textTransform: 'none' as const }}>{sub}</span>
+        <span style={{ fontSize: 13, color: muted, fontWeight: 300, letterSpacing: '0.05em', textTransform: 'none' as const }}>{sub}</span>
       </div>
-      <div style={{ fontSize: 12, color: gold, opacity: 0.8, cursor: 'pointer' }} onClick={onLink}>{link}</div>
+      <div style={{ fontSize: 14, color: gold, opacity: 0.8, cursor: 'pointer' }} onClick={onLink}>{link}</div>
     </div>
   )
 }
@@ -572,7 +572,7 @@ export default function DashboardPage() {
         {/* グリーティング + アイコン */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 4 }}>おはようございます</div>
+            <div style={{ fontSize: 14, color: muted, fontFamily: zen, marginBottom: 4 }}>おはようございます</div>
             <div style={{ fontSize: 17, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{salonName}</div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -600,7 +600,7 @@ export default function DashboardPage() {
                 width: 34, height: 34, borderRadius: '50%',
                 background: goldDim, border: '1px solid rgba(200,168,130,0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: josefin, fontWeight: 100, fontSize: 12, color: gold, cursor: 'pointer',
+                fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold, cursor: 'pointer',
                 overflow: 'hidden',
               }}
             >
@@ -615,7 +615,7 @@ export default function DashboardPage() {
         <div style={{ marginTop: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <div style={{ flex: 1, height: 1, background: border }} />
-            <div style={{ fontSize: 12, color: muted, whiteSpace: 'nowrap', letterSpacing: '0.04em', fontFamily: josefin, fontWeight: 100 }}>
+            <div style={{ fontSize: 14, color: muted, whiteSpace: 'nowrap', letterSpacing: '0.04em', fontFamily: josefin, fontWeight: 100 }}>
               {cur && jpDate(cur.date)} · {dayLabel(dayOffset)}
             </div>
             <div style={{ flex: 1, height: 1, background: border }} />
@@ -642,11 +642,11 @@ export default function DashboardPage() {
         >
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #c8a882, transparent)' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <div style={{ fontSize: 9, letterSpacing: '0.2em', fontFamily: josefin, fontWeight: 100, color: muted, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ fontSize: 11, letterSpacing: '0.2em', fontFamily: josefin, fontWeight: 100, color: muted, display: 'flex', alignItems: 'center', gap: 6 }}>
               <OrbitSVG />
               {dayOffset === 0 ? "TODAY'S SALES" : `${cur?.date.getMonth()+1}月${cur?.date.getDate()}日の売上`}
             </div>
-            <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>
+            <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>
               {data ? `${data.client_count}名来店` : '—'}
             </div>
           </div>
@@ -663,7 +663,7 @@ export default function DashboardPage() {
               { label: '物販',     value: data ? `¥${fmt(data.retail_sales)}` : '—' },
             ].map((kpi, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div style={{ fontSize: 10, color: muted, letterSpacing: '0.1em', fontFamily: josefin }}>{kpi.label}</div>
+                <div style={{ fontSize: 12, color: muted, letterSpacing: '0.1em', fontFamily: josefin }}>{kpi.label}</div>
                 <div style={{ fontSize: 15, color: '#e8e4dc', fontFamily: josefin, fontWeight: 100 }}>{kpi.value}</div>
               </div>
             ))}
@@ -688,14 +688,14 @@ export default function DashboardPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{item.name}</div>
-                      {item.brand && <div style={{ fontSize: 12, color: muted, fontFamily: josefin, fontWeight: 100 }}>{item.brand}</div>}
+                      {item.brand && <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>{item.brand}</div>}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
                       <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 22, color: crit ? alertC : gold, lineHeight: 1 }}>
-                        {item.quantity}<span style={{ fontSize: 11, marginLeft: 2 }}>{item.stock_unit}</span>
+                        {item.quantity}<span style={{ fontSize: 13, marginLeft: 2 }}>{item.stock_unit}</span>
                       </div>
                       <div style={{
-                        fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+                        fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                         padding: '2px 8px', borderRadius: 1,
                         background: crit ? alertDim : goldDim,
                         color: crit ? alertC : gold,
@@ -704,14 +704,14 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 12, color: muted, fontFamily: josefin, fontWeight: 100 }}>
+                    <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>
                       閾値 {item.threshold}{item.stock_unit}
                     </div>
                     {sent ? (
                       <div style={{
                         padding: '6px 14px', borderRadius: 2,
                         background: 'rgba(109,186,142,0.1)', border: '1px solid rgba(109,186,142,0.25)',
-                        fontSize: 10, letterSpacing: '0.1em', color: green, fontFamily: josefin,
+                        fontSize: 12, letterSpacing: '0.1em', color: green, fontFamily: josefin,
                       }}>送信済</div>
                     ) : (
                       <button
@@ -721,7 +721,7 @@ export default function DashboardPage() {
                           background: crit ? gold : goldDim,
                           border: crit ? 'none' : '1px solid rgba(200,168,130,0.3)',
                           borderRadius: 2,
-                          fontFamily: josefin, fontWeight: 100, fontSize: 10,
+                          fontFamily: josefin, fontWeight: 100, fontSize: 12,
                           letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                           color: crit ? '#1a1816' : gold, cursor: 'pointer', flexShrink: 0,
                           WebkitAppearance: 'none',
@@ -742,7 +742,7 @@ export default function DashboardPage() {
             onLink={() => navigate('/inventory', { state: { tab: 'history' } })}
           />
           {sentOrders.length === 0 ? (
-            <div style={{ fontSize: 12, color: muted, fontFamily: zen, padding: '4px 0 8px', lineHeight: 1.7 }}>本日分の発注はありません</div>
+            <div style={{ fontSize: 14, color: muted, fontFamily: zen, padding: '4px 0 8px', lineHeight: 1.7 }}>本日分の発注はありません</div>
           ) : sentOrders.map((o, i) => (
             <div key={i} style={{
               background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
@@ -750,11 +750,11 @@ export default function DashboardPage() {
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{o.name} × {o.qty}</div>
-                <div style={{ fontSize: 12, color: muted, fontFamily: josefin, fontWeight: 100 }}>{o.dealer} · LINE送信済み</div>
+                <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{o.name} × {o.qty}</div>
+                <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>{o.dealer} · LINE送信済み</div>
               </div>
               <div style={{
-                fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+                fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                 padding: '3px 10px', borderRadius: 1, whiteSpace: 'nowrap' as const,
                 background: 'rgba(109,186,142,0.1)', color: green,
                 border: '1px solid rgba(109,186,142,0.25)',
@@ -780,18 +780,18 @@ export default function DashboardPage() {
                   width: 32, height: 32, borderRadius: '50%',
                   background: '#2a2826', border: `1px solid ${border}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, color: muted, fontFamily: josefin, flexShrink: 0,
+                  fontSize: 14, color: muted, fontFamily: josefin, flexShrink: 0,
                 }}>
                   {s.avatar_initials ?? s.name.slice(0, 1)}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
-                  <div style={{ fontSize: 11, color: muted, fontFamily: josefin, fontWeight: 100 }}>
+                  <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
+                  <div style={{ fontSize: 13, color: muted, fontFamily: josefin, fontWeight: 100 }}>
                     {s.client_count > 0 ? `スタイリスト · ${s.client_count}名担当` : 'スタイリスト · 本日未来店'}
                   </div>
                 </div>
                 <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: '#e8e4dc', flexShrink: 0 }}>
-                  <span style={{ fontSize: 11, color: muted, marginRight: 1 }}>¥</span>{fmt(s.total_sales)}
+                  <span style={{ fontSize: 13, color: muted, marginRight: 1 }}>¥</span>{fmt(s.total_sales)}
                 </div>
               </div>
             ))}

@@ -270,16 +270,16 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
             {/* フォーム */}
             <div style={{ opacity: confirmed ? 0 : 1, transition: 'opacity 0.25s ease', pointerEvents: confirmed ? 'none' : 'all' }}>
               {showWarn && (
-                <div style={{ background: alertDim, border: `1px solid rgba(224,112,96,0.2)`, borderRadius: 2, padding: '10px 12px', marginBottom: 16, fontSize: 12, color: alertC, fontFamily: zen, lineHeight: 1.7 }}>
+                <div style={{ background: alertDim, border: `1px solid rgba(224,112,96,0.2)`, borderRadius: 2, padding: '10px 12px', marginBottom: 16, fontSize: 14, color: alertC, fontFamily: zen, lineHeight: 1.7 }}>
                   あと<strong style={{ margin: '0 4px' }}>{daysLeft}</strong>営業日で翌月伝票になります。
                 </div>
               )}
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
               <div style={{ fontSize: 19, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
               <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
                 <div style={{ paddingBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 12, color: muted }}>発注数</span>
+                    <span style={{ fontSize: 14, color: muted }}>発注数</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <input
                         type="number" value={qty} min="1"
@@ -290,7 +290,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                           color: '#e8e4dc', fontFamily: josefin, fontSize: 16, outline: 'none',
                         }}
                       />
-                      <span style={{ fontSize: 12, color: muted }}>{item.stock_unit}</span>
+                      <span style={{ fontSize: 14, color: muted }}>{item.stock_unit}</span>
                     </div>
                   </div>
                 </div>
@@ -304,7 +304,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   </select>
                 </ModalRow>
                 <ModalRow label="送信方法">
-                  <span style={{ fontSize: 14, color: '#e8e4dc', fontWeight: 400 }}>
+                  <span style={{ fontSize: 15, color: '#e8e4dc', fontWeight: 400 }}>
                     {dealer?.contact_method === 'LINE' ? 'LINE' : 'Email'}
                   </span>
                 </ModalRow>
@@ -315,7 +315,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   width: '100%', padding: 15, marginBottom: 10,
                   background: (loading || confirmed) ? 'rgba(200,168,130,0.3)' : gold,
                   border: 'none', borderRadius: 2,
-                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.25em',
+                  fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.25em',
                   textTransform: 'uppercase' as const,
                   color: (loading || confirmed) ? muted : '#1a1816',
                   cursor: (loading || confirmed) ? 'default' : 'pointer',
@@ -326,7 +326,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                 style={{
                   width: '100%', padding: 13,
                   background: 'transparent', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 2,
-                  fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em',
+                  fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.15em',
                   textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
                 }}
               >キャンセル</button>
@@ -345,7 +345,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                       style={{ strokeDasharray: 24, strokeDashoffset: 24, animation: 'inv-drawCheck 0.4s ease both 0.55s' }} />
                   </svg>
                 </div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em', color: green, opacity: 0, animation: 'inv-checkFade 0.25s ease both 0.7s' }}>送信完了</div>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.12em', color: green, opacity: 0, animation: 'inv-checkFade 0.25s ease both 0.7s' }}>送信完了</div>
               </div>
             )}
           </div>
@@ -358,7 +358,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
 function ModalRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: `1px solid ${border}` }}>
-      <span style={{ fontSize: 12, color: muted }}>{label}</span>
+      <span style={{ fontSize: 14, color: muted }}>{label}</span>
       {children}
     </div>
   )
@@ -389,12 +389,12 @@ function EditModal({ item, onClose, onDone }: {
     <BottomSheet onClose={onClose}>
       {close => (
         <>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
             <OrbitSVG /> 在庫数を更新
           </div>
           <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 16 }}>{item.name}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
-            <div style={{ fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: muted, fontFamily: josefin }}>現在の在庫数</div>
+            <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: muted, fontFamily: josefin }}>現在の在庫数</div>
             <input
               type="number" placeholder="例：12" min="0" value={qty}
               onChange={e => setQty(e.target.value)}
@@ -404,16 +404,16 @@ function EditModal({ item, onClose, onDone }: {
               }}
             />
           </div>
-          <div style={{ fontSize: 11, color: muted, marginBottom: 16, lineHeight: 1.7, fontFamily: zen }}>
+          <div style={{ fontSize: 13, color: muted, marginBottom: 16, lineHeight: 1.7, fontFamily: zen }}>
             入力した数値で在庫数が更新され、閾値に応じてステータスが自動的に変わります。
           </div>
           <button
             onClick={() => submit(close)}
-            style={{ width: '100%', padding: 15, marginBottom: 10, background: gold, border: 'none', borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.25em', textTransform: 'uppercase' as const, color: '#1a1816', cursor: 'pointer' }}
+            style={{ width: '100%', padding: 15, marginBottom: 10, background: gold, border: 'none', borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.25em', textTransform: 'uppercase' as const, color: '#1a1816', cursor: 'pointer' }}
           >更新する</button>
           <button
             onClick={close}
-            style={{ width: '100%', padding: 13, background: 'transparent', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer' }}
+            style={{ width: '100%', padding: 13, background: 'transparent', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer' }}
           >キャンセル</button>
         </>
       )}
@@ -430,7 +430,7 @@ function StoreModal({ stores, ownStoreId, currentStoreId, onSelect, onClose }: {
     <BottomSheet onClose={onClose}>
       {close => (
         <>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
             <OrbitSVG /> 店舗を選択
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 16 }}>
@@ -449,15 +449,15 @@ function StoreModal({ stores, ownStoreId, currentStoreId, onSelect, onClose }: {
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}
                 >
-                  <span style={{ fontSize: 14, fontWeight: 400, color: isCurrent ? gold : '#e8e4dc', fontFamily: zen }}>{s.name}</span>
-                  {isOwn && <span style={{ fontSize: 10, color: muted, fontFamily: josefin }}>自店舗</span>}
+                  <span style={{ fontSize: 15, fontWeight: 400, color: isCurrent ? gold : '#e8e4dc', fontFamily: zen }}>{s.name}</span>
+                  {isOwn && <span style={{ fontSize: 12, color: muted, fontFamily: josefin }}>自店舗</span>}
                 </div>
               )
             })}
           </div>
           <button
             onClick={close}
-            style={{ width: '100%', padding: 13, background: 'transparent', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer' }}
+            style={{ width: '100%', padding: 13, background: 'transparent', border: `1px solid rgba(232,228,220,0.1)`, borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer' }}
           >キャンセル</button>
         </>
       )}
@@ -475,8 +475,8 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
       opacity: visible ? 1 : 0, pointerEvents: 'none',
       transition: 'opacity 0.25s ease',
     }}>
-      <div style={{ fontSize: 9, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: green, marginBottom: 4 }}>// 送信完了</div>
-      <div style={{ fontSize: 13, color: '#e8e4dc', fontFamily: zen }}>{message}</div>
+      <div style={{ fontSize: 11, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: green, marginBottom: 4 }}>// 送信完了</div>
+      <div style={{ fontSize: 15, color: '#e8e4dc', fontFamily: zen }}>{message}</div>
     </div>,
     document.body
   )
@@ -513,11 +513,11 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
       {/* 上段 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{item.name}</div>
-          {brandLabel && <div style={{ fontSize: 11, color: muted, marginTop: 2, fontFamily: zen }}>{brandLabel}</div>}
+          <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{item.name}</div>
+          {brandLabel && <div style={{ fontSize: 13, color: muted, marginTop: 2, fontFamily: zen }}>{brandLabel}</div>}
         </div>
         <div style={{
-          fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+          fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
           padding: '3px 10px', borderRadius: 1, flexShrink: 0, marginLeft: 8,
           background: sent ? 'rgba(160,160,160,0.12)' : badgeBg[item.status],
           color: sent ? muted : color,
@@ -533,19 +533,19 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
           <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 22, lineHeight: 1, color: sent ? muted : color }}>{item.quantity}</span>
-          <span style={{ fontSize: 12, color: muted }}>{item.stock_unit}</span>
-          <span style={{ fontSize: 12, color: muted, margin: '0 4px' }}>/</span>
-          <span style={{ fontSize: 12, color: muted }}>閾値 {item.threshold}{item.stock_unit}</span>
+          <span style={{ fontSize: 14, color: muted }}>{item.stock_unit}</span>
+          <span style={{ fontSize: 14, color: muted, margin: '0 4px' }}>/</span>
+          <span style={{ fontSize: 14, color: muted }}>閾値 {item.threshold}{item.stock_unit}</span>
         </div>
         {item.status === '過剰' ? (
-          <span style={{ fontSize: 11, color: muted, fontFamily: josefin, opacity: 0.5, letterSpacing: '0.1em' }}>過剰</span>
+          <span style={{ fontSize: 13, color: muted, fontFamily: josefin, opacity: 0.5, letterSpacing: '0.1em' }}>過剰</span>
         ) : sent ? (
           <button
             onClick={onEdit}
             style={{
               padding: '6px 12px', border: `1px solid ${goldBorder}`, borderRadius: 1,
               background: 'transparent', color: gold,
-              fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em',
+              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
               textTransform: 'uppercase' as const, cursor: 'pointer',
             }}
           >入荷済みにする</button>
@@ -555,7 +555,7 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
             style={{
               padding: '6px 12px', border: `1px solid ${goldBorder}`, borderRadius: 1,
               background: 'transparent', color: gold,
-              fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em',
+              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
               textTransform: 'uppercase' as const, cursor: 'pointer',
             }}
           >発注する</button>
@@ -564,7 +564,7 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
             style={{
               padding: '6px 12px', border: `1px solid ${border}`, borderRadius: 1,
               background: 'transparent', color: muted,
-              fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em',
+              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
               textTransform: 'uppercase' as const, cursor: 'default', opacity: 0.6,
             }}
           >発注済</button>
@@ -667,7 +667,7 @@ function MaterialFormSheet({
           {/* ヘッダー */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <OrbitSVG size={10} />
-            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>
               {initial ? '材料を編集' : '新規材料を追加'}
             </div>
           </div>
@@ -675,19 +675,19 @@ function MaterialFormSheet({
           {/* フォーム */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>材料名</div>
+              <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>材料名</div>
               <MasterField placeholder="例：Milbon カラー 6NA" value={fname} onChange={setFname} />
             </div>
             <div>
-              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>ブランド</div>
+              <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>ブランド</div>
               <MasterField placeholder="例：Milbon" value={fbrand} onChange={setFbrand} />
             </div>
             <div>
-              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>JANコード（バーコード検索用）</div>
+              <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>JANコード（バーコード検索用）</div>
               <MasterField placeholder="例：4901234567890" value={fjan} onChange={setFjan} inputMode="numeric" />
             </div>
             <div>
-              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>カテゴリ</div>
+              <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>カテゴリ</div>
               <input
                 list="category-list"
                 value={fcat}
@@ -706,12 +706,12 @@ function MaterialFormSheet({
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>在庫単位</div>
+                <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>在庫単位</div>
                 <MasterField placeholder="例：本" value={funit} onChange={setFunit} />
               </div>
               {!initial && (
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>発注基準数</div>
+                  <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>発注基準数</div>
                   <MasterField placeholder="例：10" value={fthreshold} onChange={setFthreshold} inputMode="numeric" />
                 </div>
               )}
@@ -719,7 +719,7 @@ function MaterialFormSheet({
 
             {/* メニュー多選択 */}
             <div>
-              <div style={{ fontSize: 10, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 8 }}>使用するメニュー（複数選択可）</div>
+              <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 8 }}>使用するメニュー（複数選択可）</div>
               <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
                 {menus.filter(m => m.is_active && m.menu_type !== 'retail').map(m => {
                   const active = menuIds.has(m.id)
@@ -732,7 +732,7 @@ function MaterialFormSheet({
                         border: `1px solid ${active ? goldBorder : border}`,
                         background: active ? goldDim : 'transparent',
                         color: active ? gold : muted,
-                        fontFamily: zen, fontSize: 12,
+                        fontFamily: zen, fontSize: 14,
                       }}
                     >{m.name}</button>
                   )
@@ -758,7 +758,7 @@ function MaterialFormSheet({
                         border: `1px solid ${active ? goldBorder : border}`,
                         background: active ? goldDim : 'transparent',
                         color: active ? gold : muted,
-                        fontFamily: zen, fontSize: 12,
+                        fontFamily: zen, fontSize: 14,
                       }}
                     >物販</button>
                   )
@@ -772,10 +772,10 @@ function MaterialFormSheet({
             disabled={saving || !fname.trim()}
             style={{
               padding: '13px 0', background: saving || !fname.trim() ? 'rgba(200,168,130,0.4)' : gold,
-              border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: 'pointer',
+              border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: 'pointer',
             }}
           >{saving ? '保存中...' : '保存する'}</button>
-          <button onClick={close} style={{ background: 'transparent', border: 'none', fontSize: 11, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.1em', textAlign: 'center' }}>キャンセル</button>
+          <button onClick={close} style={{ background: 'transparent', border: 'none', fontSize: 13, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.1em', textAlign: 'center' }}>キャンセル</button>
         </div>
       )}
     </BottomSheet>
@@ -795,7 +795,7 @@ function MaterialDetailSheet({
   const tagStyle: React.CSSProperties = {
     padding: '6px 14px', borderRadius: 2,
     border: `1px solid ${goldBorder}`, background: goldDim,
-    color: gold, fontFamily: zen, fontSize: 12,
+    color: gold, fontFamily: zen, fontSize: 14,
   }
   const menus         = material.menus ?? []
   const treatmentTags = menus.filter(m => !retailMenuIds.has(m.menu_id))
@@ -808,7 +808,7 @@ function MaterialDetailSheet({
           {/* ヘッダー */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
             <OrbitSVG size={10} />
-            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>材料詳細</div>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>材料詳細</div>
           </div>
           <div style={{ fontSize: 18, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{material.name}</div>
 
@@ -816,20 +816,20 @@ function MaterialDetailSheet({
           <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, marginBottom: 16 }}>
             {material.brand && (
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${border}` }}>
-                <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>ブランド</div>
-                <div style={{ fontSize: 12, color: '#e8e4dc', fontFamily: zen }}>{material.brand}</div>
+                <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>ブランド</div>
+                <div style={{ fontSize: 14, color: '#e8e4dc', fontFamily: zen }}>{material.brand}</div>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px' }}>
-              <div style={{ fontSize: 12, color: muted, fontFamily: zen }}>カテゴリ</div>
-              <div style={{ fontSize: 12, color: '#e8e4dc', fontFamily: zen }}>{material.category}</div>
+              <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>カテゴリ</div>
+              <div style={{ fontSize: 14, color: '#e8e4dc', fontFamily: zen }}>{material.category}</div>
             </div>
           </div>
 
           {/* 使用メニュー（物販は "物販" タグに集約） */}
           {(treatmentTags.length > 0 || hasRetail) && (
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 10 }}>使用するメニュー</div>
+              <div style={{ fontSize: 14, color: muted, fontFamily: zen, marginBottom: 10 }}>使用するメニュー</div>
               <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
                 {treatmentTags.map(m => (
                   <div key={m.menu_id} style={tagStyle}>{m.menu_name}</div>
@@ -841,11 +841,11 @@ function MaterialDetailSheet({
 
           <button
             onClick={() => { onEdit(); close() }}
-            style={{ padding: '13px 0', background: gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#1a1816', cursor: 'pointer', marginBottom: 8 }}
+            style={{ padding: '13px 0', background: gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: 'pointer', marginBottom: 8 }}
           >編集する</button>
           <button
             onClick={() => { close(); setTimeout(onDelete, 450) }}
-            style={{ padding: '13px 0', background: 'transparent', border: '1px solid rgba(224,112,96,0.3)', borderRadius: 2, fontFamily: zen, fontSize: 13, color: '#e07060', cursor: 'pointer' }}
+            style={{ padding: '13px 0', background: 'transparent', border: '1px solid rgba(224,112,96,0.3)', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#e07060', cursor: 'pointer' }}
           >削除する</button>
         </div>
       )}
@@ -933,18 +933,18 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: gold, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.1em' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: gold, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.1em' }}
         >+ 材料追加</button>
       </div>
 
       {/* リスト */}
       <div style={{ padding: '16px 20px 40px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 12, fontFamily: josefin }}>Loading...</div>
+          <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 14, fontFamily: josefin }}>Loading...</div>
         ) : materials.length === 0 ? (
           <div style={{ background: goldDim, border: `1px dashed ${goldBorder}`, borderRadius: 2, padding: 20, textAlign: 'center' }}>
-            <div style={{ fontSize: 12, color: muted, fontFamily: zen, marginBottom: 10, lineHeight: 1.7 }}>材料が登録されていません</div>
-            <button onClick={() => setAddOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold }}>+ 材料を追加する</button>
+            <div style={{ fontSize: 14, color: muted, fontFamily: zen, marginBottom: 10, lineHeight: 1.7 }}>材料が登録されていません</div>
+            <button onClick={() => setAddOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold }}>+ 材料を追加する</button>
           </div>
         ) : (
           <>
@@ -955,7 +955,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
                 <div key={cat} style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 0 8px' }}>
                     <OrbitSVG size={10} />
-                    <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.15em', color: muted }}>{cat}</span>
+                    <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.15em', color: muted }}>{cat}</span>
                   </div>
                   <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2 }}>
                     {catItems.map((m, i) => {
@@ -977,8 +977,8 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
                           }}
                         >
                           <div style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
-                            <div style={{ fontSize: 13, color: '#e8e4dc', fontFamily: zen, marginBottom: sub ? 3 : 0 }}>{m.name}</div>
-                            {sub && <div style={{ fontSize: 11, color: muted, fontFamily: zen, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{sub}</div>}
+                            <div style={{ fontSize: 15, color: '#e8e4dc', fontFamily: zen, marginBottom: sub ? 3 : 0 }}>{m.name}</div>
+                            {sub && <div style={{ fontSize: 13, color: muted, fontFamily: zen, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{sub}</div>}
                           </div>
                           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
                             <polyline points="6,4 10,8 6,12" stroke="#e8e4dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1141,7 +1141,7 @@ function BarcodeScanner({ onScan, onClose }: { onScan: (code: string) => void; o
     <BottomSheet onClose={onClose}>
       {close => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', textAlign: 'center' }}>// Barcode Scanner</div>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', textAlign: 'center' }}>// Barcode Scanner</div>
 
           {/* カメラビュー — バーコード向け横長 */}
           <div style={{
@@ -1193,23 +1193,23 @@ function BarcodeScanner({ onScan, onClose }: { onScan: (code: string) => void; o
             {/* ステータスメッセージ */}
             {status === 'starting' && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 12, color: 'rgba(232,228,220,0.3)', fontFamily: josefin, fontWeight: 100, letterSpacing: '0.1em' }}>起動中...</span>
+                <span style={{ fontSize: 14, color: 'rgba(232,228,220,0.3)', fontFamily: josefin, fontWeight: 100, letterSpacing: '0.1em' }}>起動中...</span>
               </div>
             )}
             {status === 'denied' && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
-                <span style={{ fontSize: 12, color: muted, fontFamily: zen, textAlign: 'center', lineHeight: 1.8 }}>カメラへのアクセスが<br/>拒否されました</span>
+                <span style={{ fontSize: 14, color: muted, fontFamily: zen, textAlign: 'center', lineHeight: 1.8 }}>カメラへのアクセスが<br/>拒否されました</span>
               </div>
             )}
             {status === 'unsupported' && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
-                <span style={{ fontSize: 12, color: muted, fontFamily: zen, textAlign: 'center', lineHeight: 1.8 }}>カメラスキャン未対応<br/>写真から読み取れます</span>
+                <span style={{ fontSize: 14, color: muted, fontFamily: zen, textAlign: 'center', lineHeight: 1.8 }}>カメラスキャン未対応<br/>写真から読み取れます</span>
               </div>
             )}
           </div>
 
           {status === 'scanning' && (
-            <div style={{ fontSize: 12, color: muted, fontFamily: zen, textAlign: 'center', lineHeight: 1.8 }}>
+            <div style={{ fontSize: 14, color: muted, fontFamily: zen, textAlign: 'center', lineHeight: 1.8 }}>
               バーコードを横向きにフレームへ合わせてください
             </div>
           )}
@@ -1218,7 +1218,7 @@ function BarcodeScanner({ onScan, onClose }: { onScan: (code: string) => void; o
           {(status === 'unsupported' || status === 'denied') && (
             <label style={{
               display: 'block', padding: '13px 0', background: gold, borderRadius: 2,
-              fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.2em',
+              fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.2em',
               textTransform: 'uppercase' as const, color: '#1a1816', cursor: 'pointer', textAlign: 'center',
             }}>
               写真から読み取る
@@ -1228,7 +1228,7 @@ function BarcodeScanner({ onScan, onClose }: { onScan: (code: string) => void; o
 
           <button
             onClick={close}
-            style={{ background: 'transparent', border: 'none', fontSize: 11, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.1em', textAlign: 'center' }}
+            style={{ background: 'transparent', border: 'none', fontSize: 13, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.1em', textAlign: 'center' }}
           >キャンセル</button>
         </div>
       )}
@@ -1392,7 +1392,7 @@ export default function InventoryPage() {
             }}
           >
             <OrbitSVG size={10} />
-            <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, color: gold }}>{currentStoreName}</span>
+            <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 13, color: gold }}>{currentStoreName}</span>
             <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
               <polyline points="2,4 6,8 10,4" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -1403,7 +1403,7 @@ export default function InventoryPage() {
       {/* 他店舗閲覧バナー */}
       {!isOwnStore && (
         <div style={{ margin: '8px 20px 0', padding: '8px 14px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2 }}>
-          <div style={{ fontSize: 11, color: muted, display: 'flex', alignItems: 'flex-start', gap: 6, fontFamily: zen, lineHeight: 1.6 }}>
+          <div style={{ fontSize: 13, color: muted, display: 'flex', alignItems: 'flex-start', gap: 6, fontFamily: zen, lineHeight: 1.6 }}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
               <circle cx="6" cy="6" r="5" stroke={gold} strokeWidth="1"/>
               <line x1="6" y1="4" x2="6" y2="6.5" stroke={gold} strokeWidth="1.2" strokeLinecap="round"/>
@@ -1427,7 +1427,7 @@ export default function InventoryPage() {
                 background: active ? goldDim : 'transparent',
                 ...(active ? { border: `1px solid ${goldBorder}` } : {}),
                 color: active ? gold : muted,
-                fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.18em',
+                fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.18em',
                 textTransform: 'uppercase' as const, cursor: 'pointer',
               }}
             >{t === 'stock' ? '在庫状況' : '発注履歴'}</button>
@@ -1452,7 +1452,7 @@ export default function InventoryPage() {
                     background: active ? gold : 'transparent',
                     color: active ? '#1a1816' : f === '送信済' ? 'rgba(232,228,220,0.4)' : muted,
                     fontFamily: josefin, fontWeight: active ? 200 : 100,
-                    fontSize: 11, letterSpacing: '0.12em', cursor: 'pointer', whiteSpace: 'nowrap' as const,
+                    fontSize: 13, letterSpacing: '0.12em', cursor: 'pointer', whiteSpace: 'nowrap' as const,
                   }}
                 >{f}</button>
               )
@@ -1498,17 +1498,17 @@ export default function InventoryPage() {
             {/* Master リンク */}
             <div onClick={() => setView('master')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '12px 0 4px', padding: '12px 16px', background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, cursor: 'pointer' }}>
               <div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold, opacity: 0.7, marginBottom: 3 }}>// Master</div>
-                <div style={{ fontSize: 13, color: gold }}>メニュー × 材料マスタを編集</div>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: gold, opacity: 0.7, marginBottom: 3 }}>// Master</div>
+                <div style={{ fontSize: 15, color: gold }}>メニュー × 材料マスタを編集</div>
               </div>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <polyline points="6,4 10,8 6,12" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
 
-            {loading && <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 12, fontFamily: josefin }}>Loading...</div>}
+            {loading && <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 14, fontFamily: josefin }}>Loading...</div>}
             {!loading && displayItems.length === 0 && (
-              <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 12, fontFamily: josefin }}>該当する材料がありません</div>
+              <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 14, fontFamily: josefin }}>該当する材料がありません</div>
             )}
 
             {!loading && categories.map(cat => {
@@ -1517,7 +1517,7 @@ export default function InventoryPage() {
               return (
                 <div key={cat}>
                   {/* カテゴリラベル */}
-                  <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 12, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: '#e8e4dc', padding: '16px 0 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 14, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: '#e8e4dc', padding: '16px 0 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
                     <OrbitSVG size={12} /> {cat}
                   </div>
                   {catItems.map(item => (
@@ -1540,14 +1540,14 @@ export default function InventoryPage() {
       {/* 発注履歴タブ */}
       {mainTab === 'history' && (
         <div style={{ padding: '8px 20px 40px' }}>
-          {!historyLoaded && <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 12, fontFamily: josefin }}>Loading...</div>}
+          {!historyLoaded && <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 14, fontFamily: josefin }}>Loading...</div>}
           {historyLoaded && historyByMonth.length === 0 && (
-            <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 12, fontFamily: josefin }}>発注履歴がありません</div>
+            <div style={{ textAlign: 'center', color: muted, padding: 40, fontSize: 14, fontFamily: josefin }}>発注履歴がありません</div>
           )}
           {historyByMonth.map(({ label, orders }) => (
             <div key={label} style={{ marginBottom: 4 }}>
               {/* 月ヘッダー */}
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: muted, padding: '8px 0 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: muted, padding: '8px 0 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
                 <OrbitSVG size={10} /> {label}
               </div>
               {orders.map(o => {
@@ -1568,26 +1568,26 @@ export default function InventoryPage() {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{productLabel}</div>
-                        <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>
+                        <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{productLabel}</div>
+                        <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>
                           {o.dealer_name} · {o.contact_method === 'LINE' ? 'LINE' : 'メール'}
                         </div>
                       </div>
                       <div style={{
-                        fontFamily: josefin, fontWeight: 100, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+                        fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                         padding: '3px 10px', borderRadius: 1, whiteSpace: 'nowrap' as const, flexShrink: 0, marginLeft: 8,
                         ...st,
                       }}>{stLabel}</div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: `1px solid ${border}` }}>
-                      <div style={{ fontSize: 11, color: muted, fontFamily: zen }}>
+                      <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>
                         {dateStr}{costLabel ? ` · ${costLabel}` : ''}
                       </div>
                       {(o.status === 'pending' || o.status === 'sent') && !receivedOrderIds.has(o.id) && (
                         <button
                           style={{
                             padding: '6px 14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2,
-                            fontSize: 10, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.08em',
+                            fontSize: 12, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.08em',
                           }}
                           onClick={() => {
                             const inv = items.find(i => firstItem && i.name === firstItem.material_name)

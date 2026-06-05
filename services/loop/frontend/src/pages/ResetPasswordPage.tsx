@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <div style={{ minHeight: '100dvh', background: S.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: S.muted, fontFamily: S.zen, fontSize: 14 }}>無効なリンクです</div>
+        <div style={{ color: S.muted, fontFamily: S.zen, fontSize: 15 }}>無効なリンクです</div>
       </div>
     )
   }
@@ -82,7 +82,7 @@ export default function ResetPasswordPage() {
               <div style={{ fontSize: 19, fontWeight: 300, color: S.text, marginBottom: 6, fontFamily: S.zen }}>
                 新しいパスワードを設定
               </div>
-              <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
+              <div style={{ fontSize: 14, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
                 8文字以上で入力してください。
               </div>
             </div>
@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
 
               {error && (
                 <div style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   color: '#e07060',
                   background: 'rgba(224,112,96,0.1)',
                   border: '1px solid rgba(224,112,96,0.2)',
@@ -123,7 +123,7 @@ export default function ResetPasswordPage() {
                   borderRadius: 2,
                   fontFamily: S.josefin,
                   fontWeight: 200,
-                  fontSize: 12,
+                  fontSize: 14,
                   letterSpacing: '0.25em',
                   textTransform: 'uppercase',
                   color: '#1a1816',
@@ -149,7 +149,7 @@ export default function ResetPasswordPage() {
               <div style={{ fontSize: 15, fontWeight: 300, color: S.gold, fontFamily: S.zen, marginBottom: 8 }}>
                 パスワードを変更しました
               </div>
-              <div style={{ fontSize: 13, color: S.muted, lineHeight: 1.8, fontFamily: S.zen }}>
+              <div style={{ fontSize: 15, color: S.muted, lineHeight: 1.8, fontFamily: S.zen }}>
                 新しいパスワードでログインしてください。
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function ResetPasswordPage() {
                 borderRadius: 2,
                 fontFamily: S.josefin,
                 fontWeight: 200,
-                fontSize: 12,
+                fontSize: 14,
                 letterSpacing: '0.25em',
                 textTransform: 'uppercase',
                 color: '#1a1816',
@@ -190,7 +190,7 @@ function PasswordField({ label, value, onChange, autoComplete }: {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       <div style={{
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
         color: S.muted,

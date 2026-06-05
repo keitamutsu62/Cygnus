@@ -76,11 +76,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" strokeWidth="4" opacity="0.5"/>
           </svg>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            <span style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100, fontSize: 13, letterSpacing: '0.2em', color: '#e8e4dc' }}>CYGNUS</span>
-            <span style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100, fontSize: 13, letterSpacing: '0.2em', color: '#c8a882' }}>LOOP</span>
+            <span style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100, fontSize: 15, letterSpacing: '0.2em', color: '#e8e4dc' }}>CYGNUS</span>
+            <span style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100, fontSize: 15, letterSpacing: '0.2em', color: '#c8a882' }}>LOOP</span>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(232,228,220,0.55)', fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>
+        <div style={{ fontSize: 14, color: 'rgba(232,228,220,0.55)', fontFamily: "'Zen Kaku Gothic New', sans-serif" }}>
           {salonName}
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             >
               {item.icon(active)}
               <span style={{
-                fontSize: 10,
+                fontSize: 12,
                 letterSpacing: '0.08em',
                 color: active ? '#c8a882' : 'rgba(232,228,220,0.45)',
                 fontFamily: "'Josefin Sans', sans-serif",

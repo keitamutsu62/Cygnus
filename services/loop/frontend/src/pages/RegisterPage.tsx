@@ -114,7 +114,7 @@ export default function RegisterPage() {
           <div style={{ fontSize: 19, fontWeight: 300, color: S.text, marginBottom: 6, fontFamily: S.zen }}>
             サロンアカウントを作成
           </div>
-          <div style={{ fontSize: 12, color: S.muted, lineHeight: 1.7, letterSpacing: '0.05em', fontFamily: S.josefin, fontWeight: 100 }}>
+          <div style={{ fontSize: 14, color: S.muted, lineHeight: 1.7, letterSpacing: '0.05em', fontFamily: S.josefin, fontWeight: 100 }}>
             Start your journey with Cygnus LOOP.
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function RegisterPage() {
 
           {error && (
             <div style={{
-              fontSize: 12,
+              fontSize: 14,
               color: '#e07060',
               background: 'rgba(224,112,96,0.1)',
               border: '1px solid rgba(224,112,96,0.2)',
@@ -158,7 +158,7 @@ export default function RegisterPage() {
               borderRadius: 2,
               fontFamily: S.josefin,
               fontWeight: 200,
-              fontSize: 12,
+              fontSize: 14,
               letterSpacing: '0.25em',
               textTransform: 'uppercase',
               color: '#1a1816',
@@ -174,7 +174,7 @@ export default function RegisterPage() {
 
         {/* フッター */}
         <div style={{ marginTop: 'auto', paddingTop: 24, textAlign: 'center' }}>
-          <div style={{ fontSize: 11, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
+          <div style={{ fontSize: 13, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
             すでにアカウントをお持ちの方は{' '}
             <Link to="/login" style={{ color: S.gold, opacity: 0.8, textDecoration: 'none' }}>
               ログイン
@@ -199,7 +199,7 @@ function FieldInput({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       <div style={{
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
         color: 'rgba(232,228,220,0.55)',
@@ -242,7 +242,7 @@ function RoleSelect({ value, onChange }: { value: string; onChange: (v: string) 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       <div style={{
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
         color: 'rgba(232,228,220,0.55)',
