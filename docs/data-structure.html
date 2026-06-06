@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cygnus — データ構造マップ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f0e0c;
+    color: #e8e4dc;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 12px;
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: #c8a882;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(232,228,220,0.4);
+    margin-bottom: 48px;
+    letter-spacing: 0.1em;
+  }
+
+  /* ─── LEGEND ─── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: rgba(232,228,220,0.6);
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 2px;
+  }
+
+  /* ─── DOMAIN SECTIONS ─── */
+  .domains {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .domain {
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .domain-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+  .tables {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* ─── TABLE CARD ─── */
+  .table-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    padding: 12px 14px;
+    min-width: 160px;
+    border: 1px solid rgba(255,255,255,0.08);
+    position: relative;
+  }
+  .table-name {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+  .col {
+    font-size: 10px;
+    color: rgba(232,228,220,0.45);
+    line-height: 1.8;
+  }
+  .col .pk { color: #c8a882; font-weight: 500; }
+  .col .fk { color: #82b8c8; }
+  .col .auto { color: #82c896; }
+
+  /* ─── DOMAIN COLORS ─── */
+  .d-org    { background: rgba(200,168,130,0.05); border-color: rgba(200,168,130,0.15); }
+  .d-org .domain-title { color: #c8a882; }
+  .d-org .table-name   { color: #c8a882; }
+
+  .d-auth   { background: rgba(130,184,200,0.05); border-color: rgba(130,184,200,0.15); }
+  .d-auth .domain-title { color: #82b8c8; }
+  .d-auth .table-name   { color: #82b8c8; }
+
+  .d-sales  { background: rgba(130,200,150,0.05); border-color: rgba(130,200,150,0.15); }
+  .d-sales .domain-title { color: #82c896; }
+  .d-sales .table-name   { color: #82c896; }
+
+  .d-inv    { background: rgba(200,168,100,0.05); border-color: rgba(200,168,100,0.15); }
+  .d-inv .domain-title { color: #c8a864; }
+  .d-inv .table-name   { color: #c8a864; }
+
+  .d-studio { background: rgba(200,130,180,0.05); border-color: rgba(200,130,180,0.15); }
+  .d-studio .domain-title { color: #c882b4; }
+  .d-studio .table-name   { color: #c882b4; }
+
+  .d-billing { background: rgba(160,160,160,0.05); border-color: rgba(160,160,160,0.15); }
+  .d-billing .domain-title { color: #a0a0a0; }
+  .d-billing .table-name   { color: #a0a0a0; }
+
+  /* ─── FLOW SECTION ─── */
+  .flows {
+    max-width: 1200px;
+    margin: 40px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .flow-title {
+    font-size: 14px;
+    font-weight: 300;
+    color: #c8a882;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(200,168,130,0.2);
+    padding-bottom: 12px;
+  }
+  .flow {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .flow-name {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .flow-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .flow-step {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .arrow {
+    color: rgba(232,228,220,0.3);
+    font-size: 14px;
+    line-height: 1;
+  }
+  .flow-note {
+    font-size: 10px;
+    color: rgba(232,228,220,0.35);
+    margin-top: 8px;
+    line-height: 1.7;
+  }
+  .badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+  }
+  .badge-auto { background: rgba(130,200,150,0.2); color: #82c896; }
+  .badge-manual { background: rgba(200,168,130,0.15); color: #c8a882; }
+
+  /* step colors by domain */
+  .s-org    { background: rgba(200,168,130,0.12); color: #c8a882; }
+  .s-auth   { background: rgba(130,184,200,0.12); color: #82b8c8; }
+  .s-sales  { background: rgba(130,200,150,0.12); color: #82c896; }
+  .s-inv    { background: rgba(200,168,100,0.12); color: #c8a864; }
+  .s-studio { background: rgba(200,130,180,0.12); color: #c882b4; }
+  .s-billing { background: rgba(160,160,160,0.12); color: #a0a0a0; }
+</style>
+</head>
+<body>
+
+<h1>CYGNUS — DATA STRUCTURE MAP</h1>
+<p class="subtitle">テーブル構造・ドメイン分類・データ連携フロー</p>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#c8a882"></div>組織・店舗</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#82b8c8"></div>認証・スタッフ</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#82c896"></div>売上・施術</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c8a864"></div>在庫・発注</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c882b4"></div>STUDIO / RESERVE</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a0a0a0"></div>課金</div>
+</div>
+
+<div class="domains">
+
+  <!-- ① 組織・店舗 -->
+  <div class="domain d-org">
+    <div class="domain-title">① 組織・店舗</div>
+    <div class="tables">
+      <div class="table-card">
+        <div class="table-name">salons</div>
+        <div class="col">
+          <span class="pk">id</span><br>
+          name<br>
+          shimei_charge<br>
+          closing_day
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">stores</div>
+        <div class="col">
+          <span class="pk">id</span><br>
+          <span class="fk">salon_id</span><br>
+          name / address / phone
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">business_hours</div>
+        <div class="col">
+          <span class="fk">store_id</span><br>
+          open_time / close_time<br>
+          closed_weekday
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">store_special_closures</div>
+        <div class="col">
+          <span class="fk">store_id</span><br>
+          date / note
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 認証・スタッフ -->
+  <div class="domain d-auth">
+    <div class="domain-title">② 認証・スタッフ</div>
+    <div class="tables">
+      <div class="table-card">
+        <div class="table-name">staffs</div>
+        <div class="col">
+          <span class="pk">id</span><br>
+          <span class="fk">salon_id / store_id</span><br>
+          name / email / role<br>
+          password_hash<br>
+          shimei_charge / is_active<br>
+          <span class="fk">cygnus_account_id</span>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">cygnus_accounts</div>
+        <div class="col">
+          <span class="pk">id</span><br>
+          cygnus_id <small>(CYG-XXXXX)</small><br>
+          email / display_name<br>
+          password_hash
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">salon_memberships</div>
+        <div class="col">
+          <span class="fk">cygnus_account_id</span><br>
+          <span class="fk">salon_id / store_id</span><br>
+          role / is_active
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">invitations</div>
+        <div class="col">
+          <span class="fk">salon_id</span><br>
+          email / token<br>
+          role / status / expires_at
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">password_reset_tokens</div>
+        <div class="col">
+          <span class="fk">staff_id</span><br>
+          token / expires_at / used_at
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 売上・施術 -->
+  <div class="domain d-sales">
+    <div class="domain-title">③ 売上・施術</div>
+    <div class="tables">
+      <div class="table-card">
+        <div class="table-name">menus</div>
+        <div class="col">
+          <span class="pk">id</span><br>
+          <span class="fk">salon_id</span><br>
+          name / menu_type<br>
+          price / duration / is_active
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">customers</div>
+        <div class="col">
+          <span class="pk">id</span><br>
+          <span class="fk">salon_id</span><br>
+          name / phone / ex_line_id
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">treatments</div>
+        <div class="col">
+          <span class="pk">id</span><br>
+          <span class="fk">staff_id / customer_id</span><br>
+          <span class="fk">menu_id / appointment_id</span><br>
+          price / source<br>
+          performed_at
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">retail_sales</div>
+        <div class="col">
+          <span class="fk">staff_id / store_id</span><br>
+          product_name / price<br>
+          sold_at
+        </div>
+      </div>
+      <div class="table-card" style="border-color:rgba(130,200,150,0.3)">
+        <div class="table-name">daily_sales <span class="badge badge-auto">自動集計</span></div>
+        <div class="col">
+          <span class="fk">store_id</span><br>
+          date<br>
+          total_sales / client_count<br>
+          tech_sales / retail_sales
+        </div>
+      </div>
+      <div class="table-card" style="border-color:rgba(130,200,150,0.3)">
+        <div class="table-name">staff_daily_sales <span class="badge badge-auto">自動集計</span></div>
+        <div class="col">
+          <span class="fk">staff_id / store_id</span><br>
+          date<br>
+          total_sales / client_count<br>
+          unit_price / retail_sales
+        </div>
+      </div>
+      <div class="table-card" style="border-color:rgba(130,200,150,0.3)">
+        <div class="table-name">staff_menu_sales <span class="badge badge-auto">自動集計</span></div>
+        <div class="col">
+          <span class="fk">staff_daily_sale_id</span><br>
+          <span class="fk">menu_id</span><br>
+          count / amount
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 在庫・発注 -->
+  <div class="domain d-inv">
+    <div class="domain-title">④ 在庫・発注</div>
+    <div class="tables">
+      <div class="table-card">
+        <div class="table-name">materials</div>
+        <div class="col">
+          <span class="pk">id</span><br>
+          <span class="fk">salon_id</span><br>
+          name / brand / category<br>
+          size_amount / stock_unit
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">menu_materials</div>
+        <div class="col">
+          <span class="fk">menu_id</span><br>
+          <span class="fk">material_id</span><br>
+          required_quantity
+        </div>
+      </div>
+      <div class="table-card" style="border-color:rgba(200,168,100,0.3)">
+        <div class="table-name">inventories <span class="badge badge-auto">自動生成</span></div>
+        <div class="col">
+          <span class="fk">store_id</span><br>
+          <span class="fk">material_id</span><br>
+          quantity / threshold / status
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">dealers</div>
+        <div class="col">
+          <span class="fk">salon_id</span><br>
+          name / contact_method<br>
+          contact_info / status<br>
+          closing_day
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">orders</div>
+        <div class="col">
+          <span class="fk">salon_id / store_id</span><br>
+          <span class="fk">dealer_id</span><br>
+          status / is_next_month_invoice<br>
+          sent_at
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">order_items</div>
+        <div class="col">
+          <span class="fk">order_id</span><br>
+          <span class="fk">material_id</span><br>
+          quantity / unit / estimated_cost
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ STUDIO / RESERVE -->
+  <div class="domain d-studio">
+    <div class="domain-title">⑤ STUDIO / RESERVE（Cygnus ID基盤）</div>
+    <div class="tables">
+      <div class="table-card">
+        <div class="table-name">profiles</div>
+        <div class="col">
+          <span class="fk">cygnus_account_id</span><br>
+          bio / specialties (JSON)<br>
+          instagram_url / is_published
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">works</div>
+        <div class="col">
+          <span class="fk">cygnus_account_id</span><br>
+          <span class="fk">menu_id</span><br>
+          image_url / title<br>
+          tags (JSON) / is_published
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">cygnus_customers</div>
+        <div class="col">
+          cygnus_customer_id <small>(CCU-XXXXX)</small><br>
+          line_user_id / display_name
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">appointments</div>
+        <div class="col">
+          <span class="fk">cygnus_customer_id</span><br>
+          <span class="fk">cygnus_account_id</span><br>
+          <span class="fk">menu_id</span><br>
+          status / scheduled_at
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">follows</div>
+        <div class="col">
+          <span class="fk">cygnus_customer_id</span><br>
+          <span class="fk">cygnus_account_id</span>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">saved_works</div>
+        <div class="col">
+          <span class="fk">cygnus_customer_id</span><br>
+          <span class="fk">work_id</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ 課金 -->
+  <div class="domain d-billing">
+    <div class="domain-title">⑥ 課金</div>
+    <div class="tables">
+      <div class="table-card">
+        <div class="table-name">plans</div>
+        <div class="col">
+          name / max_staff_count
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-name">subscriptions</div>
+        <div class="col">
+          <span class="fk">salon_id / plan_id</span><br>
+          status
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /domains -->
+
+<!-- DATA FLOW -->
+<div class="flows" style="margin-top:60px">
+  <div class="flow-title">主要データ連携フロー</div>
+
+  <div class="flow">
+    <div class="flow-name" style="color:#82c896">① 施術記録を作成すると自動で売上集計が更新される</div>
+    <div class="flow-steps">
+      <div class="flow-step s-sales">treatments（作成）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-sales">staff_daily_sales（UPSERT）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-sales">staff_menu_sales（INSERT）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-sales">daily_sales（UPSERT）</div>
+    </div>
+    <div class="flow-note">施術1件追加するだけで、スタッフ別・店舗別・メニュー別の集計が全部自動更新される</div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-name" style="color:#82c896">② 物販売上も同様に集計が自動更新</div>
+    <div class="flow-steps">
+      <div class="flow-step s-sales">retail_sales（作成）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-sales">staff_daily_sales（retail_sales加算）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-sales">daily_sales（retail_sales加算）</div>
+    </div>
+    <div class="flow-note">物販売上も施術売上と同じ集計テーブルに合算される</div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-name" style="color:#c8a864">③ 材料を登録すると全店舗に在庫行が自動生成される</div>
+    <div class="flow-steps">
+      <div class="flow-step s-inv">materials（作成）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-org">stores（全店舗取得）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-inv">inventories（店舗分ループでINSERT）</div>
+    </div>
+    <div class="flow-note">材料1つ追加すると、サロン配下の全店舗に在庫管理行が自動で作られる</div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-name" style="color:#82b8c8">④ スタッフ招待〜承諾で3テーブルが同時に作成される</div>
+    <div class="flow-steps">
+      <div class="flow-step s-auth">invitations（招待送信）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-auth">staffs（作成）</div>
+      <div class="arrow">+</div>
+      <div class="flow-step s-auth">cygnus_accounts（作成）</div>
+      <div class="arrow">+</div>
+      <div class="flow-step s-auth">salon_memberships（作成）</div>
+    </div>
+    <div class="flow-note">招待を承諾した瞬間に、LOOP用スタッフ・Cygnus共通ID・サロン在籍情報が一括作成される</div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-name" style="color:#c882b4">⑤ RESERVE経由の予約が施術記録と紐付く（将来）</div>
+    <div class="flow-steps">
+      <div class="flow-step s-studio">appointments（予約作成 by RESERVE）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-sales">treatments（施術完了時にappointment_idで紐付け）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-studio">appointments（status → completed）</div>
+    </div>
+    <div class="flow-note">RESSERVEで予約 → LOOPで施術記録 → 自動で予約と売上が突合される。アップセル率算出の基盤</div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-name" style="color:#c882b4">⑥ STUDIO → RESERVE → LOOP のデータ連携全体像</div>
+    <div class="flow-steps">
+      <div class="flow-step s-auth">cygnus_accounts</div>
+      <div class="arrow">↓</div>
+      <div class="flow-step s-studio">profiles + works（STUDIO登録）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-studio">appointments（RESERVE予約）</div>
+      <div class="arrow">→</div>
+      <div class="flow-step s-sales">treatments（LOOP施術記録）</div>
+    </div>
+    <div class="flow-note">スタイリストのCygnus IDを軸に、STUDIO（見せる）→ RESERVE（予約）→ LOOP（実績蓄積）が一本につながる</div>
+  </div>
+
+</div>
+
+<div style="text-align:center; margin-top:60px; font-size:10px; color:rgba(232,228,220,0.2); letter-spacing:0.1em;">
+  CYGNUS DATA STRUCTURE MAP — generated 2026-06-04
+</div>
+
+</body>
+</html>

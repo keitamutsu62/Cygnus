@@ -1,0 +1,1 @@
+ALTER TABLE profiles ADD COLUMN shimei_charge INT UNSIGNED NOT NULL DEFAULT 0 AFTER is_published;
