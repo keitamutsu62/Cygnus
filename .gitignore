@@ -30,3 +30,9 @@ Thumbs.db
 *.key
 .env.local
 .env.*.local
+
+# Terraform
+infra/.terraform/
+infra/terraform.tfvars
+infra/*.tfplan
+infra/.terraform.lock.hcl

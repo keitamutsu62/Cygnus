@@ -8,5 +8,5 @@ variable "db_password" { sensitive = true }
 variable "jwt_secret" { sensitive = true }
 variable "app_image" {
   description = "ECR image URI for LOOP backend"
-  default     = "nginx:alpine"
+  default     = "219078481395.dkr.ecr.ap-northeast-1.amazonaws.com/cygnus-loop-backend:latest"
 }
