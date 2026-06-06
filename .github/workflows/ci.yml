@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─── Go バックエンド ────────────────────────────────────────────
+  backend:
+    name: Backend (Go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/loop/backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: services/loop/backend/go.mod
+          cache-dependency-path: services/loop/backend/go.sum
+
+      - name: Build
+        run: GOWORK=off go build ./...
+
+      - name: Vet
+        run: GOWORK=off go vet ./...
+
+  # ─── LOOP フロントエンド ────────────────────────────────────────
+  loop-frontend:
+    name: LOOP Frontend (TypeScript)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/loop/frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: services/loop/frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+
+  # ─── STUDIO フロントエンド ──────────────────────────────────────
+  studio-frontend:
+    name: STUDIO Frontend (TypeScript)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/studio/frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: services/studio/frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
