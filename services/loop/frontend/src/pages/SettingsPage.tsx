@@ -317,14 +317,6 @@ const ClockIcon = ({ color }: { color: string }) => (
     <polyline points="7,4 7,7 9,9" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
-const CalIcon = ({ color }: { color: string }) => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <rect x="2" y="2" width="10" height="10" rx="1.5" stroke={color} strokeWidth="1.1"/>
-    <line x1="5" y1="1" x2="5" y2="3" stroke={color} strokeWidth="1.1" strokeLinecap="round"/>
-    <line x1="9" y1="1" x2="9" y2="3" stroke={color} strokeWidth="1.1" strokeLinecap="round"/>
-    <line x1="2" y1="6" x2="12" y2="6" stroke={color} strokeWidth="1" strokeLinecap="round"/>
-  </svg>
-)
 const CalPlusIcon = ({ color }: { color: string }) => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <rect x="2" y="2" width="10" height="10" rx="1.5" stroke={color} strokeWidth="1.1"/>
@@ -1462,7 +1454,7 @@ export default function SettingsPage() {
   }
 
   const hoursLabel  = hours ? `${hours.open_time} 〜 ${hours.close_time}` : '—'
-  const closedLabel = hours?.closed_weekday != null ? `毎週${WEEKDAYS[hours.closed_weekday]}曜日` : '設定なし'
+
 
   return (
     <>

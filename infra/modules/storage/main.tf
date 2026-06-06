@@ -121,6 +121,45 @@ resource "aws_cloudfront_distribution" "studio" {
   }
 }
 
+# ─── S3 バケットポリシー（CloudFront OAC アクセス許可）────────────
+resource "aws_s3_bucket_policy" "loop" {
+  bucket = aws_s3_bucket.loop.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "AllowCloudFront"
+      Effect    = "Allow"
+      Principal = { Service = "cloudfront.amazonaws.com" }
+      Action    = "s3:GetObject"
+      Resource  = "${aws_s3_bucket.loop.arn}/*"
+      Condition = {
+        StringEquals = {
+          "AWS:SourceArn" = aws_cloudfront_distribution.loop.arn
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_s3_bucket_policy" "studio" {
+  bucket = aws_s3_bucket.studio.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "AllowCloudFront"
+      Effect    = "Allow"
+      Principal = { Service = "cloudfront.amazonaws.com" }
+      Action    = "s3:GetObject"
+      Resource  = "${aws_s3_bucket.studio.arn}/*"
+      Condition = {
+        StringEquals = {
+          "AWS:SourceArn" = aws_cloudfront_distribution.studio.arn
+        }
+      }
+    }]
+  })
+}
+
 # ─── Route 53 レコード ───────────────────────────────────────────
 resource "aws_route53_record" "loop" {
   zone_id = var.route53_zone_id

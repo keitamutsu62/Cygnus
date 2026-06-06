@@ -179,6 +179,7 @@ type InventoryItem = {
   threshold: number
   status: '要発注' | '注意' | '正常' | '過剰'
   bar_width: number
+  jan_code: string | null
 }
 type Dealer = { id: number; name: string; contact_method: string; closing_day: number | null }
 type Store  = { id: number; name: string }

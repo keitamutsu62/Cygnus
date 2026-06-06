@@ -22,7 +22,7 @@ export default function ProfilePage() {
   const claims = getClaims()
   const displayName = claims?.display_name ?? ''
 
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const [, setProfile] = useState<Profile | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string>('')
   const [bio, setBio] = useState('')
   const [specialties, setSpecialties] = useState<string[]>([])
