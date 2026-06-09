@@ -12,6 +12,7 @@ type Config struct {
 	RedisURL    string
 	JWTSecret   string
 	FrontendURL string
+	AdminToken  string
 	// Cloudflare R2（未設定時はbase64をDBに直接保存するLocalStorageにフォールバック）
 	R2AccountID string
 	R2AccessKey string
@@ -31,6 +32,7 @@ func Load() *Config {
 		RedisURL:    getEnv("REDIS_URL", "redis://localhost:6379"),
 		JWTSecret:   getEnv("JWT_SECRET", "change-me"),
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:5173"),
+		AdminToken:  getEnv("ADMIN_TOKEN", "change-me-admin"),
 		R2AccountID: getEnv("R2_ACCOUNT_ID", ""),
 		R2AccessKey: getEnv("R2_ACCESS_KEY", ""),
 		R2SecretKey: getEnv("R2_SECRET_KEY", ""),

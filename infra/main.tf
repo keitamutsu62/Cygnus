@@ -35,4 +35,5 @@ module "compute" {
   db_endpoint        = module.database.endpoint
   db_password        = var.db_password
   jwt_secret         = var.jwt_secret
+  admin_token        = var.admin_token
 }

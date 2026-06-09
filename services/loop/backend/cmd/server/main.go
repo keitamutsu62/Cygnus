@@ -22,6 +22,21 @@ func main() {
 		panic("DB接続失敗: " + err.Error())
 	}
 
+	// ─── マイグレーション ──────────────────────────────────────
+	db.MustExec(`CREATE TABLE IF NOT EXISTS admin_appointments (
+		id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+		salon_name VARCHAR(255) NOT NULL,
+		title      VARCHAR(255) NOT NULL,
+		date       DATE NOT NULL,
+		time       VARCHAR(5) NULL,
+		status     ENUM('scheduled','done','cancelled') NOT NULL DEFAULT 'scheduled',
+		notes      TEXT NULL,
+		result     TEXT NULL,
+		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		INDEX idx_date (date)
+	)`)
+
 	// ─── リポジトリ ────────────────────────────────────────────
 	salonRepo        := mysql.NewSalonRepository(db)
 	planRepo         := mysql.NewPlanRepository(db)
@@ -49,6 +64,7 @@ func main() {
 	materialRepo     := mysql.NewMaterialRepository(db)
 	dealerRepo       := mysql.NewDealerRepository(db)
 	orderRepo        := mysql.NewOrderRepository(db)
+	adminApptRepo    := mysql.NewAdminAppointmentRepository(db)
 
 	// ─── ストレージ（R2環境変数が揃っていればR2、未設定ならLocalにフォールバック）──
 	var imgStorage storage.ImageStorage
@@ -91,12 +107,17 @@ func main() {
 	retailSaleH     := handler.NewRetailSaleHandler(retailSaleUC)
 	aiH             := handler.NewAIHandler(aiUC)
 	settingsH       := handler.NewSettingsHandler(salonRepo)
+	adminH          := handler.NewAdminHandler(db, adminApptRepo)
 
 	// ─── Echo ─────────────────────────────────────────────────
 	e := echo.New()
 	e.Use(echomiddleware.Logger())
 	e.Use(echomiddleware.Recover())
-	e.Use(echomiddleware.CORS())
+	e.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
+	}))
 
 	e.GET("/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"service": "cygnus-loop", "status": "ok"})
@@ -219,6 +240,14 @@ func main() {
 	api.GET("/settings", settingsH.Get)
 	api.PATCH("/settings", settingsH.Update)
 
+	// ─── 管理ダッシュボード ────────────────────────────────────────
+	adm := e.Group("/admin/v1", middleware.AdminToken(cfg.AdminToken))
+	adm.GET("/stats", adminH.GetStats)
+	adm.GET("/aws-cost", adminH.GetAWSCost)
+	adm.GET("/appointments", adminH.ListAppointments)
+	adm.POST("/appointments", adminH.CreateAppointment)
+	adm.PATCH("/appointments/:id", adminH.UpdateAppointment)
+	adm.DELETE("/appointments/:id", adminH.DeleteAppointment)
 
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
 }

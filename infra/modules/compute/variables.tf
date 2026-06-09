@@ -10,3 +10,9 @@ variable "app_image" {
   description = "ECR image URI for LOOP backend"
   default     = "219078481395.dkr.ecr.ap-northeast-1.amazonaws.com/cygnus-loop-backend:latest"
 }
+
+variable "admin_token" {
+  description = "Admin dashboard shared token"
+  type        = string
+  sensitive   = true
+}

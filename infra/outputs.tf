@@ -14,3 +14,17 @@ output "rds_endpoint" {
   value     = module.database.endpoint
   sensitive = true
 }
+
+output "admin_url" {
+  value = "https://admin.${var.domain}"
+}
+
+output "db_endpoint" {
+  value     = module.database.endpoint
+  sensitive = true
+}
+
+output "db_password" {
+  value     = var.db_password
+  sensitive = true
+}

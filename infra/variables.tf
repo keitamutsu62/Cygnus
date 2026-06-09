@@ -17,3 +17,9 @@ variable "jwt_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "admin_token" {
+  description = "Admin dashboard shared token"
+  type        = string
+  sensitive   = true
+}

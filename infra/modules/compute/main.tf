@@ -49,6 +49,7 @@ resource "aws_ecs_task_definition" "loop_backend" {
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
 
   container_definitions = jsonencode([{
     name  = "loop-backend"
@@ -68,8 +69,9 @@ resource "aws_ecs_task_definition" "loop_backend" {
     ]
 
     secrets = [
-      { name = "DB_PASSWORD", valueFrom = aws_ssm_parameter.db_password.arn },
-      { name = "JWT_SECRET",  valueFrom = aws_ssm_parameter.jwt_secret.arn },
+      { name = "DB_PASSWORD",  valueFrom = aws_ssm_parameter.db_password.arn },
+      { name = "JWT_SECRET",   valueFrom = aws_ssm_parameter.jwt_secret.arn },
+      { name = "ADMIN_TOKEN",  valueFrom = aws_ssm_parameter.admin_token.arn },
     ]
 
     logConfiguration = {
@@ -96,6 +98,12 @@ resource "aws_ssm_parameter" "jwt_secret" {
   value = var.jwt_secret
 }
 
+resource "aws_ssm_parameter" "admin_token" {
+  name  = "/cygnus/admin_token"
+  type  = "SecureString"
+  value = var.admin_token
+}
+
 resource "aws_iam_role_policy" "ecs_ssm" {
   name = "cygnus-ecs-ssm"
   role = aws_iam_role.ecs_task_execution.id
@@ -108,7 +116,36 @@ resource "aws_iam_role_policy" "ecs_ssm" {
       Resource = [
         aws_ssm_parameter.db_password.arn,
         aws_ssm_parameter.jwt_secret.arn,
+        aws_ssm_parameter.admin_token.arn,
       ]
+    }]
+  })
+}
+
+# ─── ECS タスクロール（アプリがAWS APIを呼ぶための権限）────────────
+resource "aws_iam_role" "ecs_task" {
+  name = "cygnus-ecs-task"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "ecs_task_ce" {
+  name = "cygnus-ecs-cost-explorer"
+  role = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ce:GetCostAndUsage"]
+      Resource = ["*"]
     }]
   })
 }
