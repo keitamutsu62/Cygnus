@@ -77,10 +77,11 @@ export default function RegisterPage() {
 
   return (
     <div style={{
-      minHeight: '100dvh',
+      height: '100dvh',
       background: S.bg,
       display: 'flex',
       flexDirection: 'column',
+      overflow: 'hidden',
     }}>
       <div style={{
         flex: 1,
@@ -88,6 +89,7 @@ export default function RegisterPage() {
         flexDirection: 'column',
         padding: '0 28px 40px',
         overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
       }}>
 
         {/* ロゴエリア */}
