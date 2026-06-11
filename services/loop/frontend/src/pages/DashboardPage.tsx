@@ -435,12 +435,10 @@ export default function DashboardPage() {
   const [dayOffset,   setDayOffset]   = useState(0)
   const [staffList,   setStaffList]   = useState<StaffSalesSummary[]>([])
   const [myAvatarUrl, setMyAvatarUrl] = useState<string | null>(null)
-  const [invAlerts,        setInvAlerts]        = useState<InvAlert[]>([])
-  const [dealers,          setDealers]          = useState<Dealer[]>([])
-  const [orderTarget,      setOrderTarget]      = useState<InvAlert | null>(null)
-  const [listMaterialIds,  setListMaterialIds]  = useState<Set<number>>(new Set())
-  const [sentMaterialIds,  setSentMaterialIds]  = useState<Set<number>>(new Set())
-  const [listOrders,       setListOrders]       = useState<{ name: string; qty: string; dealer: string }[]>([])
+  const [invAlerts,   setInvAlerts]   = useState<InvAlert[]>([])
+  const [dealers,     setDealers]     = useState<Dealer[]>([])
+  const [orderTarget, setOrderTarget] = useState<InvAlert | null>(null)
+  const [listOrders,  setListOrders]  = useState<{ name: string; qty: string; dealer: string }[]>([])
   const [showNotif,        setShowNotif]        = useState(false)
   const location = useLocation()
   const { msg: toastMsg, isError: toastIsError, showError, showSuccess } = useToast()
@@ -473,27 +471,21 @@ export default function DashboardPage() {
         setSalesDays(days.map(d => ({ ...d, data: map.get(d.dateStr) ?? null })))
       }).catch(() => showError('売上データの読み込みに失敗しました'))
 
-    // 在庫と発注履歴を並行取得し、pending 品目をアラートから除外
+    // 在庫と発注履歴を並行取得
     Promise.all([
       apiFetch<InvAlert[]>(`/api/v1/inventory?store_id=${storeId}`).catch(() => [] as InvAlert[]),
       apiFetch<{ id: number; status: string; dealer_name: string; items: { material_id: number; material_name: string; quantity: number; unit: string }[] }[]>('/api/v1/orders/history').catch(() => []),
     ]).then(([invData, ordersData]) => {
-      const pending = ordersData.filter(o => o.status === 'pending')
-      const sent    = ordersData.filter(o => o.status === 'sent')
+      const pending = (Array.isArray(ordersData) ? ordersData : []).filter(o => o.status === 'pending')
       const pendingIds = new Set<number>(
         pending.flatMap(o => (o.items ?? []).map(it => Number(it.material_id)))
       )
-      const sentIds = new Set<number>(
-        sent.flatMap(o => (o.items ?? []).map(it => Number(it.material_id)))
-      )
-      setListMaterialIds(pendingIds)
-      setSentMaterialIds(sentIds)
       setListOrders(
         pending.flatMap(o =>
           (o.items ?? []).map(it => ({ name: it.material_name, qty: `${it.quantity}${it.unit}`, dealer: o.dealer_name }))
         )
       )
-      // pending（リスト中）の品目はアラートから除外。sent（送信済）はバッジ表示で残す
+      // pending（発注リスト中）の品目を除いた、閾値以下の品目をアラートに表示
       setInvAlerts(
         (Array.isArray(invData) ? invData : [])
           .filter(i => (i.status === '要発注' || i.status === '注意') && !pendingIds.has(i.material_id))
@@ -709,11 +701,7 @@ export default function DashboardPage() {
           <>
             <SectionTitle label="在庫アラート" sub="· 要発注 上位3件" link="すべて見る →" onLink={() => navigate('/inventory')} />
             {invAlerts.map(item => {
-              const inList = listMaterialIds.has(item.material_id)
-              const isSent = !inList && sentMaterialIds.has(item.material_id)
-              const badge  = inList ? 'リスト中' : isSent ? '送信済' : item.status
-              const crit   = item.status === '要発注'
-              const sent   = inList || isSent
+              const crit = item.status === '要発注'
               return (
                 <div key={item.id} style={{
                   background: 'var(--surface)',
@@ -734,37 +722,29 @@ export default function DashboardPage() {
                       <div style={{
                         fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                         padding: '2px 8px', borderRadius: 1,
-                        background: isSent ? 'rgba(160,160,160,0.12)' : crit ? alertDim : goldDim,
-                        color: isSent ? 'rgba(232,228,220,0.45)' : crit ? alertC : gold,
-                        border: `1px solid ${isSent ? 'rgba(232,228,220,0.15)' : crit ? 'rgba(224,112,96,0.25)' : 'rgba(200,168,130,0.2)'}`,
-                      }}>{badge}</div>
+                        background: crit ? alertDim : goldDim,
+                        color: crit ? alertC : gold,
+                        border: `1px solid ${crit ? 'rgba(224,112,96,0.25)' : 'rgba(200,168,130,0.2)'}`,
+                      }}>{item.status}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>
                       閾値 {item.threshold}{item.stock_unit}
                     </div>
-                    {sent ? (
-                      <div style={{
-                        padding: '6px 14px', borderRadius: 2,
-                        background: goldDim, border: `1px solid ${goldBorder}`,
-                        fontSize: 12, letterSpacing: '0.1em', color: gold, fontFamily: josefin,
-                      }}>リスト中</div>
-                    ) : (
-                      <button
-                        onClick={() => setOrderTarget(item)}
-                        style={{
-                          padding: '6px 14px',
-                          background: crit ? gold : goldDim,
-                          border: crit ? 'none' : '1px solid rgba(200,168,130,0.3)',
-                          borderRadius: 2,
-                          fontFamily: josefin, fontWeight: 100, fontSize: 12,
-                          letterSpacing: '0.12em', textTransform: 'uppercase' as const,
-                          color: crit ? '#1a1816' : gold, cursor: 'pointer', flexShrink: 0,
-                          WebkitAppearance: 'none',
-                        }}
-                      >リストに追加</button>
-                    )}
+                    <button
+                      onClick={() => setOrderTarget(item)}
+                      style={{
+                        padding: '6px 14px',
+                        background: crit ? gold : goldDim,
+                        border: crit ? 'none' : '1px solid rgba(200,168,130,0.3)',
+                        borderRadius: 2,
+                        fontFamily: josefin, fontWeight: 100, fontSize: 12,
+                        letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+                        color: crit ? '#1a1816' : gold, cursor: 'pointer', flexShrink: 0,
+                        WebkitAppearance: 'none',
+                      }}
+                    >リストに追加</button>
                   </div>
                 </div>
               )
@@ -846,7 +826,6 @@ export default function DashboardPage() {
           onDone={(dealerName, qtyStr) => {
             const target = orderTarget
             setInvAlerts(prev => prev.filter(a => a.id !== target.id))
-            setListMaterialIds(prev => new Set(prev).add(target.material_id))
             setListOrders(prev => [{ name: target.name, qty: qtyStr, dealer: dealerName }, ...prev])
           }}
         />
