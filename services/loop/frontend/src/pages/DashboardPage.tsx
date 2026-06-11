@@ -493,10 +493,10 @@ export default function DashboardPage() {
           (o.items ?? []).map(it => ({ name: it.material_name, qty: `${it.quantity}${it.unit}`, dealer: o.dealer_name }))
         )
       )
-      // バッジが「リスト中」のもの（pending）は除外。送信済みはバッジ付きで表示
+      // pending（リスト中）と sent（送信済）の品目はアラートから除外
       setInvAlerts(
         (Array.isArray(invData) ? invData : [])
-          .filter(i => (i.status === '要発注' || i.status === '注意') && !pendingIds.has(i.material_id))
+          .filter(i => (i.status === '要発注' || i.status === '注意') && !pendingIds.has(i.material_id) && !sentIds.has(i.material_id))
           .slice(0, 3)
       )
     }).catch(() => showError('在庫アラートの読み込みに失敗しました'))
@@ -713,7 +713,7 @@ export default function DashboardPage() {
               const isSent = !inList && sentMaterialIds.has(item.material_id)
               const badge  = inList ? 'リスト中' : isSent ? '送信済' : item.status
               const crit   = item.status === '要発注'
-              const sent   = inList
+              const sent   = inList || isSent
               return (
                 <div key={item.id} style={{
                   background: 'var(--surface)',
