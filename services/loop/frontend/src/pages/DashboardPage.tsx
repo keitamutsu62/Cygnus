@@ -476,19 +476,22 @@ export default function DashboardPage() {
       apiFetch<InvAlert[]>(`/api/v1/inventory?store_id=${storeId}`).catch(() => [] as InvAlert[]),
       apiFetch<{ id: number; status: string; dealer_name: string; items: { material_id: number; material_name: string; quantity: number; unit: string }[] }[]>('/api/v1/orders/history').catch(() => []),
     ]).then(([invData, ordersData]) => {
-      const pending = (Array.isArray(ordersData) ? ordersData : []).filter(o => o.status === 'pending')
-      const pendingIds = new Set<number>(
-        pending.flatMap(o => (o.items ?? []).map(it => Number(it.material_id)))
-      )
+      const orders = Array.isArray(ordersData) ? ordersData : []
+      const pending = orders.filter(o => o.status === 'pending')
+      const sent    = orders.filter(o => o.status === 'sent')
+      // pending・sent どちらも「発注済み」としてアラートから除外（重複発注防止）
+      const orderedIds = new Set<number>([
+        ...pending.flatMap(o => (o.items ?? []).map(it => Number(it.material_id))),
+        ...sent.flatMap(o => (o.items ?? []).map(it => Number(it.material_id))),
+      ])
       setListOrders(
         pending.flatMap(o =>
           (o.items ?? []).map(it => ({ name: it.material_name, qty: `${it.quantity}${it.unit}`, dealer: o.dealer_name }))
         )
       )
-      // pending（発注リスト中）の品目を除いた、閾値以下の品目をアラートに表示
       setInvAlerts(
         (Array.isArray(invData) ? invData : [])
-          .filter(i => (i.status === '要発注' || i.status === '注意') && !pendingIds.has(i.material_id))
+          .filter(i => (i.status === '要発注' || i.status === '注意') && !orderedIds.has(i.material_id))
           .slice(0, 3)
       )
     }).catch(() => showError('在庫アラートの読み込みに失敗しました'))
