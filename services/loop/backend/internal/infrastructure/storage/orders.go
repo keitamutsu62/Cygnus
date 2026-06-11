@@ -30,7 +30,7 @@ func NewOrderStorage(bucket, region string) (*OrderStorage, error) {
 	}, nil
 }
 
-// Upload はPDFバイト列をS3にアップロードし、30日有効なPresigned URLを返す。
+// Upload はPDFバイト列をS3にアップロードし、7日有効なPresigned URLを返す。
 func (o *OrderStorage) Upload(ctx context.Context, key string, pdfBytes []byte) (string, error) {
 	_, err := o.client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(o.bucket),
@@ -46,7 +46,7 @@ func (o *OrderStorage) Upload(ctx context.Context, key string, pdfBytes []byte) 
 	req, err := presigner.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(o.bucket),
 		Key:    aws.String(key),
-	}, s3.WithPresignExpires(30*24*time.Hour))
+	}, s3.WithPresignExpires(7*24*time.Hour))
 	if err != nil {
 		return "", fmt.Errorf("OrderStorage presign: %w", err)
 	}
