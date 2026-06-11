@@ -551,7 +551,7 @@ function InvCard({ item, inList, sent, readOnly, onOrder, onEdit }: {
               fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
               textTransform: 'uppercase' as const, cursor: 'pointer',
             }}
-          >入荷済みにする</button>
+          >在庫数を更新する</button>
         ) : inList ? (
           <button
             onClick={() => navigate('/inventory', { state: { tab: 'orders' } })}
