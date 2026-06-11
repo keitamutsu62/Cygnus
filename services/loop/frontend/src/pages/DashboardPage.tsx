@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { api, apiFetch } from '../lib/api'
 import { getClaims, getSalonName } from '../lib/auth'
 import { businessDaysToClosing } from '../lib/businessDays'
@@ -442,12 +442,19 @@ export default function DashboardPage() {
   const [sentMaterialIds,  setSentMaterialIds]  = useState<Set<number>>(new Set())
   const [listOrders,       setListOrders]       = useState<{ name: string; qty: string; dealer: string }[]>([])
   const [showNotif,        setShowNotif]        = useState(false)
-  const { msg: toastMsg, showError }  = useToast()
+  const location = useLocation()
+  const { msg: toastMsg, isError: toastIsError, showError, showSuccess } = useToast()
 
   const cardRef      = useRef<HTMLDivElement>(null)
   const dayOffsetRef = useRef(0)
 
   function goToDay(n: number) { dayOffsetRef.current = n; setDayOffset(n) }
+
+  useEffect(() => {
+    if ((location.state as { registered?: boolean } | null)?.registered) {
+      showSuccess('サロン登録が完了しました！ようこそ Cygnus LOOP へ。')
+    }
+  }, [])
 
   useEffect(() => {
     apiFetch<Staff[]>('/api/v1/staffs')
@@ -583,6 +590,18 @@ export default function DashboardPage() {
       `}</style>
 
       <div style={{ padding: '14px 20px 32px' }}>
+
+        {/* ストア未設定の案内 */}
+        {!storeId && (
+          <div style={{
+            background: 'var(--accent-dim)', border: '1px solid var(--accent-border)',
+            borderRadius: 6, padding: '14px 16px', marginBottom: 16,
+            fontSize: 14, color: 'var(--text)', fontFamily: zen, lineHeight: 1.7,
+          }}>
+            <div style={{ fontWeight: 500, marginBottom: 4, color: 'var(--accent)' }}>ストアの設定が必要です</div>
+            サロンの登録が完了しました。管理者にストアの設定を依頼してください。設定後にダッシュボードのデータが表示されます。
+          </div>
+        )}
 
         {/* グリーティング + アイコン */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -838,7 +857,7 @@ export default function DashboardPage() {
         <NotifPanel items={notifItems} onClose={() => setShowNotif(false)} />
       )}
 
-    <Toast msg={toastMsg} />
+    <Toast msg={toastMsg} isError={toastIsError} />
     </>
   )
 }
