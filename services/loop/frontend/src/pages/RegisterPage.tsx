@@ -229,57 +229,6 @@ function FieldInput({
   )
 }
 
-function RoleSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [focused, setFocused] = useState(false)
-  const options = [
-    { value: 'owner', label: 'オーナー' },
-    { value: 'admin', label: '管理職' },
-    { value: 'staff', label: 'スタッフ' },
-  ]
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-      <div style={{
-        fontSize: 12,
-        letterSpacing: '0.18em',
-        textTransform: 'uppercase',
-        color: 'rgba(232,228,220,0.55)',
-        fontFamily: "'Josefin Sans', sans-serif",
-        fontWeight: 100,
-      }}>役職</div>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={{
-          background: 'rgba(232,228,220,0.04)',
-          border: `1px solid ${focused ? 'rgba(200,168,130,0.4)' : 'rgba(232,228,220,0.12)'}`,
-          borderRadius: 2,
-          padding: '13px 14px',
-          fontSize: 16,
-          color: '#e8e4dc',
-          fontFamily: "'Zen Kaku Gothic New', sans-serif",
-          fontWeight: 300,
-          outline: 'none',
-          WebkitAppearance: 'none',
-          appearance: 'none',
-          width: '100%',
-          cursor: 'pointer',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(200,168,130,0.6)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'right 14px center',
-        }}
-      >
-        {options.map(o => (
-          <option key={o.value} value={o.value} style={{ background: '#211f1d', color: '#e8e4dc' }}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  )
-}
-
 function OrbitSVG() {
   return (
     <svg width="64" height="64" viewBox="0 0 80 80" fill="none">
