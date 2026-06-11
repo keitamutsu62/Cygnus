@@ -1933,14 +1933,28 @@ export default function InventoryPage() {
                               setEditItem(inv)
                               setEditOrderId(o.id)
                             } else {
-                              // 在庫アイテムが見つからない場合も発注ステータスだけ更新
                               const oid = o.id
                               setReceivedOrderIds(prev => { const s = new Set(prev); s.add(oid); return s })
-                              setHistory(prev => prev.map(h => h.id === oid ? { ...h, status: 'received' } : h))
+                              setHistory(prev => prev.map(h => h.id === oid ? { ...h, status: 'delivered' } : h))
+                              api(`/api/v1/orders/${oid}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'delivered' }) }).catch(() => {})
                               showToast('発注ステータスを更新しました')
                             }
                           }}
                         >在庫数を更新する</button>
+                      )}
+                      {o.status === 'received' && (
+                        <button
+                          style={{
+                            padding: '6px 14px', background: 'transparent', border: `1px solid ${goldBorder}`, borderRadius: 2,
+                            fontSize: 12, color: gold, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.08em',
+                          }}
+                          onClick={() => {
+                            const oid = o.id
+                            setHistory(prev => prev.map(h => h.id === oid ? { ...h, status: 'delivered' } : h))
+                            api(`/api/v1/orders/${oid}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'delivered' }) }).catch(() => {})
+                            showToast('納品済にしました')
+                          }}
+                        >納品済にする</button>
                       )}
                     </div>
                   </div>
@@ -1998,12 +2012,12 @@ export default function InventoryPage() {
             if (sentOrders.length > 0) {
               setSentIds(prev => { const s = new Set(prev); s.delete(matId); return s })
               setHistory(prev => prev.map(o =>
-                sentOrders.some(so => so.id === o.id) ? { ...o, status: 'received' } : o
+                sentOrders.some(so => so.id === o.id) ? { ...o, status: 'delivered' } : o
               ))
               sentOrders.forEach(o => {
                 api(`/api/v1/orders/${o.id}/status`, {
                   method: 'PATCH',
-                  body: JSON.stringify({ status: 'received' }),
+                  body: JSON.stringify({ status: 'delivered' }),
                 }).catch(() => {})
               })
             }
@@ -2011,10 +2025,10 @@ export default function InventoryPage() {
             if (editOrderId !== null) {
               const oid = editOrderId
               setReceivedOrderIds(prev => { const s = new Set(prev); s.add(oid); return s })
-              setHistory(prev => prev.map(o => o.id === oid ? { ...o, status: 'received' } : o))
+              setHistory(prev => prev.map(o => o.id === oid ? { ...o, status: 'delivered' } : o))
               api(`/api/v1/orders/${oid}/status`, {
                 method: 'PATCH',
-                body: JSON.stringify({ status: 'received' }),
+                body: JSON.stringify({ status: 'delivered' }),
               }).catch(() => {})
               setEditOrderId(null)
             }
