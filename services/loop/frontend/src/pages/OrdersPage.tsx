@@ -15,6 +15,7 @@ const alertC     = '#e07060'
 type OrderItem = {
   material_id: number
   material_name: string
+  jan_code: string | null
   quantity: number
   unit: string
   estimated_cost: number | null
@@ -210,7 +211,14 @@ function GroupCard({
                   borderBottom: i < allItems.length - 1 ? `1px solid ${border}` : 'none',
                 }}
               >
-                <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: zen }}>{item.material_name}</div>
+                <div>
+                  <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: zen }}>{item.material_name}</div>
+                  {item.jan_code && (
+                    <div style={{ fontSize: 11, color: muted, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.05em', marginTop: 2 }}>
+                      JAN: {item.jan_code}
+                    </div>
+                  )}
+                </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                   <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 18, color: gold }}>{item.quantity}</span>
                   <span style={{ fontSize: 13, color: muted, fontFamily: zen }}>{item.unit}</span>

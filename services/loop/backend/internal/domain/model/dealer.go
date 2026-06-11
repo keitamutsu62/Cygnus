@@ -63,6 +63,7 @@ type ItemWithMaterial struct {
 	OrderID       uint64  `db:"order_id"`
 	MaterialID    uint64  `db:"material_id"`
 	MaterialName  string  `db:"material_name"`
+	JanCode       *string `db:"jan_code"`
 	Quantity      uint32  `db:"quantity"`
 	Unit          string  `db:"unit"`
 	EstimatedCost *uint32 `db:"estimated_cost"`

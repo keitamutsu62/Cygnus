@@ -24,6 +24,7 @@ type OrderPDFData struct {
 
 type OrderPDFItem struct {
 	Name          string
+	JanCode       *string
 	Quantity      uint32
 	Unit          string
 	EstimatedCost *uint32
@@ -121,9 +122,9 @@ func GenerateOrderPDF(data OrderPDFData) ([]byte, error) {
 	// ─── 品目テーブル ────────────────────────────────────────────
 
 	tableY := y + 55
-	colX := [5]float64{40, 250, 340, 410, 480}
-	colW := [5]float64{210, 90, 70, 70, 75}
-	headers := [5]string{"品目名", "数量", "単位", "単価（円）", "金額（円）"}
+	colX := [6]float64{40, 185, 310, 360, 430, 500}
+	colW := [6]float64{145, 125, 50, 70, 70, 55}
+	headers := [6]string{"品目名", "JANコード", "数量", "単位", "単価（円）", "金額（円）"}
 
 	// ヘッダー背景
 	pdf.SetFillColor(45, 38, 30)
@@ -155,14 +156,22 @@ func GenerateOrderPDF(data OrderPDFData) ([]byte, error) {
 		pdf.SetY(ry + 7)
 		_ = pdf.Cell(&gopdf.Rect{W: colW[0] - 8, H: 14}, item.Name)
 
-		qty := fmt.Sprintf("%d", item.Quantity)
+		janStr := "—"
+		if item.JanCode != nil && *item.JanCode != "" {
+			janStr = *item.JanCode
+		}
 		pdf.SetX(colX[1] + 4)
 		pdf.SetY(ry + 7)
-		_ = pdf.Cell(&gopdf.Rect{W: colW[1] - 8, H: 14}, qty)
+		_ = pdf.Cell(&gopdf.Rect{W: colW[1] - 8, H: 14}, janStr)
 
+		qty := fmt.Sprintf("%d", item.Quantity)
 		pdf.SetX(colX[2] + 4)
 		pdf.SetY(ry + 7)
-		_ = pdf.Cell(&gopdf.Rect{W: colW[2] - 8, H: 14}, item.Unit)
+		_ = pdf.Cell(&gopdf.Rect{W: colW[2] - 8, H: 14}, qty)
+
+		pdf.SetX(colX[3] + 4)
+		pdf.SetY(ry + 7)
+		_ = pdf.Cell(&gopdf.Rect{W: colW[3] - 8, H: 14}, item.Unit)
 
 		var costStr, totalStr string
 		if item.EstimatedCost != nil {
@@ -174,12 +183,12 @@ func GenerateOrderPDF(data OrderPDFData) ([]byte, error) {
 			costStr = "—"
 			totalStr = "—"
 		}
-		pdf.SetX(colX[3] + 4)
-		pdf.SetY(ry + 7)
-		_ = pdf.Cell(&gopdf.Rect{W: colW[3] - 8, H: 14}, costStr)
 		pdf.SetX(colX[4] + 4)
 		pdf.SetY(ry + 7)
-		_ = pdf.Cell(&gopdf.Rect{W: colW[4] - 8, H: 14}, totalStr)
+		_ = pdf.Cell(&gopdf.Rect{W: colW[4] - 8, H: 14}, costStr)
+		pdf.SetX(colX[5] + 4)
+		pdf.SetY(ry + 7)
+		_ = pdf.Cell(&gopdf.Rect{W: colW[5] - 8, H: 14}, totalStr)
 	}
 
 	// 合計行
@@ -190,12 +199,12 @@ func GenerateOrderPDF(data OrderPDFData) ([]byte, error) {
 
 	_ = pdf.SetFont("NotoSansJP", "", 9)
 	pdf.SetTextColor(120, 100, 70)
-	pdf.SetX(colX[3] + 4)
+	pdf.SetX(colX[4] + 4)
 	pdf.SetY(totalY + 7)
 	_ = pdf.Cell(nil, "合計")
 
 	pdf.SetTextColor(30, 25, 20)
-	pdf.SetX(colX[4] + 4)
+	pdf.SetX(colX[5] + 4)
 	pdf.SetY(totalY + 7)
 	if totalCost > 0 {
 		_ = pdf.Cell(nil, fmt.Sprintf("%d 円", totalCost))

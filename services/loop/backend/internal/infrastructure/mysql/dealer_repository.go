@@ -149,7 +149,7 @@ func (r *OrderRepository) FindItemsForOrders(ctx context.Context, orderIDs []uin
 		return nil, nil
 	}
 	query, args, err := sqlx.In(`
-		SELECT oi.order_id, oi.material_id, m.name AS material_name, oi.quantity, oi.unit, oi.estimated_cost
+		SELECT oi.order_id, oi.material_id, m.name AS material_name, m.jan_code, oi.quantity, oi.unit, oi.estimated_cost
 		FROM order_items oi
 		JOIN materials m ON m.id = oi.material_id
 		WHERE oi.order_id IN (?)

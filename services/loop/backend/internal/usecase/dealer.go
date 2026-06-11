@@ -194,6 +194,7 @@ func (u *DealerUsecase) DeleteOrderItem(ctx context.Context, orderID, materialID
 type OrderHistoryItemEntry struct {
 	MaterialID    uint64  `json:"material_id"`
 	MaterialName  string  `json:"material_name"`
+	JanCode       *string `json:"jan_code"`
 	Quantity      uint32  `json:"quantity"`
 	Unit          string  `json:"unit"`
 	EstimatedCost *uint32 `json:"estimated_cost"`
@@ -237,6 +238,7 @@ func (u *DealerUsecase) SendOrder(ctx context.Context, orderID uint64, salonName
 	for i, it := range rawItems {
 		pdfItems[i] = pdf.OrderPDFItem{
 			Name:          it.MaterialName,
+			JanCode:       it.JanCode,
 			Quantity:      it.Quantity,
 			Unit:          it.Unit,
 			EstimatedCost: it.EstimatedCost,
@@ -330,6 +332,7 @@ func (u *DealerUsecase) ListOrdersHistory(ctx context.Context, salonID uint64) (
 		itemsByOrder[it.OrderID] = append(itemsByOrder[it.OrderID], OrderHistoryItemEntry{
 			MaterialID:    it.MaterialID,
 			MaterialName:  it.MaterialName,
+			JanCode:       it.JanCode,
 			Quantity:      it.Quantity,
 			Unit:          it.Unit,
 			EstimatedCost: it.EstimatedCost,
