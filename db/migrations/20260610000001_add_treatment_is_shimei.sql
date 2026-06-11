@@ -1,0 +1,11 @@
+SET @col_exists = (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'treatments' AND COLUMN_NAME = 'is_shimei'
+);
+SET @sql = IF(@col_exists = 0,
+  'ALTER TABLE treatments ADD COLUMN is_shimei BOOLEAN NOT NULL DEFAULT FALSE AFTER source',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

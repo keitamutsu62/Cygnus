@@ -56,7 +56,7 @@ echo ""
 # ④ フロントエンドビルド
 echo "▶ [4/5] Admin フロントエンド ビルド..."
 cd services/admin/frontend
-VITE_API_BASE="$API_BASE" npm run build
+VITE_API_BASE="https://api.cygnus.style" npm run build
 cd ../../..
 echo "✅ フロントエンドビルド完了"
 echo ""

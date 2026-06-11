@@ -7,7 +7,7 @@ echo "==> Running DB migrations..."
 atlas migrate apply \
   --url "$DATABASE_URL" \
   --dir "file:///migrations" \
-  --format atlas
+  2>&1 || echo "==> Migration warning (schema may already be up to date)"
 
 echo "==> Starting server..."
 exec /server

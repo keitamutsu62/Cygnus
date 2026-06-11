@@ -67,30 +67,30 @@ type RegisterInput struct {
 	OwnerPassword string
 }
 
-// Register サロン新規登録。staffs + cygnus_accounts + salon_memberships を同時に作成する。
-func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (*model.Staff, error) {
+// Register サロン新規登録。staffs + cygnus_accounts + salon_memberships を同時に作成し、JWTを返す。
+func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (string, error) {
 	if existing, _ := u.staffRepo.FindByEmail(ctx, in.OwnerEmail); existing != nil {
-		return nil, apierror.ErrConflict
+		return "", apierror.ErrConflict
 	}
 
 	plan, err := u.planRepo.FindDefault(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Register: find plan: %w", err)
+		return "", fmt.Errorf("Register: find plan: %w", err)
 	}
 
 	salon := &model.Salon{Name: in.SalonName}
 	if err := u.salonRepo.Create(ctx, salon); err != nil {
-		return nil, fmt.Errorf("Register: create salon: %w", err)
+		return "", fmt.Errorf("Register: create salon: %w", err)
 	}
 
 	sub := &model.Subscription{SalonID: salon.ID, PlanID: plan.ID, Status: model.SubscriptionActive}
 	if err := u.subscriptionRepo.Create(ctx, sub); err != nil {
-		return nil, fmt.Errorf("Register: create subscription: %w", err)
+		return "", fmt.Errorf("Register: create subscription: %w", err)
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(in.OwnerPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, fmt.Errorf("Register: hash password: %w", err)
+		return "", fmt.Errorf("Register: hash password: %w", err)
 	}
 
 	owner := &model.Staff{
@@ -101,7 +101,7 @@ func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (*model.St
 		Role:         model.StaffRoleOwner,
 	}
 	if err := u.staffRepo.Create(ctx, owner); err != nil {
-		return nil, fmt.Errorf("Register: create owner: %w", err)
+		return "", fmt.Errorf("Register: create owner: %w", err)
 	}
 
 	// cygnus_accounts — STUDIOで先に作成済みの場合は使い回す
@@ -109,7 +109,7 @@ func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (*model.St
 	if err != nil {
 		cygnusID, err := u.generateUniqueCygnusID(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("Register: generate cygnus id: %w", err)
+			return "", fmt.Errorf("Register: generate cygnus id: %w", err)
 		}
 		account = &model.CygnusAccount{
 			CygnusID:     cygnusID,
@@ -118,11 +118,11 @@ func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (*model.St
 			DisplayName:  in.OwnerName,
 		}
 		if err := u.accountRepo.Create(ctx, account); err != nil {
-			return nil, fmt.Errorf("Register: create cygnus account: %w", err)
+			return "", fmt.Errorf("Register: create cygnus account: %w", err)
 		}
 	}
 	if err := u.staffRepo.LinkCygnusAccount(ctx, owner.ID, account.ID); err != nil {
-		return nil, fmt.Errorf("Register: link cygnus account: %w", err)
+		return "", fmt.Errorf("Register: link cygnus account: %w", err)
 	}
 	owner.CygnusAccountID = &account.ID
 
@@ -135,11 +135,15 @@ func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (*model.St
 			IsActive:        true,
 		}
 		if err := u.membershipRepo.Create(ctx, membership); err != nil {
-			return nil, fmt.Errorf("Register: create membership: %w", err)
+			return "", fmt.Errorf("Register: create membership: %w", err)
 		}
 	}
 
-	return owner, nil
+	token, err := u.generateJWT(owner, salon.Name)
+	if err != nil {
+		return "", fmt.Errorf("Register: generate jwt: %w", err)
+	}
+	return token, nil
 }
 
 type LoginInput struct {
@@ -153,6 +157,22 @@ func (u *AuthUsecase) Login(ctx context.Context, in LoginInput) (string, error) 
 		return "", apierror.ErrUnauthorized
 	}
 
+	// cygnus_accountが紐付いている場合はそちらのパスワードで認証（LOOP/STUDIO共通パスワード）
+	if staff.CygnusAccountID != nil {
+		account, err := u.accountRepo.FindByID(ctx, *staff.CygnusAccountID)
+		if err == nil {
+			if err := bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(in.Password)); err != nil {
+				return "", apierror.ErrUnauthorized
+			}
+			salon, err := u.salonRepo.FindByID(ctx, staff.SalonID)
+			if err != nil {
+				return "", fmt.Errorf("Login: find salon: %w", err)
+			}
+			return u.generateJWT(staff, salon.Name)
+		}
+	}
+
+	// cygnus_account未連携のスタッフはstaffsのパスワードで認証
 	if err := bcrypt.CompareHashAndPassword([]byte(staff.PasswordHash), []byte(in.Password)); err != nil {
 		return "", apierror.ErrUnauthorized
 	}
@@ -397,6 +417,11 @@ func (u *AuthUsecase) ResetPassword(ctx context.Context, token, newPassword stri
 		return fmt.Errorf("ResetPassword: update password: %w", err)
 	}
 
+	// cygnus_accountも同期
+	if staff, err := u.staffRepo.FindByID(ctx, prt.StaffID); err == nil && staff.CygnusAccountID != nil {
+		_ = u.accountRepo.UpdatePassword(ctx, *staff.CygnusAccountID, string(hash))
+	}
+
 	_ = u.resetTokenRepo.MarkUsed(ctx, prt.ID)
 	return nil
 }
@@ -406,6 +431,25 @@ func (u *AuthUsecase) ChangePassword(ctx context.Context, staffID uint64, curren
 	if err != nil {
 		return apierror.ErrUnauthorized
 	}
+
+	// 認証はcygnus_accountを優先（Loginと同じロジック）
+	if staff.CygnusAccountID != nil {
+		account, err := u.accountRepo.FindByID(ctx, *staff.CygnusAccountID)
+		if err == nil {
+			if err := bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(currentPassword)); err != nil {
+				return apierror.ErrUnauthorized
+			}
+			hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+			if err != nil {
+				return fmt.Errorf("ChangePassword: hash: %w", err)
+			}
+			if err := u.staffRepo.UpdatePassword(ctx, staffID, string(hash)); err != nil {
+				return fmt.Errorf("ChangePassword: update staffs: %w", err)
+			}
+			return u.accountRepo.UpdatePassword(ctx, *staff.CygnusAccountID, string(hash))
+		}
+	}
+
 	if err := bcrypt.CompareHashAndPassword([]byte(staff.PasswordHash), []byte(currentPassword)); err != nil {
 		return apierror.ErrUnauthorized
 	}

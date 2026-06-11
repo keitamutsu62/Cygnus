@@ -34,7 +34,7 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "all fields are required")
 	}
 
-	staff, err := h.uc.Register(c.Request().Context(), usecase.RegisterInput{
+	token, err := h.uc.Register(c.Request().Context(), usecase.RegisterInput{
 		SalonName:     req.SalonName,
 		OwnerName:     req.OwnerName,
 		OwnerEmail:    req.OwnerEmail,
@@ -47,11 +47,7 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "registration failed")
 	}
 
-	return c.JSON(http.StatusCreated, map[string]any{
-		"staff_id": staff.ID,
-		"email":    staff.Email,
-		"role":     staff.Role,
-	})
+	return c.JSON(http.StatusCreated, map[string]string{"token": token})
 }
 
 // POST /api/v1/auth/login

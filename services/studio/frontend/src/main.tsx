@@ -1,5 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { loadTheme, applyTheme } from './lib/theme'
+applyTheme(loadTheme())
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
 

@@ -6,8 +6,8 @@ import BottomSheet, { useBottomSheetDismiss } from '../components/BottomSheet'
 type Menu = { id: number; name: string; price: number; duration_minutes: number | null; menu_type: string }
 
 const S = {
-  bg: '#1a1816', surface: '#272422', gold: '#c8a882', text: '#e8e4dc',
-  muted: 'rgba(232,228,220,0.5)', border: 'rgba(232,228,220,0.08)',
+  bg: 'var(--bg)', surface: 'var(--surface-2)', gold: 'var(--accent)', text: 'var(--text)',
+  muted: 'var(--text-muted)', border: 'var(--border)',
   goldBorder: 'rgba(200,168,130,0.2)', goldDim: 'rgba(200,168,130,0.1)',
   josefin: "'Josefin Sans', sans-serif", zen: "'Zen Kaku Gothic New', sans-serif",
 }
@@ -172,12 +172,12 @@ function WorkDetail({ work, menus, onDelete, onTogglePublish }: {
 
       <div onClick={() => onTogglePublish(work)} style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 14px', background: '#272422', border: `1px solid ${S.border}`,
+        padding: '12px 14px', background: 'var(--surface-2)', border: `1px solid ${S.border}`,
         borderRadius: 2, marginBottom: 16, cursor: 'pointer',
       }}>
         <span style={{ fontSize: 11, color: S.muted, fontFamily: S.zen }}>RESERVEに公開する</span>
-        <div style={{ width: 36, height: 20, background: work.is_published ? S.gold : '#1a1816', border: `1px solid ${work.is_published ? S.gold : S.border}`, borderRadius: 20, position: 'relative', transition: 'background 0.2s' }}>
-          <div style={{ position: 'absolute', top: 2, left: work.is_published ? 18 : 2, width: 14, height: 14, background: work.is_published ? '#1a1816' : S.muted, borderRadius: '50%', transition: 'left 0.2s' }} />
+        <div style={{ width: 36, height: 20, background: work.is_published ? S.gold : 'var(--bg)', border: `1px solid ${work.is_published ? S.gold : S.border}`, borderRadius: 20, position: 'relative', transition: 'background 0.2s' }}>
+          <div style={{ position: 'absolute', top: 2, left: work.is_published ? 18 : 2, width: 14, height: 14, background: work.is_published ? 'var(--bg)' : S.muted, borderRadius: '50%', transition: 'left 0.2s' }} />
         </div>
       </div>
 
@@ -303,7 +303,7 @@ function AddWork({ menus, onAdded }: { menus: Menu[]; onAdded: (w: Work) => void
       <div style={{ marginBottom: 14 }}>
         <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.muted, fontFamily: S.josefin, marginBottom: 8 }}>コメント（任意）</div>
         <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="施術のポイントや使用カラー等..." rows={3} style={{
-          width: '100%', background: '#272422', border: `1px solid ${S.border}`, borderRadius: 2,
+          width: '100%', background: 'var(--surface-2)', border: `1px solid ${S.border}`, borderRadius: 2,
           padding: '13px 14px', color: S.text, fontSize: 14, fontFamily: S.zen,
           outline: 'none', resize: 'none', lineHeight: 1.6,
         }} />
@@ -311,12 +311,12 @@ function AddWork({ menus, onAdded }: { menus: Menu[]; onAdded: (w: Work) => void
 
       <div onClick={() => setIsPublished(v => !v)} style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 14px', background: '#272422', border: `1px solid ${S.border}`,
+        padding: '12px 14px', background: 'var(--surface-2)', border: `1px solid ${S.border}`,
         borderRadius: 2, marginBottom: 16, cursor: 'pointer',
       }}>
         <span style={{ fontSize: 11, color: S.muted, fontFamily: S.zen }}>RESERVEに公開する</span>
-        <div style={{ width: 36, height: 20, background: isPublished ? S.gold : '#1a1816', border: `1px solid ${isPublished ? S.gold : S.border}`, borderRadius: 20, position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 2, left: isPublished ? 18 : 2, width: 14, height: 14, background: isPublished ? '#1a1816' : S.muted, borderRadius: '50%', transition: 'left 0.2s' }} />
+        <div style={{ width: 36, height: 20, background: isPublished ? S.gold : 'var(--bg)', border: `1px solid ${isPublished ? S.gold : S.border}`, borderRadius: 20, position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 2, left: isPublished ? 18 : 2, width: 14, height: 14, background: isPublished ? 'var(--bg)' : S.muted, borderRadius: '50%', transition: 'left 0.2s' }} />
         </div>
       </div>
 
@@ -325,7 +325,7 @@ function AddWork({ menus, onAdded }: { menus: Menu[]; onAdded: (w: Work) => void
       <button onClick={handleSubmit} disabled={loading} style={{
         width: '100%', padding: 15, background: S.gold, border: 'none', borderRadius: 2,
         fontFamily: S.josefin, fontWeight: 200, fontSize: 12, letterSpacing: '0.25em',
-        textTransform: 'uppercase', color: '#1a1816', cursor: loading ? 'not-allowed' : 'pointer',
+        textTransform: 'uppercase', color: 'var(--bg)', cursor: loading ? 'not-allowed' : 'pointer',
         opacity: loading ? 0.7 : 1,
       }}>{loading ? '...' : '投稿する'}</button>
       <button onClick={dismiss} style={{ width: '100%', padding: 13, marginTop: 8, background: 'transparent', border: `1px solid ${S.border}`, borderRadius: 2, color: S.muted, fontSize: 12, letterSpacing: '0.12em', cursor: 'pointer', fontFamily: S.josefin }}>キャンセル</button>

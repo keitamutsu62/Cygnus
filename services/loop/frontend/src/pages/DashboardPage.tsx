@@ -2,7 +2,6 @@ import { createPortal } from 'react-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useNavigate } from 'react-router-dom'
-import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
 import { getClaims, getSalonName } from '../lib/auth'
 import { businessDaysToClosing } from '../lib/businessDays'
@@ -11,13 +10,14 @@ import type { DailySales, Staff, StaffSalesSummary } from '../types'
 
 const josefin = "'Josefin Sans', sans-serif"
 const zen     = "'Zen Kaku Gothic New', sans-serif"
-const muted   = 'rgba(232,228,220,0.55)'
-const border  = 'rgba(232,228,220,0.08)'
-const gold    = '#c8a882'
+const muted   = 'var(--text-muted)'
+const border  = 'var(--border)'
+const gold    = 'var(--accent)'
 const alertC  = '#e07060'
 const green   = '#6dba8e'
 const alertDim = 'rgba(224,112,96,0.1)'
-const goldDim  = 'rgba(200,168,130,0.1)'
+const goldDim    = 'var(--accent-dim)'
+const goldBorder = 'var(--accent-border)'
 
 const DAYS_JP = ['日', '月', '火', '水', '木', '金', '土']
 function fmt(n: number) { return n.toLocaleString('ja-JP') }
@@ -34,8 +34,8 @@ function dayLabel(i: number) {
 
 const OrbitSVG = () => (
   <svg width="12" height="12" viewBox="0 0 80 80" fill="none">
-    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)"  stroke="#c8a882" strokeWidth="6" opacity="0.9"/>
-    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" strokeWidth="6" opacity="0.5"/>
+    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)"  stroke="var(--accent)" strokeWidth="6" opacity="0.9"/>
+    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="var(--accent)" strokeWidth="6" opacity="0.5"/>
   </svg>
 )
 
@@ -51,8 +51,8 @@ const BS_CSS = `
 .bs-overlay.open { opacity: 1; pointer-events: auto; }
 .bs-panel {
   width: 100%; max-width: 480px; box-sizing: border-box;
-  background: #1a1816;
-  border-top: 1px solid rgba(200,168,130,0.3);
+  background: var(--bg);
+  border-top: 1px solid var(--accent-border);
   border-radius: 16px 16px 0 0;
   padding: 24px 20px 40px;
   transform: translateY(100%);
@@ -192,11 +192,11 @@ function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => voi
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {items.map(n => (
               <div key={n.id} style={{
-                background: '#211f1d', border: `1px solid ${border}`,
+                background: 'var(--surface)', border: `1px solid ${border}`,
                 borderLeft: `3px solid ${n.borderColor}`, borderRadius: 2, padding: '14px 16px',
               }}>
                 <div style={{ fontSize: 13, color: muted, fontFamily: josefin, marginBottom: 4 }}>{n.meta}</div>
-                <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{n.title}</div>
+                <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen }}>{n.title}</div>
                 <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100, marginTop: 3 }}>{n.sub}</div>
               </div>
             ))}
@@ -284,9 +284,9 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   あと<strong style={{ margin: '0 4px' }}>{daysLeft}</strong>営業日で翌月伝票になります。このまま発注しますか？
                 </div>
               )}
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
-              <div style={{ fontSize: 19, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
-              <div style={{ background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>リストに追加</div>
+              <div style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
+              <div style={{ background: 'var(--surface)', border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
                 <div style={{ paddingBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 14, color: muted }}>発注数</span>
@@ -297,7 +297,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                         style={{
                           width: 80, padding: '4px 8px', textAlign: 'right' as const,
                           background: 'transparent', border: `1px solid rgba(232,228,220,0.15)`, borderRadius: 2,
-                          color: '#e8e4dc', fontFamily: josefin, fontSize: 16, outline: 'none',
+                          color: 'var(--text)', fontFamily: josefin, fontSize: 16, outline: 'none',
                         }}
                       />
                       <span style={{ fontSize: 14, color: muted }}>{item.stock_unit}</span>
@@ -310,14 +310,14 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                     onChange={e => setDealerId(Number(e.target.value))}
                     style={{
                       background: 'transparent', border: 'none', outline: 'none',
-                      color: '#e8e4dc', fontFamily: zen, fontSize: 16, textAlign: 'right' as const,
+                      color: 'var(--text)', fontFamily: zen, fontSize: 16, textAlign: 'right' as const,
                       maxWidth: 180,
                     }}
                   >
-                    {dealers.map(d => <option key={d.id} value={d.id} style={{ background: '#1a1816' }}>{d.name}</option>)}
+                    {dealers.map(d => <option key={d.id} value={d.id} style={{ background: 'var(--bg)' }}>{d.name}</option>)}
                   </select>
                 </ModalRow>
-                <ModalRow label="送信方法"><span style={{ fontSize: 15, color: '#e8e4dc', fontWeight: 400 }}>LINE</span></ModalRow>
+                <ModalRow label="送信方法"><span style={{ fontSize: 15, color: 'var(--text)', fontWeight: 400 }}>LINE</span></ModalRow>
               </div>
               <button
                 onClick={submit}
@@ -331,7 +331,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   color: (loading || confirmed) ? muted : '#1a1816',
                   cursor: (loading || confirmed) ? 'default' : 'pointer',
                 }}
-              >{(loading || confirmed) ? '送信中...' : '発注を送信する'}</button>
+              >{(loading || confirmed) ? '追加中...' : 'リストに追加する'}</button>
               <button
                 onClick={close}
                 style={{
@@ -349,7 +349,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                 position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 gap: 16,
-                background: '#1a1816',
+                background: 'var(--bg)',
               }}>
                 {/* 丸: マウント直後からポップイン */}
                 <div style={{
@@ -381,7 +381,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   color: green, textAlign: 'center' as const,
                   opacity: 0,
                   animation: 'checkFade 0.25s ease both 0.7s',
-                }}>送信完了</div>
+                }}>リスト追加完了</div>
               </div>
             )}
 
@@ -406,7 +406,7 @@ function SectionTitle({ label, sub, link, onLink }: {
 }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: josefin, fontWeight: 200, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: '#e8e4dc' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: josefin, fontWeight: 200, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--text)' }}>
         <OrbitSVG />{label}
         <span style={{ fontSize: 13, color: muted, fontWeight: 300, letterSpacing: '0.05em', textTransform: 'none' as const }}>{sub}</span>
       </div>
@@ -435,13 +435,13 @@ export default function DashboardPage() {
   const [dayOffset,   setDayOffset]   = useState(0)
   const [staffList,   setStaffList]   = useState<StaffSalesSummary[]>([])
   const [myAvatarUrl, setMyAvatarUrl] = useState<string | null>(null)
-  const [invAlerts,   setInvAlerts]   = useState<InvAlert[]>([])
-  const [dealers,     setDealers]     = useState<Dealer[]>([])
-  const [orderTarget, setOrderTarget] = useState<InvAlert | null>(null)
-  const [sentOrders,  setSentOrders]  = useState<{ name: string; qty: string; dealer: string }[]>(() => {
-    try { return JSON.parse(sessionStorage.getItem('dashboard_sent_orders') ?? '[]') } catch { return [] }
-  })
-  const [showNotif,   setShowNotif]   = useState(false)
+  const [invAlerts,        setInvAlerts]        = useState<InvAlert[]>([])
+  const [dealers,          setDealers]          = useState<Dealer[]>([])
+  const [orderTarget,      setOrderTarget]      = useState<InvAlert | null>(null)
+  const [listMaterialIds,  setListMaterialIds]  = useState<Set<number>>(new Set())
+  const [sentMaterialIds,  setSentMaterialIds]  = useState<Set<number>>(new Set())
+  const [listOrders,       setListOrders]       = useState<{ name: string; qty: string; dealer: string }[]>([])
+  const [showNotif,        setShowNotif]        = useState(false)
   const { msg: toastMsg, showError }  = useToast()
 
   const cardRef      = useRef<HTMLDivElement>(null)
@@ -466,17 +466,33 @@ export default function DashboardPage() {
         setSalesDays(days.map(d => ({ ...d, data: map.get(d.dateStr) ?? null })))
       }).catch(() => showError('売上データの読み込みに失敗しました'))
 
-    apiFetch<InvAlert[]>(`/api/v1/inventory?store_id=${storeId}`)
-      .then(d => {
-        const sentNames = new Set<string>(
-          JSON.parse(sessionStorage.getItem('dashboard_sent_orders') ?? '[]').map((o: { name: string }) => o.name)
+    // 在庫と発注履歴を並行取得し、pending 品目をアラートから除外
+    Promise.all([
+      apiFetch<InvAlert[]>(`/api/v1/inventory?store_id=${storeId}`).catch(() => [] as InvAlert[]),
+      apiFetch<{ id: number; status: string; dealer_name: string; items: { material_id: number; material_name: string; quantity: number; unit: string }[] }[]>('/api/v1/orders/history').catch(() => []),
+    ]).then(([invData, ordersData]) => {
+      const pending = ordersData.filter(o => o.status === 'pending')
+      const sent    = ordersData.filter(o => o.status === 'sent')
+      const pendingIds = new Set<number>(
+        pending.flatMap(o => (o.items ?? []).map(it => Number(it.material_id)))
+      )
+      const sentIds = new Set<number>(
+        sent.flatMap(o => (o.items ?? []).map(it => Number(it.material_id)))
+      )
+      setListMaterialIds(pendingIds)
+      setSentMaterialIds(sentIds)
+      setListOrders(
+        pending.flatMap(o =>
+          (o.items ?? []).map(it => ({ name: it.material_name, qty: `${it.quantity}${it.unit}`, dealer: o.dealer_name }))
         )
-        setInvAlerts(
-          (Array.isArray(d) ? d : [])
-            .filter(i => (i.status === '要発注' || i.status === '注意') && !sentNames.has(i.name))
-            .slice(0, 3)
-        )
-      }).catch(() => showError('在庫アラートの読み込みに失敗しました'))
+      )
+      // バッジが「リスト中」のもの（pending）は除外。送信済みはバッジ付きで表示
+      setInvAlerts(
+        (Array.isArray(invData) ? invData : [])
+          .filter(i => (i.status === '要発注' || i.status === '注意') && !pendingIds.has(i.material_id))
+          .slice(0, 3)
+      )
+    }).catch(() => showError('在庫アラートの読み込みに失敗しました'))
 
     apiFetch<Dealer[]>('/api/v1/dealers')
       .then(d => setDealers(Array.isArray(d) ? d : []))
@@ -560,7 +576,6 @@ export default function DashboardPage() {
 
   return (
     <>
-    <AppLayout>
       <style>{`
         @keyframes circlePop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
         @keyframes checkFade{0%{opacity:0}100%{opacity:1}}
@@ -573,12 +588,12 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 14, color: muted, fontFamily: zen, marginBottom: 4 }}>おはようございます</div>
-            <div style={{ fontSize: 17, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{salonName}</div>
+            <div style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', fontFamily: zen }}>{salonName}</div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <div onClick={() => setShowNotif(true)} style={{
               width: 34, height: 34, borderRadius: '50%',
-              background: '#211f1d', border: `1px solid ${border}`,
+              background: 'var(--surface)', border: `1px solid ${border}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', position: 'relative',
             }}>
@@ -635,7 +650,7 @@ export default function DashboardPage() {
         <div
           ref={cardRef}
           style={{
-            background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
+            background: 'var(--surface)', border: `1px solid ${border}`, borderRadius: 2,
             padding: '16px 20px', marginBottom: 4,
             position: 'relative', overflow: 'hidden',
           }}
@@ -650,7 +665,7 @@ export default function DashboardPage() {
               {data ? `${data.client_count}名来店` : '—'}
             </div>
           </div>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 40, color: '#e8e4dc', lineHeight: 1, marginBottom: 12, letterSpacing: '0.02em' }}>
+          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 40, color: 'var(--text)', lineHeight: 1, marginBottom: 12, letterSpacing: '0.02em' }}>
             {data
               ? <><span style={{ fontSize: 16, color: muted, marginRight: 2 }}>¥</span>{fmt(data.total_sales)}</>
               : <span style={{ fontSize: 28, color: muted }}>—</span>
@@ -664,7 +679,7 @@ export default function DashboardPage() {
             ].map((kpi, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <div style={{ fontSize: 12, color: muted, letterSpacing: '0.1em', fontFamily: josefin }}>{kpi.label}</div>
-                <div style={{ fontSize: 15, color: '#e8e4dc', fontFamily: josefin, fontWeight: 100 }}>{kpi.value}</div>
+                <div style={{ fontSize: 15, color: 'var(--text)', fontFamily: josefin, fontWeight: 100 }}>{kpi.value}</div>
               </div>
             ))}
           </div>
@@ -675,11 +690,14 @@ export default function DashboardPage() {
           <>
             <SectionTitle label="在庫アラート" sub="· 要発注 上位3件" link="すべて見る →" onLink={() => navigate('/inventory')} />
             {invAlerts.map(item => {
-              const crit = item.status === '要発注'
-              const sent = sentOrders.some(o => o.name === item.name)
+              const inList = listMaterialIds.has(item.material_id)
+              const isSent = !inList && sentMaterialIds.has(item.material_id)
+              const badge  = inList ? 'リスト中' : isSent ? '送信済' : item.status
+              const crit   = item.status === '要発注'
+              const sent   = inList
               return (
                 <div key={item.id} style={{
-                  background: '#211f1d',
+                  background: 'var(--surface)',
                   border: `1px solid ${border}`,
                   borderLeft: `3px solid ${crit ? alertC : gold}`,
                   borderRadius: 2, padding: '14px 16px', marginBottom: 10,
@@ -687,7 +705,7 @@ export default function DashboardPage() {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                      <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{item.name}</div>
+                      <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 3 }}>{item.name}</div>
                       {item.brand && <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>{item.brand}</div>}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
@@ -697,10 +715,10 @@ export default function DashboardPage() {
                       <div style={{
                         fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                         padding: '2px 8px', borderRadius: 1,
-                        background: crit ? alertDim : goldDim,
-                        color: crit ? alertC : gold,
-                        border: `1px solid ${crit ? 'rgba(224,112,96,0.25)' : 'rgba(200,168,130,0.2)'}`,
-                      }}>{item.status}</div>
+                        background: isSent ? 'rgba(160,160,160,0.12)' : crit ? alertDim : goldDim,
+                        color: isSent ? 'rgba(232,228,220,0.45)' : crit ? alertC : gold,
+                        border: `1px solid ${isSent ? 'rgba(232,228,220,0.15)' : crit ? 'rgba(224,112,96,0.25)' : 'rgba(200,168,130,0.2)'}`,
+                      }}>{badge}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -710,9 +728,9 @@ export default function DashboardPage() {
                     {sent ? (
                       <div style={{
                         padding: '6px 14px', borderRadius: 2,
-                        background: 'rgba(109,186,142,0.1)', border: '1px solid rgba(109,186,142,0.25)',
-                        fontSize: 12, letterSpacing: '0.1em', color: green, fontFamily: josefin,
-                      }}>送信済</div>
+                        background: goldDim, border: `1px solid ${goldBorder}`,
+                        fontSize: 12, letterSpacing: '0.1em', color: gold, fontFamily: josefin,
+                      }}>リスト中</div>
                     ) : (
                       <button
                         onClick={() => setOrderTarget(item)}
@@ -726,7 +744,7 @@ export default function DashboardPage() {
                           color: crit ? '#1a1816' : gold, cursor: 'pointer', flexShrink: 0,
                           WebkitAppearance: 'none',
                         }}
-                      >発注する</button>
+                      >リストに追加</button>
                     )}
                   </div>
                 </div>
@@ -735,30 +753,30 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* ─── 発注状況 ─── */}
+        {/* ─── 発注リスト ─── */}
         <>
           <SectionTitle
-            label="発注状況" sub="· 本日" link="履歴を見る →"
-            onLink={() => navigate('/inventory', { state: { tab: 'history' } })}
+            label="発注リスト" sub="· 未送信" link="リストを開く →"
+            onLink={() => navigate('/inventory', { state: { tab: 'orders' } })}
           />
-          {sentOrders.length === 0 ? (
-            <div style={{ fontSize: 14, color: muted, fontFamily: zen, padding: '4px 0 8px', lineHeight: 1.7 }}>本日分の発注はありません</div>
-          ) : sentOrders.map((o, i) => (
+          {listOrders.length === 0 ? (
+            <div style={{ fontSize: 14, color: muted, fontFamily: zen, padding: '4px 0 8px', lineHeight: 1.7 }}>発注リストは空です</div>
+          ) : listOrders.map((o, i) => (
             <div key={i} style={{
-              background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
+              background: 'var(--surface)', border: `1px solid ${border}`, borderRadius: 2,
               padding: '14px 16px', marginBottom: 10,
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{o.name} × {o.qty}</div>
-                <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>{o.dealer} · LINE送信済み</div>
+                <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 3 }}>{o.name} × {o.qty}</div>
+                <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>{o.dealer} · 発注リスト中</div>
               </div>
               <div style={{
                 fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
                 padding: '3px 10px', borderRadius: 1, whiteSpace: 'nowrap' as const,
-                background: 'rgba(109,186,142,0.1)', color: green,
-                border: '1px solid rgba(109,186,142,0.25)',
-              }}>送信済</div>
+                background: goldDim, color: gold,
+                border: `1px solid ${goldBorder}`,
+              }}>リスト中</div>
             </div>
           ))}
         </>
@@ -771,7 +789,7 @@ export default function DashboardPage() {
               <div key={s.staff_id}
                 onClick={() => navigate('/sales', { state: { tab: 'staff', staffId: s.staff_id } })}
                 style={{
-                  background: '#211f1d', border: `1px solid ${border}`, borderRadius: 2,
+                  background: 'var(--surface)', border: `1px solid ${border}`, borderRadius: 2,
                   padding: '12px 16px', marginBottom: 8,
                   display: 'flex', alignItems: 'center', gap: 12,
                   cursor: 'pointer',
@@ -785,12 +803,12 @@ export default function DashboardPage() {
                   {s.avatar_initials ?? s.name.slice(0, 1)}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
+                  <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
                   <div style={{ fontSize: 13, color: muted, fontFamily: josefin, fontWeight: 100 }}>
                     {s.client_count > 0 ? `スタイリスト · ${s.client_count}名担当` : 'スタイリスト · 本日未来店'}
                   </div>
                 </div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: '#e8e4dc', flexShrink: 0 }}>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: 'var(--text)', flexShrink: 0 }}>
                   <span style={{ fontSize: 13, color: muted, marginRight: 1 }}>¥</span>{fmt(s.total_sales)}
                 </div>
               </div>
@@ -809,11 +827,8 @@ export default function DashboardPage() {
           onDone={(dealerName, qtyStr) => {
             const target = orderTarget
             setInvAlerts(prev => prev.filter(a => a.id !== target.id))
-            setSentOrders(prev => {
-              const next = [{ name: target.name, qty: qtyStr, dealer: dealerName }, ...prev]
-              sessionStorage.setItem('dashboard_sent_orders', JSON.stringify(next))
-              return next
-            })
+            setListMaterialIds(prev => new Set(prev).add(target.material_id))
+            setListOrders(prev => [{ name: target.name, qty: qtyStr, dealer: dealerName }, ...prev])
           }}
         />
       )}
@@ -823,7 +838,6 @@ export default function DashboardPage() {
         <NotifPanel items={notifItems} onClose={() => setShowNotif(false)} />
       )}
 
-    </AppLayout>
     <Toast msg={toastMsg} />
     </>
   )

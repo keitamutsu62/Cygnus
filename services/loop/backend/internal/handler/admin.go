@@ -32,17 +32,20 @@ func (h *AdminHandler) GetStats(c echo.Context) error {
 	type row struct{ Count int `db:"count"` }
 	var salons, staffs, activeSubs row
 
-	h.db.GetContext(ctx, &salons, `SELECT COUNT(*) AS count FROM salons`)
-	h.db.GetContext(ctx, &staffs, `SELECT COUNT(*) AS count FROM staffs`)
-	h.db.GetContext(ctx, &activeSubs, `SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active'`)
+	// salon_id=1 は内部テスト用アカウントのため除外
+	const internalSalonID = 1
 
-	// 今月売上合計
+	h.db.GetContext(ctx, &salons, `SELECT COUNT(*) AS count FROM salons WHERE id != ?`, internalSalonID)
+	h.db.GetContext(ctx, &staffs, `SELECT COUNT(*) AS count FROM staffs WHERE salon_id != ?`, internalSalonID)
+	h.db.GetContext(ctx, &activeSubs, `SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active' AND salon_id != ?`, internalSalonID)
+
+	// 今月売上合計（内部アカウント除外）
 	now := time.Now()
 	from := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 	var totalSales struct{ Total *int64 `db:"total"` }
 	h.db.GetContext(ctx, &totalSales,
-		`SELECT SUM(total_sales + retail_sales) AS total FROM daily_sales WHERE date >= ?`,
-		from.Format("2006-01-02"))
+		`SELECT SUM(total_sales + retail_sales) AS total FROM daily_sales WHERE date >= ? AND store_id NOT IN (SELECT id FROM stores WHERE salon_id = ?)`,
+		from.Format("2006-01-02"), internalSalonID)
 
 	total := int64(0)
 	if totalSales.Total != nil {
@@ -154,7 +157,7 @@ func findAdminAppt(ctx context.Context, db *sqlx.DB, id uint64) (*model.AdminApp
 
 // GET /admin/v1/aws-cost
 func (h *AdminHandler) GetAWSCost(c echo.Context) error {
-	ctx, cancel := context.WithTimeout(c.Request().Context(), 8*time.Second)
+	ctx, cancel := context.WithTimeout(c.Request().Context(), 12*time.Second)
 	defer cancel()
 
 	cfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion("us-east-1"))
@@ -171,7 +174,10 @@ func (h *AdminHandler) GetAWSCost(c echo.Context) error {
 		end = now.AddDate(0, 0, 1).Format("2006-01-02")
 	}
 
-	// 合計
+	// プロジェクト開始日（累計の起点）
+	projectStart := "2026-05-01"
+
+	// 当月合計
 	out, err := ce.GetCostAndUsage(ctx, &costexplorer.GetCostAndUsageInput{
 		TimePeriod:  &cetypes.DateInterval{Start: aws.String(start), End: aws.String(end)},
 		Granularity: cetypes.GranularityMonthly,
@@ -187,7 +193,27 @@ func (h *AdminHandler) GetAWSCost(c echo.Context) error {
 	amount := out.ResultsByTime[0].Total["UnblendedCost"].Amount
 	unit   := out.ResultsByTime[0].Total["UnblendedCost"].Unit
 
-	// サービス別内訳
+	// 累計合計（プロジェクト開始〜今日）
+	cumEnd := end
+	cumOut, err := ce.GetCostAndUsage(ctx, &costexplorer.GetCostAndUsageInput{
+		TimePeriod:  &cetypes.DateInterval{Start: aws.String(projectStart), End: aws.String(cumEnd)},
+		Granularity: cetypes.GranularityMonthly,
+		Metrics:     []string{"UnblendedCost"},
+	})
+	var cumulativeAmount string
+	if err == nil {
+		var total float64
+		for _, r := range cumOut.ResultsByTime {
+			if a := r.Total["UnblendedCost"].Amount; a != nil {
+				if v, e := strconv.ParseFloat(*a, 64); e == nil {
+					total += v
+				}
+			}
+		}
+		cumulativeAmount = strconv.FormatFloat(total, 'f', 4, 64)
+	}
+
+	// サービス別内訳（当月）
 	byService, err := ce.GetCostAndUsage(ctx, &costexplorer.GetCostAndUsageInput{
 		TimePeriod:  &cetypes.DateInterval{Start: aws.String(start), End: aws.String(end)},
 		Granularity: cetypes.GranularityMonthly,
@@ -212,11 +238,13 @@ func (h *AdminHandler) GetAWSCost(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]any{
-		"status":       "ok",
-		"amount":       amount,
-		"unit":         unit,
-		"period_start": start,
-		"period_end":   end,
-		"breakdown":    breakdown,
+		"status":            "ok",
+		"amount":            amount,
+		"unit":              unit,
+		"period_start":      start,
+		"period_end":        end,
+		"cumulative_amount": cumulativeAmount,
+		"project_start":     projectStart,
+		"breakdown":         breakdown,
 	})
 }

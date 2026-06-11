@@ -37,7 +37,7 @@ func (r *MaterialRepository) FindByID(ctx context.Context, id uint64) (*model.Ma
 }
 
 func (r *MaterialRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Material, error) {
-	var list []*model.Material
+	list := make([]*model.Material, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM materials WHERE salon_id = ? ORDER BY category, name`, salonID)
 	if err != nil {

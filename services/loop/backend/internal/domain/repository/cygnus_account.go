@@ -12,6 +12,7 @@ type CygnusAccountRepository interface {
 	FindByEmail(ctx context.Context, email string) (*model.CygnusAccount, error)
 	FindByCygnusID(ctx context.Context, cygnusID string) (*model.CygnusAccount, error)
 	ExistsCygnusID(ctx context.Context, cygnusID string) (bool, error)
+	UpdatePassword(ctx context.Context, accountID uint64, passwordHash string) error
 }
 
 type SalonMembershipRepository interface {

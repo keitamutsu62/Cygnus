@@ -58,6 +58,12 @@ func (r *CygnusAccountRepository) ExistsCygnusID(ctx context.Context, cygnusID s
 	return count > 0, err
 }
 
+func (r *CygnusAccountRepository) UpdatePassword(ctx context.Context, accountID uint64, passwordHash string) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE cygnus_accounts SET password_hash = ? WHERE id = ?`, passwordHash, accountID)
+	return err
+}
+
 // ─────────────────────────────────────────────────────────────
 
 type SalonMembershipRepository struct{ db *sqlx.DB }

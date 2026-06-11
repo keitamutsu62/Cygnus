@@ -1,20 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import AppLayout from '../components/AppLayout'
 import { api, apiFetch } from '../lib/api'
 import { getClaims } from '../lib/auth'
 import type { DailySales, Staff, StaffDailySales, StaffSalesSummary, Store } from '../types'
 
-const gold       = '#c8a882'
-const surface    = '#211f1d'
+const gold       = 'var(--accent)'
+const surface    = 'var(--surface)'
 const bdr        = 'rgba(232,228,220,0.1)'
-const goldDim    = 'rgba(200,168,130,0.12)'
-const goldBorder = 'rgba(200,168,130,0.2)'
-const muted      = 'rgba(232,228,220,0.55)'
-const txt        = '#e8e4dc'
+const goldDim    = 'var(--accent-dim)'
+const goldBorder = 'var(--accent-border)'
+const muted      = 'var(--text-muted)'
+const txt        = 'var(--text)'
 const green      = '#6dba8e'
 const alertC     = '#e07060'
-const bg         = '#1a1816'
+const bg         = 'var(--bg)'
 const josefin    = "'Josefin Sans', sans-serif"
 const zen        = "'Zen Kaku Gothic New', sans-serif"
 
@@ -360,7 +359,7 @@ function StaffRankRow({ rank, name, initials, meta, sales, pct, onClick }: {
   return (
     <div style={{ background: surface, border: `1px solid ${bdr}`, borderRadius: 2, padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={onClick}>
       <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 16, color: rank === 1 ? gold : muted, minWidth: 18, textAlign: 'center' }}>{rank}</div>
-      <div style={{ width: 32, height: 32, background: '#272422', border: `1px solid ${bdr}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: muted, flexShrink: 0 }}>{ini}</div>
+      <div style={{ width: 32, height: 32, background: 'var(--surface-2)', border: `1px solid ${bdr}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: muted, flexShrink: 0 }}>{ini}</div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 15, fontWeight: 400, color: txt, marginBottom: 2 }}>{name}</div>
         <div style={{ fontSize: 13, color: muted }}>{meta}</div>
@@ -586,11 +585,14 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
 
   useEffect(() => {
     const { from, to } = fetchRange(period)
+    const t = todayStr()
+    const menuFrom = period === 'today' ? t : from
+    const menuTo   = period === 'today' ? t : to
     const staffParam = selectedStaffId ? `&staff_id=${selectedStaffId}` : ''
     apiFetch<StaffDailySales[]>(`/api/v1/sales/staff?from=${from}&to=${to}${staffParam}`)
       .then(data => setSales(Array.isArray(data) ? data : []))
       .catch(() => setSales([]))
-    apiFetch<MenuSummary[]>(`/api/v1/sales/staff/menus?from=${from}&to=${to}${staffParam}`)
+    apiFetch<MenuSummary[]>(`/api/v1/sales/staff/menus?from=${menuFrom}&to=${menuTo}${staffParam}`)
       .then(data => setMenus(Array.isArray(data) ? data : []))
       .catch(() => setMenus([]))
   }, [period, selectedStaffId])
@@ -848,7 +850,7 @@ export default function SalesPage() {
   const showCompare = period === 'compare'
 
   return (
-    <AppLayout>
+    <>
       {/* height:100% で外側スクロールを殺し、内側スクロールコンテナを使う */}
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* ヘッダー（固定） */}
@@ -915,6 +917,6 @@ export default function SalesPage() {
           )}
         </div>
       </div>
-    </AppLayout>
+    </>
   )
 }

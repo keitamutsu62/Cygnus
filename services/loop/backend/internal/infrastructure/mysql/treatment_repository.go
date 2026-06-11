@@ -40,7 +40,7 @@ func (r *TreatmentRepository) FindByID(ctx context.Context, id uint64) (*model.T
 }
 
 func (r *TreatmentRepository) FindByStaffID(ctx context.Context, staffID uint64, limit, offset int) ([]*model.Treatment, error) {
-	var list []*model.Treatment
+	list := make([]*model.Treatment, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM treatments WHERE staff_id = ? ORDER BY performed_at DESC LIMIT ? OFFSET ?`,
 		staffID, limit, offset)
@@ -51,7 +51,7 @@ func (r *TreatmentRepository) FindByStaffID(ctx context.Context, staffID uint64,
 }
 
 func (r *TreatmentRepository) FindBySalonID(ctx context.Context, salonID uint64, limit, offset int) ([]*model.Treatment, error) {
-	var list []*model.Treatment
+	list := make([]*model.Treatment, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM treatments WHERE salon_id = ? ORDER BY performed_at DESC LIMIT ? OFFSET ?`,
 		salonID, limit, offset)

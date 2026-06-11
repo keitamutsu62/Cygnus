@@ -1,6 +1,6 @@
 #!/bin/bash
 # tmuxの右下ペインで常時表示するコストウォッチャー
-RATE=147
+RATE=155
 
 while true; do
   clear
@@ -32,7 +32,7 @@ while true; do
     COST=$(python3 -c "print(f'¥{float(\"$ACTUAL\")*$RATE:,.0f}')" 2>/dev/null)
     KIND="実績"
   else
-    COST="¥7,115"
+    COST="¥6,140"
     KIND="推定"
   fi
 

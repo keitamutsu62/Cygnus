@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AppLayout from '../components/AppLayout'
 import { apiFetch } from '../lib/api'
 import type { Staff } from '../types'
 
 const josefin    = "'Josefin Sans', sans-serif"
 const zen        = "'Zen Kaku Gothic New', sans-serif"
-const gold       = '#c8a882'
-const goldDim    = 'rgba(200,168,130,0.12)'
-const goldBorder = 'rgba(200,168,130,0.2)'
-const muted      = 'rgba(232,228,220,0.55)'
-const border     = 'rgba(232,228,220,0.08)'
-const surface    = '#211f1d'
-const txt        = '#e8e4dc'
+const gold       = 'var(--accent)'
+const goldDim    = 'var(--accent-dim)'
+const goldBorder = 'var(--accent-border)'
+const muted      = 'var(--text-muted)'
+const border     = 'var(--border)'
+const surface    = 'var(--surface)'
+const txt        = 'var(--text)'
 const green      = '#6dba8e'
 const alertColor = '#e07060'
 
@@ -71,7 +70,7 @@ function CancelModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 48px' }}
+        style={{ width: '100%', maxWidth: 480, background: 'var(--bg)', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 48px' }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 24px' }}/>
@@ -97,7 +96,7 @@ function CancelModal({ onClose }: { onClose: () => void }) {
         </button>
         <button
           onClick={onClose}
-          style={{ width: '100%', padding: 14, background: gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: 'pointer' }}
+          style={{ width: '100%', padding: 14, background: gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: 'pointer' }}
         >
           キャンセル（解約しない）
         </button>
@@ -114,7 +113,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        style={{ width: '100%', maxWidth: 480, background: '#1a1816', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 48px' }}
+        style={{ width: '100%', maxWidth: 480, background: 'var(--bg)', borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0', padding: '20px 20px 48px' }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 24px' }}/>
@@ -196,7 +195,6 @@ export default function PlanPage() {
 
   return (
     <>
-    <AppLayout>
       {/* ヘッダー */}
       <div style={{ padding: '14px 20px 0', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
         <button
@@ -341,7 +339,6 @@ export default function PlanPage() {
         </div>
 
       </div>
-    </AppLayout>
 
     {cancelOpen  && <CancelModal  onClose={() => setCancelOpen(false)}  />}
     {paymentOpen && <PaymentModal onClose={() => setPaymentOpen(false)} />}

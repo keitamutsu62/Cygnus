@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { apiFetch, api } from '../lib/api'
 import { logout, getClaims } from '../lib/auth'
+import { useTheme, THEME_LABELS, type Theme } from '../lib/theme'
 import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import type { Profile, Work } from '../types'
 
 const S = {
-  bg: '#1a1816', surface: '#211f1d', surface2: '#272422',
-  gold: '#c8a882', goldBorder: 'rgba(200,168,130,0.2)', goldDim: 'rgba(200,168,130,0.1)',
-  text: '#e8e4dc', muted: 'rgba(232,228,220,0.5)', border: 'rgba(232,228,220,0.08)',
+  bg: 'var(--bg)', surface: 'var(--surface)', surface2: 'var(--surface-2)',
+  gold: 'var(--accent)', goldBorder: 'var(--accent-border)', goldDim: 'var(--accent-dim)',
+  text: 'var(--text)', muted: 'var(--text-muted)', border: 'var(--border)',
   green: '#6dba8e',
   josefin: "'Josefin Sans', sans-serif", zen: "'Zen Kaku Gothic New', sans-serif",
 }
@@ -21,6 +22,7 @@ export default function ProfilePage() {
   const navigate = useNavigate()
   const claims = getClaims()
   const displayName = claims?.display_name ?? ''
+  const { theme, setTheme } = useTheme()
 
   const [, setProfile] = useState<Profile | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string>('')
@@ -155,7 +157,7 @@ export default function ProfilePage() {
             background: S.gold, display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M7 1L9 3L3.5 8.5L1 9L1.5 6.5Z" stroke="#1a1816" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M7 1L9 3L3.5 8.5L1 9L1.5 6.5Z" stroke="var(--on-accent)" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
         </div>
@@ -204,7 +206,7 @@ export default function ProfilePage() {
             <div style={{ fontSize: 13, color: S.text, lineHeight: 1.75, marginBottom: 12, fontFamily: S.zen }}>{aiSuggestion}</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { setBio(aiSuggestion); setAiSuggestion('') }}
-                style={{ flex: 1, padding: 9, background: S.gold, color: '#1a1816', border: 'none', borderRadius: 2, fontSize: 11, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: S.josefin }}>この文章を使う</button>
+                style={{ flex: 1, padding: 9, background: S.gold, color: 'var(--on-accent)', border: 'none', borderRadius: 2, fontSize: 11, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: S.josefin }}>この文章を使う</button>
               <button onClick={() => setAiSuggestion('')}
                 style={{ padding: '9px 14px', background: 'transparent', border: `1px solid ${S.border}`, borderRadius: 2, fontSize: 11, color: S.muted, cursor: 'pointer', fontFamily: S.josefin }}>閉じる</button>
             </div>
@@ -257,7 +259,7 @@ export default function ProfilePage() {
             <div style={{ fontSize: 13, color: S.text, fontFamily: S.zen, marginBottom: 2 }}>RESERVEに公開する</div>
             <div style={{ fontSize: 11, color: S.muted, fontFamily: S.zen }}>ONにするとお客さんに表示されます</div>
           </div>
-          <div style={{ width: 36, height: 20, background: isPublished ? S.gold : '#1a1816', border: `1px solid ${isPublished ? S.gold : S.border}`, borderRadius: 20, position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: 36, height: 20, background: isPublished ? S.gold : 'var(--surface-2)', border: `1px solid ${isPublished ? S.gold : S.border}`, borderRadius: 20, position: 'relative', flexShrink: 0 }}>
             <div style={{ position: 'absolute', top: 2, left: isPublished ? 18 : 2, width: 14, height: 14, background: isPublished ? '#1a1816' : S.muted, borderRadius: '50%', transition: 'left 0.2s' }} />
           </div>
         </div>
@@ -282,6 +284,29 @@ export default function ProfilePage() {
           color: S.gold, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase',
           cursor: 'pointer', fontFamily: S.josefin,
         }}>RESERVE での見え方を確認</button>
+      </div>
+
+      {/* テーマ */}
+      <div style={{ padding: '24px 20px 0' }}>
+        <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.muted, fontFamily: S.josefin, marginBottom: 10 }}>テーマ</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {(['dark', 'light', 'pop'] as Theme[]).map(t => (
+            <button
+              key={t}
+              onClick={() => setTheme(t)}
+              style={{
+                flex: 1, padding: '10px 4px', border: `1px solid ${theme === t ? S.gold : S.border}`,
+                borderRadius: 6, background: theme === t ? S.goldDim : 'transparent',
+                cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+              }}
+            >
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: t === 'dark' ? '#1a1816' : t === 'light' ? '#f7f3ee' : '#ffffff', border: '1px solid rgba(128,128,128,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 9, height: 9, borderRadius: '50%', background: t === 'dark' ? '#c8a882' : t === 'light' ? '#9b7c5a' : '#f06292' }} />
+              </div>
+              <span style={{ fontSize: 9, fontFamily: S.josefin, letterSpacing: '0.08em', color: theme === t ? S.gold : S.muted }}>{THEME_LABELS[t]}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ログアウト */}
@@ -320,7 +345,7 @@ function ReservePreview({ displayName, currentSalon, avatarUrl, bio, specialties
   onClose: () => void
 }) {
   return (
-    <div style={{
+    <div data-theme="dark" style={{
       position: 'fixed', inset: 0, zIndex: 300,
       background: '#141210', display: 'flex', flexDirection: 'column',
       maxWidth: 480, margin: '0 auto',
@@ -427,7 +452,7 @@ function ReservePreview({ displayName, currentSalon, avatarUrl, bio, specialties
         <button style={{
           width: '100%', padding: 15, background: S.gold, border: 'none', borderRadius: 2,
           fontFamily: S.josefin, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: '#1a1816', cursor: 'default', opacity: 0.7,
+          color: 'var(--on-accent)', cursor: 'default', opacity: 0.7,
         }}>予約する（プレビュー）</button>
       </div>
     </div>

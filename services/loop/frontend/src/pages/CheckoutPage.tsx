@@ -7,15 +7,15 @@ import BottomSheet from '../components/BottomSheet'
 import { Toast, useToast } from '../components/Toast'
 import { ROLE_LABEL } from '../types'
 
-const gold = '#c8a882'
-const goldDim = 'rgba(200,168,130,0.12)'
-const goldBorder = 'rgba(200,168,130,0.25)'
-const bg = '#1a1816'
-const surface = '#211f1d'
-const surface2 = '#252320'
-const txt = '#e8e4dc'
-const muted = 'rgba(232,228,220,0.45)'
-const border = 'rgba(232,228,220,0.08)'
+const gold = 'var(--accent)'
+const goldDim = 'var(--accent-dim)'
+const goldBorder = 'var(--accent-border)'
+const bg = 'var(--bg)'
+const surface = 'var(--surface)'
+const surface2 = 'var(--surface-2)'
+const txt = 'var(--text)'
+const muted = 'var(--text-muted)'
+const border = 'var(--border)'
 const green = '#6dba8e'
 const josefin = "'Josefin Sans', sans-serif"
 const zen = "'Zen Kaku Gothic New', sans-serif"
@@ -265,8 +265,25 @@ export default function CheckoutPage() {
     const storeId = selectedStaff?.store_id ?? claims?.store_id ?? null
 
     try {
+      const shimeiEntry = shimei && effectiveShimeiRyo > 0
+        ? [api('/api/v1/treatments', {
+            method: 'POST',
+            body: JSON.stringify({
+              staff_id: selectedStaffId,
+              store_id: storeId,
+              menu_id: null,
+              menu_name: '指名料',
+              price: effectiveShimeiRyo,
+              source,
+              is_shimei: true,
+              count_as_client: false,
+              performed_at: now,
+              notes: null,
+            }),
+          }).then(r => { if (!r.ok) throw new Error() })]
+        : []
       await Promise.all([
-        ...menuItems.map(item =>
+        ...menuItems.map((item, index) =>
           api('/api/v1/treatments', {
             method: 'POST',
             body: JSON.stringify({
@@ -277,11 +294,13 @@ export default function CheckoutPage() {
               price: item.price,
               source,
               is_shimei: shimei,
+              count_as_client: index === 0,
               performed_at: now,
               notes: item.note ?? null,
             }),
           }).then(r => { if (!r.ok) throw new Error() }),
         ),
+        ...shimeiEntry,
         ...retailItems.map(item =>
           api('/api/v1/retail-sales', {
             method: 'POST',

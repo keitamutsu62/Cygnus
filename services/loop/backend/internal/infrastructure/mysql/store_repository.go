@@ -36,7 +36,7 @@ func (r *StoreRepository) FindByID(ctx context.Context, id uint64) (*model.Store
 }
 
 func (r *StoreRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Store, error) {
-	var list []*model.Store
+	list := make([]*model.Store, 0)
 	err := r.db.SelectContext(ctx, &list, `SELECT * FROM stores WHERE salon_id = ? ORDER BY id ASC`, salonID)
 	if err != nil {
 		return nil, fmt.Errorf("StoreRepository.FindBySalonID: %w", err)
@@ -97,7 +97,7 @@ func NewStoreSpecialClosureRepository(db *sqlx.DB) *StoreSpecialClosureRepositor
 }
 
 func (r *StoreSpecialClosureRepository) FindByStoreID(ctx context.Context, storeID uint64) ([]*model.StoreSpecialClosure, error) {
-	var list []*model.StoreSpecialClosure
+	list := make([]*model.StoreSpecialClosure, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM store_special_closures WHERE store_id = ? ORDER BY date ASC`, storeID)
 	if err != nil {

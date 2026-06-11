@@ -28,7 +28,7 @@ func (r *RetailSaleRepository) Create(ctx context.Context, rs *model.RetailSale)
 }
 
 func (r *RetailSaleRepository) FindByStore(ctx context.Context, storeID uint64, from, to string) ([]*model.RetailSale, error) {
-	var list []*model.RetailSale
+	list := make([]*model.RetailSale, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM retail_sales WHERE store_id=? AND DATE(sold_at) BETWEEN ? AND ? ORDER BY sold_at DESC`,
 		storeID, from, to)
@@ -39,7 +39,7 @@ func (r *RetailSaleRepository) FindByStore(ctx context.Context, storeID uint64, 
 }
 
 func (r *RetailSaleRepository) FindByStaff(ctx context.Context, staffID uint64, from, to string) ([]*model.RetailSale, error) {
-	var list []*model.RetailSale
+	list := make([]*model.RetailSale, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM retail_sales WHERE staff_id=? AND DATE(sold_at) BETWEEN ? AND ? ORDER BY sold_at DESC`,
 		staffID, from, to)

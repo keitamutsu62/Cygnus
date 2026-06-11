@@ -47,7 +47,7 @@ func (r *StaffRepository) FindByEmail(ctx context.Context, email string) (*model
 }
 
 func (r *StaffRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Staff, error) {
-	var list []*model.Staff
+	list := make([]*model.Staff, 0)
 	if err := r.db.SelectContext(ctx, &list, `
 		SELECT s.*, p.avatar_url
 		FROM staffs s

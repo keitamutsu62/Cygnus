@@ -19,6 +19,10 @@ type Config struct {
 	R2SecretKey string
 	R2Bucket    string
 	R2PublicURL string
+	// 発注書PDF（S3 + SES）
+	OrdersBucket string // 例: cygnus-loop-orders
+	OrdersRegion string // 例: ap-northeast-1
+	SESFrom      string // 例: orders@cygnus.style
 }
 
 func Load() *Config {
@@ -33,11 +37,14 @@ func Load() *Config {
 		JWTSecret:   getEnv("JWT_SECRET", "change-me"),
 		FrontendURL: getEnv("FRONTEND_URL", "http://localhost:5173"),
 		AdminToken:  getEnv("ADMIN_TOKEN", "change-me-admin"),
-		R2AccountID: getEnv("R2_ACCOUNT_ID", ""),
-		R2AccessKey: getEnv("R2_ACCESS_KEY", ""),
-		R2SecretKey: getEnv("R2_SECRET_KEY", ""),
-		R2Bucket:    getEnv("R2_BUCKET", ""),
-		R2PublicURL: getEnv("R2_PUBLIC_URL", ""),
+		R2AccountID:  getEnv("R2_ACCOUNT_ID", ""),
+		R2AccessKey:  getEnv("R2_ACCESS_KEY", ""),
+		R2SecretKey:  getEnv("R2_SECRET_KEY", ""),
+		R2Bucket:     getEnv("R2_BUCKET", ""),
+		R2PublicURL:  getEnv("R2_PUBLIC_URL", ""),
+		OrdersBucket: getEnv("ORDERS_BUCKET", ""),
+		OrdersRegion: getEnv("ORDERS_REGION", "ap-northeast-1"),
+		SESFrom:      getEnv("SES_FROM", ""),
 	}
 }
 

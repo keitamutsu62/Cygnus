@@ -19,7 +19,10 @@ type OrderRepository interface {
 	FindByID(ctx context.Context, id uint64) (*model.Order, error)
 	FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Order, error)
 	UpdateStatus(ctx context.Context, id uint64, status model.OrderStatus) error
+	Delete(ctx context.Context, id uint64) error
 	AddItems(ctx context.Context, items []*model.OrderItem) error
 	FindItems(ctx context.Context, orderID uint64) ([]*model.OrderItem, error)
 	FindItemsForOrders(ctx context.Context, orderIDs []uint64) ([]*model.ItemWithMaterial, error)
+	UpdateItemQuantity(ctx context.Context, orderID, materialID uint64, quantity uint32) error
+	DeleteItem(ctx context.Context, orderID, materialID uint64) error
 }

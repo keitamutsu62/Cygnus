@@ -3,8 +3,8 @@ import { apiFetch, api } from '../lib/api'
 import BottomSheet, { useBottomSheetDismiss } from '../components/BottomSheet'
 
 const S = {
-  gold: '#c8a882', text: '#e8e4dc', muted: 'rgba(232,228,220,0.5)',
-  border: 'rgba(232,228,220,0.08)', surface: '#211f1d', green: '#6dba8e',
+  gold: 'var(--accent)', text: 'var(--text)', muted: 'var(--text-muted)',
+  border: 'var(--border)', surface: 'var(--surface)', green: '#6dba8e',
   goldBorder: 'rgba(200,168,130,0.2)', goldDim: 'rgba(200,168,130,0.1)',
   josefin: "'Josefin Sans', sans-serif", zen: "'Zen Kaku Gothic New', sans-serif",
 }
@@ -176,14 +176,14 @@ function MemoEditSheet({ onSaved }: { onSaved: () => void }) {
         placeholder="今日感じたこと、気づいたことを残しておく..."
         rows={5} autoFocus
         style={{
-          width: '100%', background: '#272422', border: `1px solid ${S.border}`,
+          width: '100%', background: 'var(--surface-2)', border: `1px solid ${S.border}`,
           borderRadius: 2, padding: '13px 14px', color: S.text, fontSize: 14,
           fontFamily: S.zen, outline: 'none', resize: 'none', lineHeight: 1.75,
         }}
       />
       <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
         <button onClick={dismiss} style={{ flex: 1, padding: 12, background: 'transparent', border: `1px solid ${S.border}`, borderRadius: 2, color: S.muted, fontSize: 11, letterSpacing: '0.12em', cursor: 'pointer', fontFamily: S.josefin }}>キャンセル</button>
-        <button onClick={handleSave} disabled={loading} style={{ flex: 2, padding: 12, background: S.gold, border: 'none', borderRadius: 2, color: '#1a1816', fontSize: 11, letterSpacing: '0.2em', cursor: 'pointer', fontFamily: S.josefin, opacity: loading ? 0.7 : 1 }}>保存する</button>
+        <button onClick={handleSave} disabled={loading} style={{ flex: 2, padding: 12, background: S.gold, border: 'none', borderRadius: 2, color: 'var(--bg)', fontSize: 11, letterSpacing: '0.2em', cursor: 'pointer', fontFamily: S.josefin, opacity: loading ? 0.7 : 1 }}>保存する</button>
       </div>
     </>
   )

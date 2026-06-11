@@ -4,8 +4,8 @@ import { getClaims } from '../lib/auth'
 import BottomSheet, { useBottomSheetDismiss } from '../components/BottomSheet'
 
 const S = {
-  gold: '#c8a882', text: '#e8e4dc', muted: 'rgba(232,228,220,0.5)',
-  border: 'rgba(232,228,220,0.08)', surface: '#211f1d', surface2: '#272422',
+  gold: 'var(--accent)', text: 'var(--text)', muted: 'var(--text-muted)',
+  border: 'var(--border)', surface: 'var(--surface)', surface2: 'var(--surface-2)',
   goldBorder: 'rgba(200,168,130,0.2)', goldDim: 'rgba(200,168,130,0.1)',
   josefin: "'Josefin Sans', sans-serif", zen: "'Zen Kaku Gothic New', sans-serif",
   green: 'rgba(109,186,142,0.7)', greenBg: 'rgba(109,186,142,0.08)', greenBorder: 'rgba(109,186,142,0.2)',
@@ -152,7 +152,7 @@ export default function TimelinePage() {
               )}
               <div style={{
                 width: 8, height: 8, borderRadius: '50%',
-                border: `1px solid ${S.green}`, background: m.is_active ? S.green : '#1a1816',
+                border: `1px solid ${S.green}`, background: m.is_active ? S.green : 'var(--bg)',
                 flexShrink: 0, marginTop: 4,
               }} />
               <div style={{ flex: 1 }}>
@@ -197,7 +197,7 @@ export default function TimelinePage() {
               )}
               <div style={{
                 width: 8, height: 8, borderRadius: '50%',
-                border: `1px solid ${S.gold}`, background: c.is_current ? S.gold : '#1a1816',
+                border: `1px solid ${S.gold}`, background: c.is_current ? S.gold : 'var(--bg)',
                 flexShrink: 0, marginTop: 4,
               }} />
               <div style={{ flex: 1 }}>
@@ -367,7 +367,7 @@ function CareerForm({ initial, onSaved, onDeleted }: {
       <button onClick={handleSave} disabled={loading || !salonName.trim() || !role.trim()} style={{
         width: '100%', padding: 15, background: S.gold, border: 'none', borderRadius: 2,
         fontFamily: S.josefin, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase',
-        color: '#1a1816', cursor: 'pointer', opacity: (loading || !salonName.trim() || !role.trim()) ? 0.5 : 1,
+        color: 'var(--bg)', cursor: 'pointer', opacity: (loading || !salonName.trim() || !role.trim()) ? 0.5 : 1,
         marginBottom: 8,
       }}>{isEdit ? '更新する' : '追加する'}</button>
 

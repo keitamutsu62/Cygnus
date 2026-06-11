@@ -148,8 +148,65 @@ func (h *DealerHandler) GetOrder(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]any{"order": o, "items": items})
 }
 
+// POST /api/v1/orders/:id/send
+// PDF生成 → S3アップロード → SESメール or LINE URL を返す
+func (h *DealerHandler) SendOrder(c echo.Context) error {
+	claims := claimsFrom(c)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	result, err := h.uc.SendOrder(c.Request().Context(), id, claims.SalonName)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to send order")
+	}
+	return c.JSON(http.StatusOK, map[string]any{
+		"method":   result.Method,
+		"line_url": result.LineURL,
+		"pdf_url":  result.PDFURL,
+	})
+}
+
+// PATCH /api/v1/orders/:id/items/:material_id
+func (h *DealerHandler) UpdateOrderItem(c echo.Context) error {
+	orderID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	materialID, err := strconv.ParseUint(c.Param("material_id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid material_id")
+	}
+	var req struct {
+		Quantity uint32 `json:"quantity"`
+	}
+	if err := c.Bind(&req); err != nil || req.Quantity == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "quantity must be >= 1")
+	}
+	if err := h.uc.UpdateOrderItem(c.Request().Context(), orderID, materialID, req.Quantity); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update item")
+	}
+	return c.NoContent(http.StatusNoContent)
+}
+
+// DELETE /api/v1/orders/:id/items/:material_id
+func (h *DealerHandler) DeleteOrderItem(c echo.Context) error {
+	orderID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	materialID, err := strconv.ParseUint(c.Param("material_id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid material_id")
+	}
+	orderDeleted, err := h.uc.DeleteOrderItem(c.Request().Context(), orderID, materialID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to delete item")
+	}
+	return c.JSON(http.StatusOK, map[string]any{"order_deleted": orderDeleted})
+}
+
 // PATCH /api/v1/orders/:id/status
-// "sent" に変更したタイミングが LINE/email 発注通知の外部連携トリガー
 func (h *DealerHandler) UpdateOrderStatus(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

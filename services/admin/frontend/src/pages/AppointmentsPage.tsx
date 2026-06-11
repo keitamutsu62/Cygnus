@@ -1,5 +1,150 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import { adminFetch } from '../lib/api'
+
+// ── BottomSheet（LOOP と同一実装） ─────────────────────────────
+const BS_CSS = `
+.adm-bs-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.adm-bs-overlay.open { opacity: 1; pointer-events: auto; }
+.adm-bs-panel {
+  width: 100%; max-width: 600px; box-sizing: border-box;
+  background: #1a1816;
+  border-top: 1px solid rgba(200,168,130,0.3);
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px 48px;
+  transform: translateY(100%);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: 85vh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+}
+.adm-bs-overlay.open .adm-bs-panel { transform: translateY(0); }
+`
+;(function () {
+  const existing = document.getElementById('adm-bs-styles')
+  if (existing) existing.remove()
+  const el = document.createElement('style')
+  el.id = 'adm-bs-styles'
+  el.textContent = BS_CSS
+  document.head.appendChild(el)
+})()
+
+function BottomSheet({ onClose, children }: {
+  onClose: () => void
+  children: (close: () => void) => React.ReactNode
+}) {
+  const overlayRef    = useRef<HTMLDivElement>(null)
+  const panelRef      = useRef<HTMLDivElement>(null)
+  const onCloseRef    = useRef(onClose)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  onCloseRef.current  = onClose
+
+  function close() {
+    const overlay = overlayRef.current
+    const panel   = panelRef.current
+    if (overlay) {
+      overlay.style.transition    = 'none'
+      overlay.style.opacity       = '1'
+      overlay.style.pointerEvents = 'none'
+      overlay.classList.remove('open')
+    }
+    if (panel) {
+      panel.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
+      panel.style.transform  = 'translateY(100%)'
+    }
+    closeTimerRef.current = setTimeout(() => {
+      closeTimerRef.current = null
+      onCloseRef.current()
+    }, 450)
+  }
+
+  useEffect(() => {
+    const id1 = requestAnimationFrame(() => {
+      const id2 = requestAnimationFrame(() => {
+        overlayRef.current?.classList.add('open')
+      })
+      return () => cancelAnimationFrame(id2)
+    })
+    return () => {
+      cancelAnimationFrame(id1)
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    }
+  }, [])
+
+  // 背景スクロール禁止
+  useEffect(() => {
+    const overlay = overlayRef.current
+    const panel   = panelRef.current
+    if (!overlay || !panel) return
+    const stop = (e: TouchEvent) => { if (!panel.contains(e.target as Node)) e.preventDefault() }
+    overlay.addEventListener('touchmove', stop, { passive: false })
+    return () => overlay.removeEventListener('touchmove', stop)
+  }, [])
+
+  // スワイプで閉じる
+  useEffect(() => {
+    const el = panelRef.current
+    if (!el) return
+    let sy = 0, isDragging = false
+
+    const onStart = (e: TouchEvent) => { sy = e.touches[0].clientY; isDragging = true }
+    const onMove  = (e: TouchEvent) => {
+      if (!isDragging) return
+      const dy = e.touches[0].clientY - sy
+      if (dy > 0 && el.scrollTop === 0) {
+        e.preventDefault()
+        el.style.transition = 'none'
+        el.style.transform  = `translateY(${dy}px)`
+      }
+    }
+    const onEnd = (e: TouchEvent) => {
+      isDragging = false
+      const dy = e.changedTouches[0].clientY - sy
+      if (dy > 80 && el.scrollTop === 0) {
+        const overlay = overlayRef.current
+        if (overlay) {
+          overlay.style.transition    = 'none'
+          overlay.style.opacity       = '1'
+          overlay.style.pointerEvents = 'none'
+          overlay.classList.remove('open')
+        }
+        el.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
+        el.style.transform  = 'translateY(100%)'
+        setTimeout(() => onCloseRef.current(), 450)
+      } else {
+        el.style.transition = 'transform 0.35s ease'
+        el.style.transform  = 'translateY(0)'
+        setTimeout(() => { el.style.transition = ''; el.style.transform = '' }, 350)
+      }
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove',  onMove,  { passive: false })
+    el.addEventListener('touchend',   onEnd,   { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove',  onMove)
+      el.removeEventListener('touchend',   onEnd)
+    }
+  }, [])
+
+  return createPortal(
+    <div ref={overlayRef} className="adm-bs-overlay"
+      onClick={e => { if (e.target === e.currentTarget) close() }}
+    >
+      <div ref={panelRef} className="adm-bs-panel">
+        <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
+        {children(close)}
+      </div>
+    </div>,
+    document.body
+  )
+}
 
 const gold    = '#c8a882'
 const muted   = 'rgba(232,228,220,0.55)'
@@ -339,92 +484,85 @@ export default function AppointmentsPage() {
         ))}
       </div>
 
-      {/* ── 新規フォーム（モーダル） ── */}
+      {/* ── 新規フォーム（BottomSheet） ── */}
       {showForm && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100,
-        }} onClick={() => setShowForm(false)}>
-          <div style={{
-            width: '100%', maxWidth: 600,
-            background: '#211f1d', borderTop: `1px solid ${border}`,
-            borderRadius: '12px 12px 0 0', padding: 24,
-          }} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 13, color: gold, fontFamily: josefin, letterSpacing: '0.15em', marginBottom: 16 }}>
-              NEW APPOINTMENT
-            </div>
-            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[
-                { key: 'salon_name', label: 'サロン名 *', type: 'text', required: true },
-                { key: 'title',      label: '内容 *',     type: 'text', required: true },
-                { key: 'date',       label: '日付 *',     type: 'date', required: true },
-                { key: 'time',       label: '時間',       type: 'time', required: false },
-              ].map(({ key, label, type, required }) => (
-                <div key={key}>
-                  <label style={{ fontSize: 11, color: muted, fontFamily: josefin, letterSpacing: '0.1em', display: 'block', marginBottom: 4 }}>
-                    {label}
+        <BottomSheet onClose={() => setShowForm(false)}>
+          {close => (
+            <>
+              <div style={{ fontSize: 11, color: gold, fontFamily: josefin, letterSpacing: '0.22em', marginBottom: 20 }}>
+                // NEW APPOINTMENT
+              </div>
+              <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[
+                  { key: 'salon_name', label: 'サロン名', type: 'text', required: true },
+                  { key: 'title',      label: '内容',     type: 'text', required: true },
+                  { key: 'date',       label: '日付',     type: 'date', required: true },
+                  { key: 'time',       label: '時間',     type: 'time', required: false },
+                ].map(({ key, label, type, required }) => (
+                  <div key={key}>
+                    <label style={{ fontSize: 11, color: muted, fontFamily: josefin, letterSpacing: '0.12em', display: 'block', marginBottom: 6 }}>
+                      {label}{required && ' *'}
+                    </label>
+                    <input type={type} required={required}
+                      value={form[key as keyof typeof form]}
+                      onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                      style={inputStyle}
+                    />
+                  </div>
+                ))}
+                <div>
+                  <label style={{ fontSize: 11, color: muted, fontFamily: josefin, letterSpacing: '0.12em', display: 'block', marginBottom: 6 }}>
+                    メモ
                   </label>
-                  <input type={type} required={required}
-                    value={form[key as keyof typeof form]}
-                    onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                    style={inputStyle}
+                  <textarea rows={3} value={form.notes}
+                    onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                    style={{ ...inputStyle, resize: 'none' }}
                   />
                 </div>
-              ))}
-              <div>
-                <label style={{ fontSize: 11, color: muted, fontFamily: josefin, letterSpacing: '0.1em', display: 'block', marginBottom: 4 }}>
-                  メモ
-                </label>
-                <textarea rows={2} value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  style={{ ...inputStyle, resize: 'vertical' }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                <button type="button" onClick={() => setShowForm(false)} style={outlineBtn}>CANCEL</button>
-                <button type="submit" disabled={saving} style={{ ...goldBtn, flex: 2, opacity: saving ? 0.5 : 1 }}>
-                  {saving ? '...' : 'ADD'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                  <button type="button" onClick={close} style={outlineBtn}>CANCEL</button>
+                  <button type="submit" disabled={saving} style={{ ...goldBtn, flex: 2, opacity: saving ? 0.5 : 1 }}>
+                    {saving ? '...' : 'ADD'}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
+        </BottomSheet>
       )}
 
-      {/* ── 実績入力モーダル ── */}
+      {/* ── 実績入力（BottomSheet） ── */}
       {selected && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100,
-        }} onClick={() => setSelected(null)}>
-          <div style={{
-            width: '100%', maxWidth: 600,
-            background: '#211f1d', borderTop: `1px solid ${border}`,
-            borderRadius: '12px 12px 0 0', padding: 24,
-          }} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 2 }}>
-              {selected.salon_name}
-            </div>
-            <div style={{ fontSize: 15, fontFamily: zen, color: '#e8e4dc', marginBottom: 16 }}>
-              {selected.title}
-            </div>
-            <label style={{ fontSize: 11, color: muted, fontFamily: josefin, letterSpacing: '0.1em', display: 'block', marginBottom: 6 }}>
-              実績・結果
-            </label>
-            <textarea rows={4} value={resultInput}
-              onChange={e => setResultInput(e.target.value)}
-              placeholder="商談内容、次のアクションなど..."
-              style={{ ...inputStyle, marginBottom: 14, resize: 'vertical' }}
-            />
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setSelected(null)} style={outlineBtn}>CANCEL</button>
-              <button onClick={() => saveResult(selected)} disabled={saving}
-                style={{ ...goldBtn, flex: 2, opacity: saving ? 0.5 : 1 }}>
-                {saving ? '...' : '完了として記録'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <BottomSheet onClose={() => setSelected(null)}>
+          {close => (
+            <>
+              <div style={{ fontSize: 11, color: gold, fontFamily: josefin, letterSpacing: '0.22em', marginBottom: 16 }}>
+                // RESULT
+              </div>
+              <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 4 }}>
+                {selected.salon_name}
+              </div>
+              <div style={{ fontSize: 16, fontFamily: zen, color: '#e8e4dc', marginBottom: 20 }}>
+                {selected.title}
+              </div>
+              <label style={{ fontSize: 11, color: muted, fontFamily: josefin, letterSpacing: '0.12em', display: 'block', marginBottom: 6 }}>
+                実績・結果
+              </label>
+              <textarea rows={4} value={resultInput}
+                onChange={e => setResultInput(e.target.value)}
+                placeholder="商談内容、次のアクションなど..."
+                style={{ ...inputStyle, marginBottom: 16, resize: 'none' }}
+              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={close} style={outlineBtn}>CANCEL</button>
+                <button onClick={() => saveResult(selected)} disabled={saving}
+                  style={{ ...goldBtn, flex: 2, opacity: saving ? 0.5 : 1 }}>
+                  {saving ? '...' : '完了として記録'}
+                </button>
+              </div>
+            </>
+          )}
+        </BottomSheet>
       )}
 
       {/* ── Toast ── */}

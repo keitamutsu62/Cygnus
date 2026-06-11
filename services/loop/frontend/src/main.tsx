@@ -1,8 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { loadTheme, applyTheme } from './lib/theme'
+applyTheme(loadTheme())
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
 import AuthGuard from './components/AuthGuard'
+import AppLayout from './components/AppLayout'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import AcceptInvitationPage from './pages/AcceptInvitationPage'
@@ -15,7 +18,9 @@ import SettingsPage from './pages/SettingsPage'
 import CheckoutPage from './pages/CheckoutPage'
 import MenusPage from './pages/MenusPage'
 import PlanPage from './pages/PlanPage'
-
+import OrdersPage from './pages/OrdersPage'
+import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
@@ -25,13 +30,20 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
-        <Route path="/inventory" element={<AuthGuard><InventoryPage /></AuthGuard>} />
-        <Route path="/sales" element={<AuthGuard><SalesPage /></AuthGuard>} />
-        <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
-        <Route path="/checkout" element={<AuthGuard><CheckoutPage /></AuthGuard>} />
-        <Route path="/menus" element={<AuthGuard><MenusPage /></AuthGuard>} />
-        <Route path="/plan" element={<AuthGuard><PlanPage /></AuthGuard>} />
+        <Route element={<AuthGuard />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/sales" element={<SalesPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/menus" element={<MenusPage />} />
+            <Route path="/plan" element={<PlanPage />} />
+            <Route path="/orders" element={<OrdersPage />} />
+          </Route>
+          <Route path="/checkout" element={<CheckoutPage />} />
+        </Route>
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

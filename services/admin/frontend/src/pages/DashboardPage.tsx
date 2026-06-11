@@ -8,7 +8,9 @@ const green   = '#6dba8e'
 const josefin = "'Josefin Sans', sans-serif"
 const zen     = "'Zen Kaku Gothic New', sans-serif"
 
-const JPY_RATE = 147
+const JPY_RATE      = 155
+const CLAUDE_MONTHLY = 100  // Claude Max $100/月
+const PROJECT_START  = new Date('2026-05-01')
 
 type Stats = {
   salon_count:      number
@@ -25,6 +27,8 @@ type AWSCost = {
   unit?:   string
   period_start?: string
   period_end?:   string
+  cumulative_amount?: string
+  project_start?: string
   breakdown?: ServiceItem[]
   reason?: string
 }
@@ -79,23 +83,34 @@ export default function DashboardPage() {
   const now = new Date()
   const dateLabel = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`
 
-  // コスト表示値を計算
-  function costDisplay(): { label: string; value: string; sub?: string } {
-    if (!cost) return { label: '取得中...', value: '—' }
-    if (cost.status !== 'ok' || !cost.amount) {
-      return { label: 'データ準備中', value: '—' }
-    }
-    const usd = parseFloat(cost.amount)
-    const jpy = Math.round(usd * JPY_RATE)
-    const m = cost.period_start ? parseInt(cost.period_start.split('-')[1]) : now.getMonth() + 1
-    return {
-      label: `${m}月 実績`,
-      value: `¥${fmt(jpy)}`,
-      sub: `$${usd.toFixed(2)}`,
-    }
+  // Claude累計月数（プロジェクト開始月から今月まで）
+  function claudeMonthsElapsed(): number {
+    const y = now.getFullYear() - PROJECT_START.getFullYear()
+    const m = now.getMonth() - PROJECT_START.getMonth()
+    return Math.max(1, y * 12 + m + 1)
   }
 
-  const cd = costDisplay()
+  // AWS累計（ドメイン代含む）
+  const awsCumulativeUSD = cost?.status === 'ok' && cost.cumulative_amount
+    ? parseFloat(cost.cumulative_amount)
+    : null
+
+  // Claude累計
+  const claudeMonths      = claudeMonthsElapsed()
+  const claudeCumulativeUSD = CLAUDE_MONTHLY * claudeMonths
+
+  // 総累計
+  const totalCumulativeUSD = awsCumulativeUSD !== null
+    ? awsCumulativeUSD + claudeCumulativeUSD
+    : null
+
+  // 当月AWS
+  const monthlyUSD = cost?.status === 'ok' && cost.amount
+    ? parseFloat(cost.amount)
+    : null
+  const monthLabel = cost?.period_start
+    ? `${parseInt(cost.period_start.split('-')[1])}月 AWS実績`
+    : `${now.getMonth() + 1}月 AWS実績`
 
   return (
     <div style={{ padding: '24px 20px', maxWidth: 600, margin: '0 auto' }}>
@@ -125,24 +140,78 @@ export default function DashboardPage() {
         <div style={{ color: muted, fontFamily: zen, fontSize: 14 }}>読み込み中...</div>
       ) : null}
 
-      {/* AWS コストセクション */}
+      {/* コストセクション */}
       <div style={{ marginTop: 20, padding: '20px 24px', background: '#211f1d', border: `1px solid ${border}`, borderRadius: 8 }}>
         <div style={{ fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.15em', marginBottom: 16 }}>
-          AWS COST / AWSコスト
+          PROJECT COST / プロジェクト累計コスト
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 4 }}>{cd.label}</div>
-            <div style={{ fontSize: 32, fontFamily: josefin, fontWeight: 100, color: '#e8e4dc', lineHeight: 1 }}>
-              {cd.value}
+        {/* 累計合計（大きく表示） */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 6 }}>
+            累計合計（AWS + Claude Max）
+          </div>
+          <div style={{ fontSize: 36, fontFamily: josefin, fontWeight: 100, color: '#e8e4dc', lineHeight: 1 }}>
+            {totalCumulativeUSD !== null
+              ? `¥${fmt(Math.round(totalCumulativeUSD * JPY_RATE))}`
+              : '—'}
+          </div>
+          {totalCumulativeUSD !== null && (
+            <div style={{ fontSize: 12, color: muted, fontFamily: josefin, marginTop: 5 }}>
+              ${totalCumulativeUSD.toFixed(2)} × ¥{JPY_RATE}
             </div>
-            {cd.sub && (
-              <div style={{ fontSize: 12, color: muted, fontFamily: josefin, marginTop: 4 }}>{cd.sub} × ¥{JPY_RATE}</div>
-            )}
+          )}
+        </div>
+
+        {/* 内訳行 */}
+        <div style={{ borderTop: `1px solid ${border}`, paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+          {/* AWS累計 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 12, color: '#e8e4dc', fontFamily: zen }}>AWS累計</div>
+              <div style={{ fontSize: 11, color: muted, fontFamily: josefin, marginTop: 2 }}>
+                {cost?.project_start ?? '2026-05-01'} 〜 今日
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 14, fontFamily: josefin, color: '#e8e4dc' }}>
+                {awsCumulativeUSD !== null ? `¥${fmt(Math.round(awsCumulativeUSD * JPY_RATE))}` : '—'}
+              </div>
+              {awsCumulativeUSD !== null && (
+                <div style={{ fontSize: 11, color: muted, fontFamily: josefin }}>${awsCumulativeUSD.toFixed(2)}</div>
+              )}
+            </div>
           </div>
 
-          {/* ECS稼働状況 */}
+          {/* Claude累計 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 12, color: '#e8e4dc', fontFamily: zen }}>Claude Max累計</div>
+              <div style={{ fontSize: 11, color: muted, fontFamily: josefin, marginTop: 2 }}>
+                $100/月 × {claudeMonths}ヶ月
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 14, fontFamily: josefin, color: '#e8e4dc' }}>
+                ¥{fmt(Math.round(claudeCumulativeUSD * JPY_RATE))}
+              </div>
+              <div style={{ fontSize: 11, color: muted, fontFamily: josefin }}>${claudeCumulativeUSD}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 当月AWS + ECS状態 */}
+        <div style={{ marginTop: 16, borderTop: `1px solid ${border}`, paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 4 }}>{monthLabel}</div>
+            <div style={{ fontSize: 20, fontFamily: josefin, fontWeight: 100, color: '#e8e4dc' }}>
+              {monthlyUSD !== null ? `¥${fmt(Math.round(monthlyUSD * JPY_RATE))}` : '—'}
+            </div>
+            {monthlyUSD !== null && (
+              <div style={{ fontSize: 11, color: muted, fontFamily: josefin, marginTop: 3 }}>${monthlyUSD.toFixed(2)}</div>
+            )}
+          </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 11, color: muted, fontFamily: josefin, letterSpacing: '0.1em', marginBottom: 6 }}>ECS</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
@@ -155,9 +224,9 @@ export default function DashboardPage() {
 
         {/* サービス別内訳 */}
         {cost?.status === 'ok' && cost.breakdown && cost.breakdown.length > 0 && (
-          <div style={{ marginTop: 16, borderTop: `1px solid ${border}`, paddingTop: 14 }}>
+          <div style={{ marginTop: 14, borderTop: `1px solid ${border}`, paddingTop: 14 }}>
             <div style={{ fontSize: 11, color: muted, fontFamily: josefin, letterSpacing: '0.12em', marginBottom: 10 }}>
-              BREAKDOWN / 内訳
+              AWS BREAKDOWN / 当月内訳
             </div>
             {cost.breakdown
               .filter(b => parseFloat(b.amount) > 0.001)
@@ -166,7 +235,7 @@ export default function DashboardPage() {
                 const jpy = Math.round(parseFloat(b.amount) * JPY_RATE)
                 const label = SERVICE_LABELS[b.service] ?? b.service
                 return (
-                  <div key={b.service} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0' }}>
+                  <div key={b.service} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
                     <span style={{ fontSize: 12, color: muted, fontFamily: zen }}>{label}</span>
                     <span style={{ fontSize: 12, color: '#e8e4dc', fontFamily: josefin }}>¥{fmt(jpy)}</span>
                   </div>
@@ -180,6 +249,11 @@ export default function DashboardPage() {
             ※ Cost Explorer のデータ準備中（初回有効化後24時間）
           </div>
         )}
+
+        <div style={{ marginTop: 14, fontSize: 11, color: muted, fontFamily: josefin, opacity: 0.6, lineHeight: 1.8 }}>
+          ※ 為替レート ¥{JPY_RATE}/$ 固定。Claude費用は手動設定値。<br />
+          ※ AWSコストは請求反映に1〜2日の遅延があります。
+        </div>
       </div>
     </div>
   )

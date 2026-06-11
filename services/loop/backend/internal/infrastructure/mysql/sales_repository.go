@@ -15,15 +15,21 @@ func NewSalesRepository(db *sqlx.DB) *SalesRepository { return &SalesRepository{
 
 // UpsertStaffDailySales は staff_daily_sales を加算 upsert し id を返す。
 // treatment 作成のたびに呼ばれ、当日の累計に加算していく。
-func (r *SalesRepository) UpsertStaffDailySales(ctx context.Context, staffID, storeID uint64, date string, amount uint32) (uint64, error) {
+func (r *SalesRepository) UpsertStaffDailySales(ctx context.Context, staffID, storeID uint64, date string, amount uint32, countAsClient bool) (uint64, error) {
+	clientInc := uint32(0)
+	if countAsClient {
+		clientInc = 1
+	}
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO staff_daily_sales (staff_id, store_id, date, total_sales, client_count, unit_price, retail_sales)
-		VALUES (?, ?, ?, ?, 1, ?, 0)
+		VALUES (?, ?, ?, ?, ?, ?, 0)
 		ON DUPLICATE KEY UPDATE
 		  total_sales  = total_sales + VALUES(total_sales),
-		  client_count = client_count + 1,
-		  unit_price   = (total_sales + VALUES(total_sales)) / (client_count + 1)`,
-		staffID, storeID, date, amount, amount)
+		  client_count = client_count + VALUES(client_count),
+		  unit_price   = IF(client_count + VALUES(client_count) > 0,
+		                    (total_sales + VALUES(total_sales)) / (client_count + VALUES(client_count)),
+		                    0)`,
+		staffID, storeID, date, amount, clientInc, amount)
 	if err != nil {
 		return 0, fmt.Errorf("SalesRepository.UpsertStaffDailySales: %w", err)
 	}
@@ -42,20 +48,24 @@ func (r *SalesRepository) AppendStaffMenuSales(ctx context.Context, staffDailySa
 }
 
 // UpsertDailySales は store 単位の日次売上に加算 upsert する。
-func (r *SalesRepository) UpsertDailySales(ctx context.Context, storeID uint64, date string, techAmount uint32) error {
+func (r *SalesRepository) UpsertDailySales(ctx context.Context, storeID uint64, date string, techAmount uint32, countAsClient bool) error {
+	clientInc := uint32(0)
+	if countAsClient {
+		clientInc = 1
+	}
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO daily_sales (store_id, date, total_sales, client_count, tech_sales, retail_sales)
-		VALUES (?, ?, ?, 1, ?, 0)
+		VALUES (?, ?, ?, ?, ?, 0)
 		ON DUPLICATE KEY UPDATE
 		  total_sales  = total_sales + VALUES(total_sales),
-		  client_count = client_count + 1,
+		  client_count = client_count + VALUES(client_count),
 		  tech_sales   = tech_sales + VALUES(tech_sales)`,
-		storeID, date, techAmount, techAmount)
+		storeID, date, techAmount, clientInc, techAmount)
 	return err
 }
 
 func (r *SalesRepository) FindDailySalesByStore(ctx context.Context, storeID uint64, from, to string) ([]*model.DailySales, error) {
-	var list []*model.DailySales
+	list := make([]*model.DailySales, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM daily_sales WHERE store_id=? AND date BETWEEN ? AND ? ORDER BY date DESC`,
 		storeID, from, to)
@@ -91,7 +101,7 @@ func (r *SalesRepository) UpsertRetailDailySales(ctx context.Context, staffID, s
 }
 
 func (r *SalesRepository) FindStaffDailySales(ctx context.Context, staffID uint64, from, to string) ([]*model.StaffDailySales, error) {
-	var list []*model.StaffDailySales
+	list := make([]*model.StaffDailySales, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM staff_daily_sales WHERE staff_id=? AND date BETWEEN ? AND ? ORDER BY date DESC`,
 		staffID, from, to)

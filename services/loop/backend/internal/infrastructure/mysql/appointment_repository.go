@@ -15,7 +15,7 @@ func NewAppointmentRepository(db *sqlx.DB) *AppointmentRepository {
 }
 
 func (r *AppointmentRepository) FindByAccountID(ctx context.Context, accountID uint64) ([]*model.Appointment, error) {
-	var list []*model.Appointment
+	list := make([]*model.Appointment, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM appointments WHERE cygnus_account_id = ? ORDER BY start_at DESC`,
 		accountID)
@@ -26,7 +26,7 @@ func (r *AppointmentRepository) FindByAccountID(ctx context.Context, accountID u
 }
 
 func (r *AppointmentRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Appointment, error) {
-	var list []*model.Appointment
+	list := make([]*model.Appointment, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM appointments WHERE salon_id = ? ORDER BY start_at DESC`,
 		salonID)

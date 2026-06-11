@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { api } from '../lib/api'
 
 const S = {
   bg:          '#1a1816',
@@ -29,9 +30,8 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/login', {
+      const res = await api('/api/v1/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
       if (!res.ok) {
@@ -177,10 +177,18 @@ export default function LoginPage() {
         {/* フッター */}
         <div style={{ marginTop: 'auto', paddingTop: 24, textAlign: 'center' }}>
           <div style={{ fontSize: 13, color: S.muted, lineHeight: 1.7, fontFamily: S.zen }}>
-            アカウントをお持ちでない場合は<br />
-            <span style={{ color: S.gold, cursor: 'pointer', opacity: 0.8 }}>
-              サロンオーナーに招待を依頼してください
-            </span>
+            サロンアカウントをお持ちでない場合は<br />
+            <Link to="/register" style={{ color: S.gold, opacity: 0.8, textDecoration: 'none' }}>
+              新規サロン登録
+            </Link>
+          </div>
+          <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 20 }}>
+            <Link to="/terms" style={{ fontSize: 11, color: S.muted, textDecoration: 'none', fontFamily: S.josefin, letterSpacing: '0.1em', opacity: 0.7 }}>
+              利用規約
+            </Link>
+            <Link to="/privacy" style={{ fontSize: 11, color: S.muted, textDecoration: 'none', fontFamily: S.josefin, letterSpacing: '0.1em', opacity: 0.7 }}>
+              プライバシーポリシー
+            </Link>
           </div>
         </div>
       </div>

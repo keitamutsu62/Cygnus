@@ -61,11 +61,14 @@ resource "aws_ecs_task_definition" "loop_backend" {
     }]
 
     environment = [
-      { name = "PORT",         value = "8080" },
-      { name = "DB_HOST",      value = var.db_endpoint },
-      { name = "DB_PORT",      value = "3306" },
-      { name = "DB_NAME",      value = "cygnus_dev" },
-      { name = "DB_USER",      value = "cygnus" },
+      { name = "PORT",           value = "8080" },
+      { name = "DB_HOST",        value = var.db_endpoint },
+      { name = "DB_PORT",        value = "3306" },
+      { name = "DB_NAME",        value = "cygnus_dev" },
+      { name = "DB_USER",        value = "cygnus" },
+      { name = "ORDERS_BUCKET",  value = "cygnus-loop-orders" },
+      { name = "ORDERS_REGION",  value = "ap-northeast-1" },
+      { name = "SES_FROM",       value = var.ses_from },
     ]
 
     secrets = [
@@ -147,6 +150,56 @@ resource "aws_iam_role_policy" "ecs_task_ce" {
       Action   = ["ce:GetCostAndUsage"]
       Resource = ["*"]
     }]
+  })
+}
+
+# ─── 発注書PDFバケット ─────────────────────────────────────────────
+resource "aws_s3_bucket" "orders" {
+  bucket = "cygnus-loop-orders"
+}
+
+resource "aws_s3_bucket_public_access_block" "orders" {
+  bucket                  = aws_s3_bucket.orders.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "orders" {
+  bucket = aws_s3_bucket.orders.id
+  rule {
+    id     = "expire-old-pdfs"
+    status = "Enabled"
+    filter {}
+    expiration { days = 90 }
+  }
+}
+
+# ─── ECS タスクロールに S3 / SES 権限を付与 ─────────────────────────
+resource "aws_iam_role_policy" "ecs_task_orders" {
+  name = "cygnus-ecs-orders"
+  role = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["s3:PutObject", "s3:GetObject"]
+        Resource = ["${aws_s3_bucket.orders.arn}/*"]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:GeneratePresignedUrl"]
+        Resource = ["${aws_s3_bucket.orders.arn}/*"]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["ses:SendEmail", "ses:SendRawEmail"]
+        Resource = ["*"]
+      }
+    ]
   })
 }
 

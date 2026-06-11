@@ -5,7 +5,8 @@
     "services/loop/frontend",
     "services/loop/frontend/packages/*",
     "services/reserve/frontend",
-    "services/studio/frontend"
+    "services/studio/frontend",
+    "services/admin/frontend"
   ],
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",

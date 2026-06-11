@@ -16,3 +16,9 @@ variable "admin_token" {
   type        = string
   sensitive   = true
 }
+
+variable "ses_from" {
+  description = "SES sender email address (e.g. orders@cygnus.style)"
+  type        = string
+  default     = ""
+}

@@ -36,4 +36,5 @@ module "compute" {
   db_password        = var.db_password
   jwt_secret         = var.jwt_secret
   admin_token        = var.admin_token
+  ses_from           = var.ses_from
 }

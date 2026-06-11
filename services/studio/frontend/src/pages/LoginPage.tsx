@@ -23,7 +23,8 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/studio/login', {
+      const base = (import.meta.env.VITE_API_BASE as string | undefined) ?? ''
+      const res = await fetch(`${base}/api/v1/auth/studio/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

@@ -37,7 +37,7 @@ func (r *DealerRepository) FindByID(ctx context.Context, id uint64) (*model.Deal
 }
 
 func (r *DealerRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Dealer, error) {
-	var list []*model.Dealer
+	list := make([]*model.Dealer, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM dealers WHERE salon_id = ? ORDER BY name ASC`, salonID)
 	if err != nil {
@@ -86,7 +86,7 @@ func (r *OrderRepository) FindByID(ctx context.Context, id uint64) (*model.Order
 }
 
 func (r *OrderRepository) FindBySalonID(ctx context.Context, salonID uint64) ([]*model.Order, error) {
-	var list []*model.Order
+	list := make([]*model.Order, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM orders WHERE salon_id = ? ORDER BY created_at DESC`, salonID)
 	if err != nil {
@@ -116,13 +116,32 @@ func (r *OrderRepository) AddItems(ctx context.Context, items []*model.OrderItem
 }
 
 func (r *OrderRepository) FindItems(ctx context.Context, orderID uint64) ([]*model.OrderItem, error) {
-	var list []*model.OrderItem
+	list := make([]*model.OrderItem, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM order_items WHERE order_id = ?`, orderID)
 	if err != nil {
 		return nil, fmt.Errorf("OrderRepository.FindItems: %w", err)
 	}
 	return list, nil
+}
+
+func (r *OrderRepository) Delete(ctx context.Context, id uint64) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM orders WHERE id=?`, id)
+	return err
+}
+
+func (r *OrderRepository) UpdateItemQuantity(ctx context.Context, orderID, materialID uint64, quantity uint32) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE order_items SET quantity=? WHERE order_id=? AND material_id=?`,
+		quantity, orderID, materialID)
+	return err
+}
+
+func (r *OrderRepository) DeleteItem(ctx context.Context, orderID, materialID uint64) error {
+	_, err := r.db.ExecContext(ctx,
+		`DELETE FROM order_items WHERE order_id=? AND material_id=?`,
+		orderID, materialID)
+	return err
 }
 
 func (r *OrderRepository) FindItemsForOrders(ctx context.Context, orderIDs []uint64) ([]*model.ItemWithMaterial, error) {
@@ -138,7 +157,7 @@ func (r *OrderRepository) FindItemsForOrders(ctx context.Context, orderIDs []uin
 	if err != nil {
 		return nil, fmt.Errorf("OrderRepository.FindItemsForOrders: %w", err)
 	}
-	var list []*model.ItemWithMaterial
+	list := make([]*model.ItemWithMaterial, 0)
 	err = r.db.SelectContext(ctx, &list, r.db.Rebind(query), args...)
 	if err != nil {
 		return nil, fmt.Errorf("OrderRepository.FindItemsForOrders: %w", err)

@@ -24,8 +24,9 @@ export default function RegisterPage() {
     setError('')
     if (password.length < 8) { setError('パスワードは8文字以上で入力してください'); return }
     setLoading(true)
+    const base = (import.meta.env.VITE_API_BASE as string | undefined) ?? ''
     try {
-      const res = await fetch('/api/v1/auth/studio/register', {
+      const res = await fetch(`${base}/api/v1/auth/studio/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ display_name: name, email, password }),
@@ -34,7 +35,7 @@ export default function RegisterPage() {
       if (!res.ok) { setError('登録に失敗しました'); return }
 
       // 登録後そのままログイン
-      const loginRes = await fetch('/api/v1/auth/studio/login', {
+      const loginRes = await fetch(`${base}/api/v1/auth/studio/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

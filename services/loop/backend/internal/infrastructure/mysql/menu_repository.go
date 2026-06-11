@@ -38,7 +38,7 @@ func (r *MenuRepository) FindByID(ctx context.Context, id uint64) (*model.Menu, 
 }
 
 func (r *MenuRepository) FindBySalonID(ctx context.Context, salonID uint64, menuType string) ([]*model.Menu, error) {
-	var list []*model.Menu
+	list := make([]*model.Menu, 0)
 	var err error
 	if menuType != "" {
 		err = r.db.SelectContext(ctx, &list,

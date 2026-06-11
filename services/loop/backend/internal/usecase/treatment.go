@@ -34,6 +34,7 @@ type CreateTreatmentInput struct {
 	DurationMinutes *uint16
 	Source          model.TreatmentSource
 	IsShimei        bool
+	CountAsClient   bool // 同一会計の2件目以降・指名料はfalse
 	AppointmentID   *uint64
 	PerformedAt     string // RFC3339
 	Notes           *string
@@ -71,11 +72,11 @@ func (u *TreatmentUsecase) Create(ctx context.Context, in CreateTreatmentInput) 
 	if in.StoreID != nil {
 		date := performedAt.Format("2006-01-02")
 
-		salesID, err := u.salesRepo.UpsertStaffDailySales(ctx, in.StaffID, *in.StoreID, date, in.Price)
+		salesID, err := u.salesRepo.UpsertStaffDailySales(ctx, in.StaffID, *in.StoreID, date, in.Price, in.CountAsClient)
 		if err == nil && in.MenuID != nil && salesID > 0 {
 			_ = u.salesRepo.AppendStaffMenuSales(ctx, salesID, *in.MenuID, in.Price)
 		}
-		_ = u.salesRepo.UpsertDailySales(ctx, *in.StoreID, date, in.Price)
+		_ = u.salesRepo.UpsertDailySales(ctx, *in.StoreID, date, in.Price, in.CountAsClient)
 	}
 
 	// ── RESERVE 予約の自動完了 ───────────────────────────────

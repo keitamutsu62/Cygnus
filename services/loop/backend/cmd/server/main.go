@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 
+	"log"
+
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/config"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/handler"
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/infrastructure/mailer"
@@ -74,6 +76,28 @@ func main() {
 		imgStorage = storage.NewLocalStorage()
 	}
 
+	// ─── 発注書ストレージ（ORDERS_BUCKET が設定されている場合のみ有効）─────────
+	var orderUploader usecase.OrderPDFUploader
+	if cfg.OrdersBucket != "" {
+		os, err := storage.NewOrderStorage(cfg.OrdersBucket, cfg.OrdersRegion)
+		if err != nil {
+			log.Printf("OrderStorage init error (S3 presign disabled): %v", err)
+		} else {
+			orderUploader = os
+		}
+	}
+
+	// ─── SESメール送信（SES_FROM が設定されている場合のみ有効）──────────────────
+	var orderEmailSender usecase.OrderEmailSender
+	if cfg.SESFrom != "" {
+		sm, err := mailer.NewSESMailer(cfg.OrdersRegion, cfg.SESFrom)
+		if err != nil {
+			log.Printf("SESMailer init error (email disabled): %v", err)
+		} else {
+			orderEmailSender = sm
+		}
+	}
+
 	// ─── ユースケース ──────────────────────────────────────────
 	m := mailer.NewLogMailer()
 
@@ -87,7 +111,7 @@ func main() {
 	appointmentUC := usecase.NewAppointmentUsecase(appointmentRepo)
 	storeUC      := usecase.NewStoreUsecase(storeRepo, bhRepo, closureRepo)
 	materialUC      := usecase.NewMaterialUsecase(materialRepo, invtWriteRepo, storeRepo)
-	dealerUC        := usecase.NewDealerUsecase(dealerRepo, orderRepo)
+	dealerUC        := usecase.NewDealerUsecase(dealerRepo, orderRepo, orderUploader, orderEmailSender)
 	retailSaleUC    := usecase.NewRetailSaleUsecase(retailSaleRepo, salesRepo)
 	aiUC            := usecase.NewAIUsecase(salesRepo, staffRepo)
 
@@ -205,6 +229,9 @@ func main() {
 	api.GET("/orders/history", dealerH.ListOrdersHistory)
 	api.POST("/orders", dealerH.CreateOrder)
 	api.GET("/orders/:id", dealerH.GetOrder)
+	api.POST("/orders/:id/send", dealerH.SendOrder)
+	api.PATCH("/orders/:id/items/:material_id", dealerH.UpdateOrderItem)
+	api.DELETE("/orders/:id/items/:material_id", dealerH.DeleteOrderItem)
 	api.PATCH("/orders/:id/status", dealerH.UpdateOrderStatus)
 
 	// 顧客台帳

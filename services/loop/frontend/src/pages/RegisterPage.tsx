@@ -23,7 +23,6 @@ export default function RegisterPage() {
     ownerEmail:      '',
     ownerPassword:   '',
     confirmPassword: '',
-    role:            'owner',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -49,7 +48,6 @@ export default function RegisterPage() {
           owner_name:     form.ownerName,
           owner_email:    form.ownerEmail,
           owner_password: form.ownerPassword,
-          role:           form.role,
         }),
       })
       if (!res.ok) {
@@ -59,7 +57,9 @@ export default function RegisterPage() {
           : '登録に失敗しました。入力内容をご確認ください')
         return
       }
-      navigate('/login')
+      const { token } = await res.json()
+      localStorage.setItem('token', token)
+      navigate('/dashboard')
     } catch {
       setError('通信エラーが発生しました')
     } finally {
@@ -131,9 +131,6 @@ export default function RegisterPage() {
               placeholder={f.placeholder}
             />
           ))}
-
-          {/* 役職 */}
-          <RoleSelect value={form.role} onChange={v => handleChange('role', v)} />
 
           {error && (
             <div style={{

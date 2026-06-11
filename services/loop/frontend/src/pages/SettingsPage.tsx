@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AppLayout from '../components/AppLayout'
 import BottomSheet, { useBottomSheetDismiss } from '../components/BottomSheet'
 import { api, apiFetch } from '../lib/api'
 import { getClaims, logout } from '../lib/auth'
+import { useTheme, THEME_LABELS, type Theme } from '../lib/theme'
 import type { Staff, Store, StaffRole } from '../types'
 import { ROLE_LABEL } from '../types'
 
 const josefin    = "'Josefin Sans', sans-serif"
 const zen        = "'Zen Kaku Gothic New', sans-serif"
-const gold       = '#c8a882'
-const goldDim    = 'rgba(200,168,130,0.12)'
-const goldBorder = 'rgba(200,168,130,0.2)'
-const muted      = 'rgba(232,228,220,0.55)'
-const border     = 'rgba(232,228,220,0.08)'
-const surface    = '#211f1d'
-const txt        = '#e8e4dc'
+const gold       = 'var(--accent)'
+const goldDim    = 'var(--accent-dim)'
+const goldBorder = 'var(--accent-border)'
+const muted      = 'var(--text-muted)'
+const border     = 'var(--border)'
+const surface    = 'var(--surface)'
+const txt        = 'var(--text)'
 const green      = '#6dba8e'
 const greenDim   = 'rgba(109,186,142,0.1)'
 const purpleDim  = 'rgba(150,100,220,0.1)'
@@ -84,16 +84,16 @@ function InviteModal({ onClose }: { onClose: () => void }) {
         <div>
           <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 6 }}>役職</div>
           <select value={role} onChange={e => setRole(e.target.value as StaffRole)} style={{ ...inputStyle, WebkitAppearance: 'none' }}>
-            <option style={{ background: '#1a1816' }} value="staff">スタッフ</option>
-            <option style={{ background: '#1a1816' }} value="admin">店長</option>
-            <option style={{ background: '#1a1816' }} value="owner">オーナー</option>
+            <option style={{ background: 'var(--bg)' }} value="staff">スタッフ</option>
+            <option style={{ background: 'var(--bg)' }} value="admin">店長</option>
+            <option style={{ background: 'var(--bg)' }} value="owner">オーナー</option>
           </select>
         </div>
       </div>
       <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2 }}>
         <div style={{ fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>招待メールが送信されます。受け取った方は<br/>メール内のURLからアカウントを登録できます。</div>
       </div>
-      <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
+      <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
         {sending ? '送信中...' : '招待メールを送信する'}
       </button>
       <SheetCancel style={{ marginTop: 8 }} />
@@ -164,7 +164,7 @@ function PasswordChangeSheet({ onClose }: { onClose: () => void }) {
       )}
       <button
         onClick={save} disabled={saving}
-        style={{ width: '100%', marginTop: 16, padding: 14, background: saving ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: saving ? 'default' : 'pointer' }}
+        style={{ width: '100%', marginTop: 16, padding: 14, background: saving ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: saving ? 'default' : 'pointer' }}
       >
         {saving ? '変更中...' : '変更する'}
       </button>
@@ -267,7 +267,7 @@ function SpecialClosureSheet({ storeId, onClose }: { storeId: number; onClose: (
       </div>
       <button
         onClick={add} disabled={adding || !newDate}
-        style={{ width: '100%', padding: 14, background: (!newDate || adding) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: (!newDate || adding) ? 'default' : 'pointer' }}
+        style={{ width: '100%', padding: 14, background: (!newDate || adding) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: (!newDate || adding) ? 'default' : 'pointer' }}
       >
         {adding ? '追加中...' : '追加する'}
       </button>
@@ -626,7 +626,7 @@ function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={onCancel} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}>キャンセル</button>
-        <button onClick={save} disabled={saving || !canSave} style={{ flex: 2, padding: '10px 0', background: (!canSave || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 14, color: '#1a1816', cursor: canSave && !saving ? 'pointer' : 'default' }}>
+        <button onClick={save} disabled={saving || !canSave} style={{ flex: 2, padding: '10px 0', background: (!canSave || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 14, color: 'var(--on-accent)', cursor: canSave && !saving ? 'pointer' : 'default' }}>
           {saving ? '保存中...' : '追加する'}
         </button>
       </div>
@@ -864,6 +864,7 @@ function StaffDetail({
 function ProfileSettings({ onBack }: { onBack: () => void }) {
   const claims   = getClaims()
   const navigate = useNavigate()
+  const { theme, setTheme } = useTheme()
   const [myStaff,          setMyStaff]          = useState<Staff | null>(null)
   const [myStore,          setMyStore]           = useState<Store | null>(null)
   const [showPasswordSheet, setShowPasswordSheet] = useState(false)
@@ -939,7 +940,7 @@ function ProfileSettings({ onBack }: { onBack: () => void }) {
           </div>
           <div style={{ position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderRadius: '50%', background: gold, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-              <path d="M5.5 2v7M2 5.5h7" stroke="#1a1816" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M5.5 2v7M2 5.5h7" stroke="var(--on-accent)" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
         </div>
@@ -958,6 +959,30 @@ function ProfileSettings({ onBack }: { onBack: () => void }) {
         <SettingRow label="役職" value={ROLE_LABEL[claims?.role ?? 'staff']} />
         <SettingRow label="所属店舗" value={myStore?.name ?? '—'} last />
       </SettingGroup>
+
+      {/* テーマ */}
+      <GroupLabel>テーマ</GroupLabel>
+      <div style={{ margin: '0 16px', background: 'var(--surface)', borderRadius: 8, padding: '14px 16px' }}>
+        <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 12 }}>アプリの表示テーマを選択してください</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {(['dark', 'light', 'pop'] as Theme[]).map(t => (
+            <button
+              key={t}
+              onClick={() => setTheme(t)}
+              style={{
+                flex: 1, padding: '10px 4px', border: `1px solid ${theme === t ? gold : border}`,
+                borderRadius: 6, background: theme === t ? goldDim : 'transparent',
+                cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+              }}
+            >
+              <div style={{ width: 24, height: 24, borderRadius: '50%', background: t === 'dark' ? '#1a1816' : t === 'light' ? '#f7f3ee' : '#ffffff', border: '1px solid rgba(128,128,128,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: t === 'dark' ? '#c8a882' : t === 'light' ? '#9b7c5a' : '#f06292' }} />
+              </div>
+              <span style={{ fontSize: 10, fontFamily: josefin, letterSpacing: '0.08em', color: theme === t ? gold : muted }}>{THEME_LABELS[t]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* セキュリティ */}
       <GroupLabel>セキュリティ</GroupLabel>
@@ -1394,26 +1419,21 @@ export default function SettingsPage() {
   // サブページ
   if (sub === 'profile') {
     return (
-      <AppLayout>
-        <div style={{ padding: '14px 20px 80px' }}>
-          <ProfileSettings onBack={() => setSub(null)} />
-        </div>
-      </AppLayout>
+      <div style={{ padding: '14px 20px 80px' }}>
+        <ProfileSettings onBack={() => setSub(null)} />
+      </div>
     )
   }
   if (sub === 'hours') {
     return (
-      <AppLayout>
-        <div style={{ padding: '14px 20px 80px' }}>
-          <HoursSettings onBack={() => setSub(null)} />
-        </div>
-      </AppLayout>
+      <div style={{ padding: '14px 20px 80px' }}>
+        <HoursSettings onBack={() => setSub(null)} />
+      </div>
     )
   }
   if (sub === 'staff-list') {
     return (
       <>
-      <AppLayout>
         <div style={{ padding: '14px 20px 80px' }}>
           <StaffListSettings
             staffList={staffList}
@@ -1423,33 +1443,28 @@ export default function SettingsPage() {
             onBack={() => setSub(null)}
           />
         </div>
-      </AppLayout>
-      {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
+        {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
       </>
     )
   }
   if (sub === 'staff-detail' && selectedStaff) {
     return (
-      <AppLayout>
-        <div style={{ padding: '14px 20px 80px' }}>
-          <StaffDetail
-            staff={selectedStaff}
-            storeList={storeList}
-            salonShimeiCharge={salonShimeiCharge}
-            onBack={() => { setSub('staff-list'); setSelectedStaff(null) }}
-            onUpdated={() => loadStaffs()}
-          />
-        </div>
-      </AppLayout>
+      <div style={{ padding: '14px 20px 80px' }}>
+        <StaffDetail
+          staff={selectedStaff}
+          storeList={storeList}
+          salonShimeiCharge={salonShimeiCharge}
+          onBack={() => { setSub('staff-list'); setSelectedStaff(null) }}
+          onUpdated={() => loadStaffs()}
+        />
+      </div>
     )
   }
   if (sub === 'pos') {
     return (
-      <AppLayout>
-        <div style={{ padding: '14px 20px 80px' }}>
-          <PosSettings storeList={storeList} onBack={() => setSub(null)} />
-        </div>
-      </AppLayout>
+      <div style={{ padding: '14px 20px 80px' }}>
+        <PosSettings storeList={storeList} onBack={() => setSub(null)} />
+      </div>
     )
   }
 
@@ -1458,7 +1473,6 @@ export default function SettingsPage() {
 
   return (
     <>
-    <AppLayout>
       <div style={{ padding: '14px 20px 0', flexShrink: 0 }}>
         <div style={{ fontSize: 19, fontWeight: 400, color: txt, fontFamily: zen }}>設定</div>
       </div>
@@ -1603,7 +1617,6 @@ export default function SettingsPage() {
         </div>
 
       </div>
-    </AppLayout>
 
     {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
     {closingEditDealer && (

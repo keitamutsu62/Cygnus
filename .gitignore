@@ -8,6 +8,11 @@ vendor/
 # Go binaries (built artifacts)
 /server
 /services/loop/backend/server
+/services/loop/backend/reset_owner_pw
+/services/loop/backend/seed_demo
+/services/loop/backend/seed_salon1
+/services/loop/backend/seed_works
+/services/loop/backend/set_owner_id
 /services/reserve/backend/server
 **/tmp/
 

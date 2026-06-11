@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cygnus Theme Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300&family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f0ede8;
+      font-family: 'Josefin Sans', sans-serif;
+      padding: 40px 24px 60px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 200;
+      letter-spacing: 0.3em;
+      color: #888;
+      margin-bottom: 40px;
+      text-transform: uppercase;
+    }
+
+    .phones {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .phone-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .theme-label {
+      font-size: 11px;
+      font-weight: 200;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #666;
+    }
+
+    .phone {
+      width: 320px;
+      height: 640px;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* ── DARK ── */
+    .dark { background: #1a1816; }
+    .dark .topbar {
+      background: rgba(26,24,22,0.95);
+      border-bottom: 1px solid rgba(232,228,220,0.08);
+      padding: 20px 18px 14px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .dark .logo-name { color: #e8e4dc; }
+    .dark .logo-sub  { color: #c8a882; }
+    .dark .salon-name { color: rgba(232,228,220,0.65); font-size: 11px; letter-spacing: 0.1em; }
+    .dark .content { flex: 1; overflow: hidden; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .dark .section-title { font-size: 9px; letter-spacing: 0.25em; color: rgba(232,228,220,0.6); text-transform: uppercase; margin-bottom: 2px; }
+    .dark .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(232,228,220,0.08);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .dark .stat-row { display: flex; gap: 10px; }
+    .dark .stat {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(232,228,220,0.08);
+      border-radius: 10px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .dark .stat-val { font-size: 20px; font-weight: 200; color: #c8a882; letter-spacing: 0.05em; }
+    .dark .stat-key { font-size: 9px; letter-spacing: 0.15em; color: rgba(232,228,220,0.65); margin-top: 3px; font-family: 'Zen Kaku Gothic New', sans-serif; }
+    .dark .list-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(232,228,220,0.06);
+    }
+    .dark .list-item:last-child { border-bottom: none; }
+    .dark .item-name { font-size: 12px; color: #e8e4dc; font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 300; }
+    .dark .item-val  { font-size: 11px; color: #c8a882; letter-spacing: 0.05em; }
+    .dark .badge {
+      display: inline-block;
+      background: rgba(200,168,130,0.15);
+      color: #c8a882;
+      border-radius: 4px;
+      font-size: 9px;
+      padding: 2px 7px;
+      letter-spacing: 0.1em;
+    }
+    .dark .bottomnav {
+      background: #211f1d;
+      border-top: 1px solid rgba(232,228,220,0.08);
+      display: flex;
+      flex-shrink: 0;
+      padding-bottom: 8px;
+    }
+    .dark .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 10px 0 6px; gap: 4px; background: none; border: none; cursor: pointer;
+    }
+    .dark .nav-label { font-size: 9px; letter-spacing: 0.08em; font-family: 'Josefin Sans'; font-weight: 100; }
+    .dark .nav-label.active { color: #c8a882; }
+    .dark .nav-label.inactive { color: rgba(232,228,220,0.55); }
+
+    /* ── LIGHT ── */
+    .light { background: #f7f3ee; }
+    .light .topbar {
+      background: rgba(247,243,238,0.97);
+      border-bottom: 1px solid rgba(100,80,60,0.1);
+      padding: 20px 18px 14px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .light .logo-name { color: #4a3d32; }
+    .light .logo-sub  { color: #9b7c5a; }
+    .light .salon-name { color: rgba(74,61,50,0.65); font-size: 11px; letter-spacing: 0.1em; }
+    .light .content { flex: 1; overflow: hidden; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .light .section-title { font-size: 9px; letter-spacing: 0.25em; color: rgba(74,61,50,0.7); text-transform: uppercase; margin-bottom: 2px; }
+    .light .card {
+      background: #ffffff;
+      border: 1px solid rgba(100,80,60,0.1);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(100,80,60,0.06);
+    }
+    .light .stat-row { display: flex; gap: 10px; }
+    .light .stat {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid rgba(100,80,60,0.1);
+      border-radius: 10px;
+      padding: 12px 10px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(100,80,60,0.06);
+    }
+    .light .stat-val { font-size: 20px; font-weight: 200; color: #9b7c5a; letter-spacing: 0.05em; }
+    .light .stat-key { font-size: 9px; letter-spacing: 0.15em; color: rgba(74,61,50,0.7); margin-top: 3px; font-family: 'Zen Kaku Gothic New', sans-serif; }
+    .light .list-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(100,80,60,0.08);
+    }
+    .light .list-item:last-child { border-bottom: none; }
+    .light .item-name { font-size: 12px; color: #1e1610; font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 300; }
+    .light .item-val  { font-size: 11px; color: #9b7c5a; letter-spacing: 0.05em; }
+    .light .badge {
+      display: inline-block;
+      background: rgba(155,124,90,0.12);
+      color: #9b7c5a;
+      border-radius: 4px;
+      font-size: 9px;
+      padding: 2px 7px;
+      letter-spacing: 0.1em;
+    }
+    .light .bottomnav {
+      background: #fff8f2;
+      border-top: 1px solid rgba(100,80,60,0.1);
+      display: flex;
+      flex-shrink: 0;
+      padding-bottom: 8px;
+    }
+    .light .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 10px 0 6px; gap: 4px; background: none; border: none; cursor: pointer;
+    }
+    .light .nav-label { font-size: 9px; letter-spacing: 0.08em; font-family: 'Josefin Sans'; font-weight: 100; }
+    .light .nav-label.active { color: #9b7c5a; }
+    .light .nav-label.inactive { color: rgba(74,61,50,0.55); }
+
+    /* ── POP ── */
+    .pop { background: #ffffff; }
+    .pop .topbar {
+      background: #ffffff;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      padding: 20px 18px 14px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .pop .logo-name { color: #333333; }
+    .pop .logo-sub  { color: #f06292; }
+    .pop .salon-name { color: rgba(51,51,51,0.65); font-size: 11px; letter-spacing: 0.1em; }
+    .pop .content { flex: 1; overflow: hidden; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .pop .section-title { font-size: 9px; letter-spacing: 0.25em; color: rgba(51,51,51,0.65); text-transform: uppercase; margin-bottom: 2px; }
+    .pop .card {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 12px rgba(240,98,146,0.08);
+    }
+    .pop .stat-row { display: flex; gap: 10px; }
+    .pop .stat {
+      flex: 1;
+      background: linear-gradient(135deg, #fff0f5 0%, #fff5f8 100%);
+      border: 1px solid rgba(240,98,146,0.15);
+      border-radius: 12px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .pop .stat-val { font-size: 20px; font-weight: 200; color: #f06292; letter-spacing: 0.05em; }
+    .pop .stat-key { font-size: 9px; letter-spacing: 0.15em; color: rgba(51,51,51,0.65); margin-top: 3px; font-family: 'Zen Kaku Gothic New', sans-serif; }
+    .pop .list-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .pop .list-item:last-child { border-bottom: none; }
+    .pop .item-name { font-size: 12px; color: #333; font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 300; }
+    .pop .item-val  { font-size: 11px; color: #f06292; letter-spacing: 0.05em; }
+    .pop .badge {
+      display: inline-block;
+      background: rgba(240,98,146,0.1);
+      color: #f06292;
+      border-radius: 20px;
+      font-size: 9px;
+      padding: 2px 8px;
+      letter-spacing: 0.1em;
+    }
+    .pop .bottomnav {
+      background: #ffffff;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      display: flex;
+      flex-shrink: 0;
+      padding-bottom: 8px;
+    }
+    .pop .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 10px 0 6px; gap: 4px; background: none; border: none; cursor: pointer;
+    }
+    .pop .nav-label { font-size: 9px; letter-spacing: 0.08em; font-family: 'Josefin Sans'; font-weight: 100; }
+    .pop .nav-label.active { color: #f06292; }
+    .pop .nav-label.inactive { color: rgba(51,51,51,0.55); }
+  </style>
+</head>
+<body>
+  <h1>Cygnus Loop — Theme Preview</h1>
+  <div class="phones">
+
+    <!-- DARK -->
+    <div class="phone-wrap">
+      <div class="theme-label">Dark（現状）</div>
+      <div class="phone dark">
+        <div class="topbar dark">
+          <div style="display:flex;align-items:center;gap:8px">
+            <svg width="20" height="20" viewBox="0 0 80 80" fill="none">
+              <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#c8a882" stroke-width="5" opacity="0.9"/>
+              <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" stroke-width="5" opacity="0.5"/>
+            </svg>
+            <div>
+              <div style="font-family:'Josefin Sans';font-weight:100;font-size:11px;letter-spacing:0.2em" class="logo-name">CYGNUS</div>
+              <div style="font-family:'Josefin Sans';font-weight:100;font-size:11px;letter-spacing:0.2em" class="logo-sub">LOOP</div>
+            </div>
+          </div>
+          <div class="salon-name" style="font-family:'Zen Kaku Gothic New'">HAIR SALON KAZE</div>
+        </div>
+        <div class="content dark">
+          <div class="section-title dark">今日の状況</div>
+          <div class="stat-row dark">
+            <div class="stat dark"><div class="stat-val dark">8</div><div class="stat-key dark">来店</div></div>
+            <div class="stat dark"><div class="stat-val dark">¥62,400</div><div class="stat-key dark">売上</div></div>
+            <div class="stat dark"><div class="stat-val dark">3</div><div class="stat-key dark">残り</div></div>
+          </div>
+          <div class="section-title dark" style="margin-top:4px">在庫アラート</div>
+          <div class="card dark">
+            <div class="list-item dark">
+              <div><div class="item-name dark">ミルボン オルディーブ 8-CB</div><span class="badge dark">残り2本</span></div>
+              <div class="item-val dark">要発注</div>
+            </div>
+            <div class="list-item dark">
+              <div><div class="item-name dark">シュワルツコフ BC ボンドポーション</div><span class="badge dark">残り1本</span></div>
+              <div class="item-val dark">要発注</div>
+            </div>
+            <div class="list-item dark">
+              <div><div class="item-name dark">ケラスターゼ RE シャンプー</div><span class="badge dark">残り3本</span></div>
+              <div class="item-val dark">要発注</div>
+            </div>
+          </div>
+          <div class="section-title dark" style="margin-top:4px">直近の売上</div>
+          <div class="card dark">
+            <div class="list-item dark">
+              <div class="item-name dark">カット + カラー</div>
+              <div class="item-val dark">¥18,500</div>
+            </div>
+            <div class="list-item dark">
+              <div class="item-name dark">トリートメント</div>
+              <div class="item-val dark">¥6,600</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottomnav dark">
+          <button class="nav-btn dark">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><rect x="2" y="2" width="8" height="8" rx="1.5" stroke="#c8a882" stroke-width="1.5"/><rect x="12" y="2" width="8" height="8" rx="1.5" stroke="rgba(232,228,220,0.35)" stroke-width="1.5"/><rect x="2" y="12" width="8" height="8" rx="1.5" stroke="rgba(232,228,220,0.35)" stroke-width="1.5"/><rect x="12" y="12" width="8" height="8" rx="1.5" stroke="rgba(232,228,220,0.35)" stroke-width="1.5"/></svg>
+            <span class="nav-label dark active">ホーム</span>
+          </button>
+          <button class="nav-btn dark">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><rect x="2" y="5" width="18" height="14" rx="1.5" stroke="rgba(232,228,220,0.55)" stroke-width="1.5"/><line x1="7" y1="2" x2="7" y2="8" stroke="rgba(232,228,220,0.55)" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="2" x2="15" y2="8" stroke="rgba(232,228,220,0.55)" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="nav-label dark inactive">在庫</span>
+          </button>
+          <button class="nav-btn dark">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><polyline points="2,16 7,10 11,13 16,7 20,9" stroke="rgba(232,228,220,0.55)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="nav-label dark inactive">売上</span>
+          </button>
+          <button class="nav-btn dark">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><circle cx="11" cy="8" r="4" stroke="rgba(232,228,220,0.55)" stroke-width="1.5"/><path d="M3 19C3 15.7 6.6 13 11 13C15.4 13 19 15.7 19 19" stroke="rgba(232,228,220,0.55)" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="nav-label dark inactive">設定</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIGHT -->
+    <div class="phone-wrap">
+      <div class="theme-label">Light（ベージュ）</div>
+      <div class="phone light">
+        <div class="topbar light">
+          <div style="display:flex;align-items:center;gap:8px">
+            <svg width="20" height="20" viewBox="0 0 80 80" fill="none">
+              <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#9b7c5a" stroke-width="5" opacity="0.9"/>
+              <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#9b7c5a" stroke-width="5" opacity="0.5"/>
+            </svg>
+            <div>
+              <div style="font-family:'Josefin Sans';font-weight:100;font-size:11px;letter-spacing:0.2em" class="logo-name">CYGNUS</div>
+              <div style="font-family:'Josefin Sans';font-weight:100;font-size:11px;letter-spacing:0.2em" class="logo-sub">LOOP</div>
+            </div>
+          </div>
+          <div class="salon-name light" style="font-family:'Zen Kaku Gothic New'">HAIR SALON KAZE</div>
+        </div>
+        <div class="content light">
+          <div class="section-title light">今日の状況</div>
+          <div class="stat-row light">
+            <div class="stat light"><div class="stat-val light">8</div><div class="stat-key light">来店</div></div>
+            <div class="stat light"><div class="stat-val light">¥62,400</div><div class="stat-key light">売上</div></div>
+            <div class="stat light"><div class="stat-val light">3</div><div class="stat-key light">残り</div></div>
+          </div>
+          <div class="section-title light" style="margin-top:4px">在庫アラート</div>
+          <div class="card light">
+            <div class="list-item light">
+              <div><div class="item-name light">ミルボン オルディーブ 8-CB</div><span class="badge light">残り2本</span></div>
+              <div class="item-val light">要発注</div>
+            </div>
+            <div class="list-item light">
+              <div><div class="item-name light">シュワルツコフ BC ボンドポーション</div><span class="badge light">残り1本</span></div>
+              <div class="item-val light">要発注</div>
+            </div>
+            <div class="list-item light">
+              <div><div class="item-name light">ケラスターゼ RE シャンプー</div><span class="badge light">残り3本</span></div>
+              <div class="item-val light">要発注</div>
+            </div>
+          </div>
+          <div class="section-title light" style="margin-top:4px">直近の売上</div>
+          <div class="card light">
+            <div class="list-item light">
+              <div class="item-name light">カット + カラー</div>
+              <div class="item-val light">¥18,500</div>
+            </div>
+            <div class="list-item light">
+              <div class="item-name light">トリートメント</div>
+              <div class="item-val light">¥6,600</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottomnav light">
+          <button class="nav-btn light">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><rect x="2" y="2" width="8" height="8" rx="1.5" stroke="#9b7c5a" stroke-width="1.5"/><rect x="12" y="2" width="8" height="8" rx="1.5" stroke="rgba(74,61,50,0.5)" stroke-width="1.5"/><rect x="2" y="12" width="8" height="8" rx="1.5" stroke="rgba(74,61,50,0.5)" stroke-width="1.5"/><rect x="12" y="12" width="8" height="8" rx="1.5" stroke="rgba(74,61,50,0.5)" stroke-width="1.5"/></svg>
+            <span class="nav-label light active">ホーム</span>
+          </button>
+          <button class="nav-btn light">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><rect x="2" y="5" width="18" height="14" rx="1.5" stroke="rgba(74,61,50,0.5)" stroke-width="1.5"/><line x1="7" y1="2" x2="7" y2="8" stroke="rgba(74,61,50,0.5)" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="2" x2="15" y2="8" stroke="rgba(74,61,50,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="nav-label light inactive">在庫</span>
+          </button>
+          <button class="nav-btn light">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><polyline points="2,16 7,10 11,13 16,7 20,9" stroke="rgba(74,61,50,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="nav-label light inactive">売上</span>
+          </button>
+          <button class="nav-btn light">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><circle cx="11" cy="8" r="4" stroke="rgba(74,61,50,0.5)" stroke-width="1.5"/><path d="M3 19C3 15.7 6.6 13 11 13C15.4 13 19 15.7 19 19" stroke="rgba(74,61,50,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="nav-label light inactive">設定</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POP -->
+    <div class="phone-wrap">
+      <div class="theme-label">Pop（ミニモ風）</div>
+      <div class="phone pop">
+        <div class="topbar pop">
+          <div style="display:flex;align-items:center;gap:8px">
+            <svg width="20" height="20" viewBox="0 0 80 80" fill="none">
+              <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#f06292" stroke-width="5" opacity="0.9"/>
+              <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#f06292" stroke-width="5" opacity="0.5"/>
+            </svg>
+            <div>
+              <div style="font-family:'Josefin Sans';font-weight:100;font-size:11px;letter-spacing:0.2em" class="logo-name">CYGNUS</div>
+              <div style="font-family:'Josefin Sans';font-weight:100;font-size:11px;letter-spacing:0.2em" class="logo-sub">LOOP</div>
+            </div>
+          </div>
+          <div class="salon-name pop" style="font-family:'Zen Kaku Gothic New'">HAIR SALON KAZE</div>
+        </div>
+        <div class="content pop">
+          <div class="section-title pop">今日の状況</div>
+          <div class="stat-row pop">
+            <div class="stat pop"><div class="stat-val pop">8</div><div class="stat-key pop">来店</div></div>
+            <div class="stat pop"><div class="stat-val pop">¥62,400</div><div class="stat-key pop">売上</div></div>
+            <div class="stat pop"><div class="stat-val pop">3</div><div class="stat-key pop">残り</div></div>
+          </div>
+          <div class="section-title pop" style="margin-top:4px">在庫アラート</div>
+          <div class="card pop">
+            <div class="list-item pop">
+              <div><div class="item-name pop">ミルボン オルディーブ 8-CB</div><span class="badge pop">残り2本</span></div>
+              <div class="item-val pop">要発注</div>
+            </div>
+            <div class="list-item pop">
+              <div><div class="item-name pop">シュワルツコフ BC ボンドポーション</div><span class="badge pop">残り1本</span></div>
+              <div class="item-val pop">要発注</div>
+            </div>
+            <div class="list-item pop">
+              <div><div class="item-name pop">ケラスターゼ RE シャンプー</div><span class="badge pop">残り3本</span></div>
+              <div class="item-val pop">要発注</div>
+            </div>
+          </div>
+          <div class="section-title pop" style="margin-top:4px">直近の売上</div>
+          <div class="card pop">
+            <div class="list-item pop">
+              <div class="item-name pop">カット + カラー</div>
+              <div class="item-val pop">¥18,500</div>
+            </div>
+            <div class="list-item pop">
+              <div class="item-name pop">トリートメント</div>
+              <div class="item-val pop">¥6,600</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottomnav pop">
+          <button class="nav-btn pop">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><rect x="2" y="2" width="8" height="8" rx="1.5" stroke="#f06292" stroke-width="1.5"/><rect x="12" y="2" width="8" height="8" rx="1.5" stroke="rgba(51,51,51,0.5)" stroke-width="1.5"/><rect x="2" y="12" width="8" height="8" rx="1.5" stroke="rgba(51,51,51,0.5)" stroke-width="1.5"/><rect x="12" y="12" width="8" height="8" rx="1.5" stroke="rgba(51,51,51,0.5)" stroke-width="1.5"/></svg>
+            <span class="nav-label pop active">ホーム</span>
+          </button>
+          <button class="nav-btn pop">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><rect x="2" y="5" width="18" height="14" rx="1.5" stroke="rgba(51,51,51,0.5)" stroke-width="1.5"/><line x1="7" y1="2" x2="7" y2="8" stroke="rgba(51,51,51,0.5)" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="2" x2="15" y2="8" stroke="rgba(51,51,51,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="nav-label pop inactive">在庫</span>
+          </button>
+          <button class="nav-btn pop">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><polyline points="2,16 7,10 11,13 16,7 20,9" stroke="rgba(51,51,51,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="nav-label pop inactive">売上</span>
+          </button>
+          <button class="nav-btn pop">
+            <svg viewBox="0 0 22 22" fill="none" width="18" height="18"><circle cx="11" cy="8" r="4" stroke="rgba(51,51,51,0.5)" stroke-width="1.5"/><path d="M3 19C3 15.7 6.6 13 11 13C15.4 13 19 15.7 19 19" stroke="rgba(51,51,51,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="nav-label pop inactive">設定</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

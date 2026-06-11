@@ -15,7 +15,7 @@ func NewAdminAppointmentRepository(db *sqlx.DB) *AdminAppointmentRepository {
 }
 
 func (r *AdminAppointmentRepository) List(ctx context.Context) ([]*model.AdminAppointment, error) {
-	var list []*model.AdminAppointment
+	list := make([]*model.AdminAppointment, 0)
 	err := r.db.SelectContext(ctx, &list,
 		`SELECT * FROM admin_appointments ORDER BY date ASC, time ASC`)
 	if err != nil {

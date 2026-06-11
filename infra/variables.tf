@@ -23,3 +23,9 @@ variable "admin_token" {
   type        = string
   sensitive   = true
 }
+
+variable "ses_from" {
+  description = "SES sender email for order notifications"
+  type        = string
+  default     = ""
+}

@@ -1,26 +1,26 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
-import AppLayout from '../components/AppLayout'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { api, apiFetch } from '../lib/api'
 import { getClaims } from '../lib/auth'
 import { businessDaysToClosing } from '../lib/businessDays'
 
 const josefin = "'Josefin Sans', sans-serif"
 const zen     = "'Zen Kaku Gothic New', sans-serif"
-const muted   = 'rgba(232,228,220,0.55)'
-const border  = 'rgba(232,228,220,0.08)'
-const gold    = '#c8a882'
+const muted   = 'var(--text-muted)'
+const border  = 'var(--border)'
+const gold    = 'var(--accent)'
 const alertC  = '#e07060'
 const green   = '#6dba8e'
 const blue    = '#6496dc'
 const alertDim = 'rgba(224,112,96,0.1)'
-const goldDim  = 'rgba(200,168,130,0.1)'
-const goldBorder = 'rgba(200,168,130,0.2)'
-const surface  = '#211f1d'
+const goldDim  = 'var(--accent-dim)'
+const goldBorder = 'var(--accent-border)'
+const surface  = 'var(--surface)'
 
 // ─── BottomSheet CSS ──────────────────────────────────────────────────────────
 const BS_CSS = `
+.inv-filter-row::-webkit-scrollbar { display: none; }
 .inv-bs-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200;
   background: rgba(0,0,0,0.7);
@@ -189,6 +189,7 @@ type HistoryOrder = {
   created_at: string; dealer_name: string; contact_method: string
   items: HistoryOrderItem[]
 }
+type SendResult = { method: string; line_url: string; pdf_url: string }
 type MaterialMenuAssoc = { menu_id: number; menu_name: string }
 type Material = {
   id: number
@@ -210,8 +211,8 @@ const STATUS_COLOR: Record<string, string> = {
 
 const OrbitSVG = ({ size = 10 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 80 80" fill="none" style={{ flexShrink: 0 }}>
-    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)"  stroke="#c8a882" strokeWidth="6" opacity="0.9"/>
-    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#c8a882" strokeWidth="6" opacity="0.5"/>
+    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)"  stroke="var(--accent)" strokeWidth="6" opacity="0.9"/>
+    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="var(--accent)" strokeWidth="6" opacity="0.5"/>
   </svg>
 )
 
@@ -275,8 +276,8 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   あと<strong style={{ margin: '0 4px' }}>{daysLeft}</strong>営業日で翌月伝票になります。
                 </div>
               )}
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注確認</div>
-              <div style={{ fontSize: 19, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
+              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>発注リストに追加</div>
+              <div style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
               <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
                 <div style={{ paddingBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -288,7 +289,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                         style={{
                           width: 80, padding: '4px 8px', textAlign: 'right' as const,
                           background: 'transparent', border: `1px solid rgba(232,228,220,0.15)`, borderRadius: 2,
-                          color: '#e8e4dc', fontFamily: josefin, fontSize: 16, outline: 'none',
+                          color: 'var(--text)', fontFamily: josefin, fontSize: 16, outline: 'none',
                         }}
                       />
                       <span style={{ fontSize: 14, color: muted }}>{item.stock_unit}</span>
@@ -299,13 +300,13 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   <select
                     value={dealerId}
                     onChange={e => setDealerId(Number(e.target.value))}
-                    style={{ background: 'transparent', border: 'none', outline: 'none', color: '#e8e4dc', fontFamily: zen, fontSize: 16, textAlign: 'right' as const, maxWidth: 180 }}
+                    style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: zen, fontSize: 16, textAlign: 'right' as const, maxWidth: 180 }}
                   >
-                    {dealers.map(d => <option key={d.id} value={d.id} style={{ background: '#1a1816' }}>{d.name}</option>)}
+                    {dealers.map(d => <option key={d.id} value={d.id} style={{ background: 'var(--bg)' }}>{d.name}</option>)}
                   </select>
                 </ModalRow>
                 <ModalRow label="送信方法">
-                  <span style={{ fontSize: 15, color: '#e8e4dc', fontWeight: 400 }}>
+                  <span style={{ fontSize: 15, color: 'var(--text)', fontWeight: 400 }}>
                     {dealer?.contact_method === 'LINE' ? 'LINE' : 'Email'}
                   </span>
                 </ModalRow>
@@ -321,7 +322,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                   color: (loading || confirmed) ? muted : '#1a1816',
                   cursor: (loading || confirmed) ? 'default' : 'pointer',
                 }}
-              >{(loading || confirmed) ? '送信中...' : '発注を送信する'}</button>
+              >{(loading || confirmed) ? '追加中...' : 'リストに追加する'}</button>
               <button
                 onClick={close}
                 style={{
@@ -334,7 +335,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
             </div>
             {/* 完了アニメーション */}
             {confirmed && (
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, background: '#1a1816' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, background: 'var(--bg)' }}>
                 <style>{`
                   @keyframes inv-circlePop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
                   @keyframes inv-drawCheck{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
@@ -346,7 +347,7 @@ function OrderModal({ item, storeId, dealers, onClose, onDone }: {
                       style={{ strokeDasharray: 24, strokeDashoffset: 24, animation: 'inv-drawCheck 0.4s ease both 0.55s' }} />
                   </svg>
                 </div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.12em', color: green, opacity: 0, animation: 'inv-checkFade 0.25s ease both 0.7s' }}>送信完了</div>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.12em', color: green, opacity: 0, animation: 'inv-checkFade 0.25s ease both 0.7s' }}>リスト追加完了</div>
               </div>
             )}
           </div>
@@ -393,7 +394,7 @@ function EditModal({ item, onClose, onDone }: {
           <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
             <OrbitSVG /> 在庫数を更新
           </div>
-          <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 16 }}>{item.name}</div>
+          <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 16 }}>{item.name}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
             <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: muted, fontFamily: josefin }}>現在の在庫数</div>
             <input
@@ -401,7 +402,7 @@ function EditModal({ item, onClose, onDone }: {
               onChange={e => setQty(e.target.value)}
               style={{
                 background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2,
-                padding: '13px 14px', fontSize: 16, color: '#e8e4dc', fontFamily: zen, outline: 'none',
+                padding: '13px 14px', fontSize: 16, color: 'var(--text)', fontFamily: zen, outline: 'none',
               }}
             />
           </div>
@@ -410,7 +411,7 @@ function EditModal({ item, onClose, onDone }: {
           </div>
           <button
             onClick={() => submit(close)}
-            style={{ width: '100%', padding: 15, marginBottom: 10, background: gold, border: 'none', borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.25em', textTransform: 'uppercase' as const, color: '#1a1816', cursor: 'pointer' }}
+            style={{ width: '100%', padding: 15, marginBottom: 10, background: gold, border: 'none', borderRadius: 2, fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.25em', textTransform: 'uppercase' as const, color: 'var(--on-accent)', cursor: 'pointer' }}
           >更新する</button>
           <button
             onClick={close}
@@ -477,17 +478,18 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
       transition: 'opacity 0.25s ease',
     }}>
       <div style={{ fontSize: 11, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: green, marginBottom: 4 }}>// 送信完了</div>
-      <div style={{ fontSize: 15, color: '#e8e4dc', fontFamily: zen }}>{message}</div>
+      <div style={{ fontSize: 15, color: 'var(--text)', fontFamily: zen }}>{message}</div>
     </div>,
     document.body
   )
 }
 
 // ─── 在庫カード ───────────────────────────────────────────────────────────────
-function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
-  item: InventoryItem; sent: boolean; readOnly: boolean
+function InvCard({ item, inList, sent, readOnly, onOrder, onEdit }: {
+  item: InventoryItem; inList: boolean; sent: boolean; readOnly: boolean
   onOrder: () => void; onEdit: () => void
 }) {
+  const navigate = useNavigate()
   const color = STATUS_COLOR[item.status] ?? '#e8e4dc'
   const borderLeftColor: Record<string, string> = {
     '要発注': alertC, '注意': gold, '正常': green, '過剰': blue,
@@ -503,7 +505,7 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
 
   const brandLabel = [item.brand, item.size_amount ? `${item.size_amount}${item.size_unit}` : null].filter(Boolean).join(' · ')
 
-  const canOrder = !readOnly && (item.status === '要発注' || item.status === '注意')
+  const canOrder = !readOnly && !inList && !sent && (item.status === '要発注' || item.status === '注意')
 
   return (
     <div style={{
@@ -514,26 +516,26 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
       {/* 上段 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>{item.name}</div>
+          <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen }}>{item.name}</div>
           {brandLabel && <div style={{ fontSize: 13, color: muted, marginTop: 2, fontFamily: zen }}>{brandLabel}</div>}
         </div>
         <div style={{
           fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
           padding: '3px 10px', borderRadius: 1, flexShrink: 0, marginLeft: 8,
-          background: sent ? 'rgba(160,160,160,0.12)' : badgeBg[item.status],
-          color: sent ? muted : color,
-          border: `1px solid ${sent ? 'rgba(232,228,220,0.15)' : badgeBorder[item.status]}`,
+          background: inList ? goldDim : sent ? 'rgba(160,160,160,0.12)' : badgeBg[item.status],
+          color: inList ? gold : sent ? muted : color,
+          border: `1px solid ${inList ? goldBorder : sent ? 'rgba(232,228,220,0.15)' : badgeBorder[item.status]}`,
           fontFamily: josefin,
-        }}>{sent ? '送信済' : item.status}</div>
+        }}>{inList ? 'リスト中' : sent ? '送信済' : item.status}</div>
       </div>
       {/* バー */}
       <div style={{ height: 3, background: 'rgba(232,228,220,0.06)', borderRadius: 2, overflow: 'hidden', marginBottom: 10 }}>
-        <div style={{ height: '100%', width: `${item.bar_width}%`, background: sent ? muted : color, borderRadius: 2, transition: 'width 0.4s ease' }} />
+        <div style={{ height: '100%', width: `${item.bar_width}%`, background: (inList || sent) ? muted : color, borderRadius: 2, transition: 'width 0.4s ease' }} />
       </div>
       {/* 下段 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-          <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 22, lineHeight: 1, color: sent ? muted : color }}>{item.quantity}</span>
+          <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 22, lineHeight: 1, color: (inList || sent) ? muted : color }}>{item.quantity}</span>
           <span style={{ fontSize: 14, color: muted }}>{item.stock_unit}</span>
           <span style={{ fontSize: 14, color: muted, margin: '0 4px' }}>/</span>
           <span style={{ fontSize: 14, color: muted }}>閾値 {item.threshold}{item.stock_unit}</span>
@@ -550,6 +552,16 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
               textTransform: 'uppercase' as const, cursor: 'pointer',
             }}
           >入荷済みにする</button>
+        ) : inList ? (
+          <button
+            onClick={() => navigate('/inventory', { state: { tab: 'orders' } })}
+            style={{
+              padding: '6px 12px', border: `1px solid ${goldBorder}`, borderRadius: 1,
+              background: 'transparent', color: gold,
+              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
+              textTransform: 'uppercase' as const, cursor: 'pointer',
+            }}
+          >発注リストを見る</button>
         ) : canOrder ? (
           <button
             onClick={onOrder}
@@ -559,17 +571,8 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
               fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
               textTransform: 'uppercase' as const, cursor: 'pointer',
             }}
-          >発注する</button>
-        ) : (
-          <button
-            style={{
-              padding: '6px 12px', border: `1px solid ${border}`, borderRadius: 1,
-              background: 'transparent', color: muted,
-              fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.12em',
-              textTransform: 'uppercase' as const, cursor: 'default', opacity: 0.6,
-            }}
-          >発注済</button>
-        )}
+          >リストに追加</button>
+        ) : null}
       </div>
     </div>
   )
@@ -577,10 +580,10 @@ function InvCard({ item, sent, readOnly, onOrder, onEdit }: {
 
 // ─── 発注履歴ステータスバッジ ─────────────────────────────────────────────────
 const STATUS_LABEL: Record<string, string> = {
-  pending:   '送信済', sent: '送信済', received: '入荷中', delivered: '納品済',
+  pending:   'リスト中', sent: '送信済', received: '入荷中', delivered: '納品済',
 }
 const STATUS_STYLE: Record<string, React.CSSProperties> = {
-  pending:   { background: 'rgba(160,160,160,0.12)', border: '1px solid rgba(232,228,220,0.15)', color: muted },
+  pending:   { background: 'rgba(200,168,130,0.1)', border: '1px solid rgba(200,168,130,0.2)', color: '#c8a882' },
   sent:      { background: 'rgba(160,160,160,0.12)', border: '1px solid rgba(232,228,220,0.15)', color: muted },
   received:  { background: 'rgba(200,168,130,0.12)', border: `1px solid ${goldBorder}`,          color: gold },
   delivered: { background: 'rgba(109,186,142,0.12)', border: '1px solid rgba(109,186,142,0.3)',  color: green },
@@ -602,7 +605,7 @@ function MasterField({
         width: '100%', boxSizing: 'border-box' as const,
         background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.12)`,
         borderRadius: 2, padding: '10px 12px',
-        fontSize: 16, color: '#e8e4dc', fontFamily: zen, outline: 'none',
+        fontSize: 16, color: 'var(--text)', fontFamily: zen, outline: 'none',
       }}
     />
   )
@@ -698,7 +701,7 @@ function MaterialFormSheet({
                   width: '100%', boxSizing: 'border-box' as const,
                   background: 'rgba(232,228,220,0.04)', border: `1px solid rgba(232,228,220,0.12)`,
                   borderRadius: 2, padding: '10px 12px',
-                  fontSize: 16, color: '#e8e4dc', fontFamily: zen, outline: 'none',
+                  fontSize: 16, color: 'var(--text)', fontFamily: zen, outline: 'none',
                 }}
               />
               <datalist id="category-list">
@@ -773,7 +776,7 @@ function MaterialFormSheet({
             disabled={saving || !fname.trim()}
             style={{
               padding: '13px 0', background: saving || !fname.trim() ? 'rgba(200,168,130,0.4)' : gold,
-              border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: 'pointer',
+              border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: 'pointer',
             }}
           >{saving ? '保存中...' : '保存する'}</button>
           <button onClick={close} style={{ background: 'transparent', border: 'none', fontSize: 13, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.1em', textAlign: 'center' }}>キャンセル</button>
@@ -811,19 +814,19 @@ function MaterialDetailSheet({
             <OrbitSVG size={10} />
             <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>材料詳細</div>
           </div>
-          <div style={{ fontSize: 18, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 18 }}>{material.name}</div>
+          <div style={{ fontSize: 18, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 18 }}>{material.name}</div>
 
           {/* 詳細情報 */}
           <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 2, marginBottom: 16 }}>
             {material.brand && (
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${border}` }}>
                 <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>ブランド</div>
-                <div style={{ fontSize: 14, color: '#e8e4dc', fontFamily: zen }}>{material.brand}</div>
+                <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: zen }}>{material.brand}</div>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px' }}>
               <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>カテゴリ</div>
-              <div style={{ fontSize: 14, color: '#e8e4dc', fontFamily: zen }}>{material.category}</div>
+              <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: zen }}>{material.category}</div>
             </div>
           </div>
 
@@ -842,7 +845,7 @@ function MaterialDetailSheet({
 
           <button
             onClick={() => { onEdit(); close() }}
-            style={{ padding: '13px 0', background: gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: '#1a1816', cursor: 'pointer', marginBottom: 8 }}
+            style={{ padding: '13px 0', background: gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: 'pointer', marginBottom: 8 }}
           >編集する</button>
           <button
             onClick={() => { close(); setTimeout(onDelete, 450) }}
@@ -930,7 +933,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
               <polyline points="13,4 7,10 13,16" stroke="#e8e4dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <div style={{ fontSize: 16, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>メニュー × 材料マスタ</div>
+          <div style={{ fontSize: 16, fontWeight: 400, color: 'var(--text)', fontFamily: zen }}>メニュー × 材料マスタ</div>
         </div>
         <button
           onClick={() => setAddOpen(true)}
@@ -978,7 +981,7 @@ function MaterialMasterScreen({ onBack, onChanged }: { onBack: () => void; onCha
                           }}
                         >
                           <div style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
-                            <div style={{ fontSize: 15, color: '#e8e4dc', fontFamily: zen, marginBottom: sub ? 3 : 0 }}>{m.name}</div>
+                            <div style={{ fontSize: 15, color: 'var(--text)', fontFamily: zen, marginBottom: sub ? 3 : 0 }}>{m.name}</div>
                             {sub && <div style={{ fontSize: 13, color: muted, fontFamily: zen, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{sub}</div>}
                           </div>
                           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
@@ -1220,7 +1223,7 @@ function BarcodeScanner({ onScan, onClose }: { onScan: (code: string) => void; o
             <label style={{
               display: 'block', padding: '13px 0', background: gold, borderRadius: 2,
               fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.2em',
-              textTransform: 'uppercase' as const, color: '#1a1816', cursor: 'pointer', textAlign: 'center',
+              textTransform: 'uppercase' as const, color: 'var(--on-accent)', cursor: 'pointer', textAlign: 'center',
             }}>
               写真から読み取る
               <input type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
@@ -1238,7 +1241,7 @@ function BarcodeScanner({ onScan, onClose }: { onScan: (code: string) => void; o
 }
 
 // ─── メインページ ─────────────────────────────────────────────────────────────
-const FILTERS = ['すべて', '要発注', '注意', '正常', '過剰', '送信済'] as const
+const FILTERS = ['すべて', '要発注', '注意', '正常', '過剰', 'リスト中', '送信済'] as const
 
 export default function InventoryPage() {
   const claims      = getClaims()
@@ -1257,7 +1260,9 @@ export default function InventoryPage() {
   const [loading,        setLoading]         = useState(true)
 
   const locState = loc.state as { tab?: string } | null
-  const [mainTab,        setMainTab]         = useState<'stock' | 'history'>(locState?.tab === 'history' ? 'history' : 'stock')
+  const [mainTab,        setMainTab]         = useState<'stock' | 'orders' | 'history'>(
+    locState?.tab === 'history' ? 'history' : locState?.tab === 'orders' ? 'orders' : 'stock'
+  )
   const [filter,         setFilter]          = useState<string>('すべて')
   const [search,         setSearch]          = useState('')
 
@@ -1265,8 +1270,16 @@ export default function InventoryPage() {
   const [orderItem,      setOrderItem]       = useState<InventoryItem | null>(null)
   const [editItem,       setEditItem]        = useState<InventoryItem | null>(null)
 
+  const [listIds,        setListIds]         = useState<Set<number>>(new Set())
   const [sentIds,        setSentIds]         = useState<Set<number>>(new Set())
   const [receivedOrderIds, setReceivedOrderIds] = useState<Set<number>>(new Set())
+
+  const [pendingOrders,        setPendingOrders]        = useState<HistoryOrder[]>([])
+  const [pendingOrdersLoading, setPendingOrdersLoading] = useState(false)
+  const [sendingOrderIds,      setSendingOrderIds]      = useState<Set<number>>(new Set())
+  const [updatingItems,        setUpdatingItems]        = useState<Set<string>>(new Set())
+  const [lineResult,           setLineResult]           = useState<{ orderIds: number[]; url: string } | null>(null)
+
   const [toastMsg,       setToastMsg]        = useState('')
   const [toastVisible,   setToastVisible]    = useState(false)
   const [scannerOpen,    setScannerOpen]     = useState(false)
@@ -1308,24 +1321,28 @@ export default function InventoryPage() {
       .catch(() => { setItems([]); showToast('在庫データの読み込みに失敗しました') })
       .finally(() => setLoading(false))
 
-    // pending/sent の発注がある品目を「送信済」として初期表示
+    // pending → listIds（リスト中）、sent → sentIds（送信済）として初期表示
     apiFetch<HistoryOrder[]>('/api/v1/orders/history')
       .then(data => {
         const list = Array.isArray(data) ? data : []
-        const ids = new Set<number>()
+        const lIds = new Set<number>()
+        const sIds = new Set<number>()
         list.forEach(order => {
-          if (order.status === 'pending' || order.status === 'sent') {
-            ;(order.items ?? []).forEach(it => ids.add(Number(it.material_id)))
+          if (order.status === 'pending') {
+            ;(order.items ?? []).forEach(it => lIds.add(Number(it.material_id)))
+          } else if (order.status === 'sent') {
+            ;(order.items ?? []).forEach(it => sIds.add(Number(it.material_id)))
           }
         })
-        setSentIds(ids)
+        setListIds(lIds)
+        setSentIds(sIds)
         setHistory(list)
         setHistoryLoaded(true)
       })
-      .catch(() => setSentIds(new Set()))
+      .catch(() => { setListIds(new Set()); setSentIds(new Set()) })
   }, [currentStoreId])
 
-  // 発注履歴読み込み（履歴タブ表示時、または発注後フラグリセット時）
+  // 発注履歴タブ読み込み
   useEffect(() => {
     if (mainTab !== 'history' || historyLoaded) return
     apiFetch<HistoryOrder[]>('/api/v1/orders/history')
@@ -1333,17 +1350,137 @@ export default function InventoryPage() {
       .catch(() => { setHistory([]); setHistoryLoaded(true) })
   }, [mainTab, historyLoaded])
 
-  // フィルタ・検索
-  // sentIds に含まれるアイテムはカードを消さずバッジだけ「送信済」に変える
+  // 発注リストタブ読み込み（タブ切替のたびに最新を取得）
+  useEffect(() => {
+    if (mainTab !== 'orders') return
+    setPendingOrdersLoading(true)
+    apiFetch<HistoryOrder[]>('/api/v1/orders/history')
+      .then(data => {
+        const list = Array.isArray(data) ? data : []
+        const pending = list.filter(o => o.status === 'pending')
+        setPendingOrders(pending)
+        const lIds = new Set<number>()
+        pending.forEach(o => (o.items ?? []).forEach(it => lIds.add(Number(it.material_id))))
+        setListIds(lIds)
+      })
+      .catch(() => setPendingOrders([]))
+      .finally(() => setPendingOrdersLoading(false))
+  }, [mainTab])
+
+  async function handleSendAll(groupOrders: HistoryOrder[]) {
+    if (groupOrders.length === 0) return
+    const ids = groupOrders.map(o => o.id)
+    ids.forEach(id => setSendingOrderIds(prev => new Set(prev).add(id)))
+    try {
+      let lineUrl = ''
+      for (const order of groupOrders) {
+        const res = await api(`/api/v1/orders/${order.id}/send`, { method: 'POST' })
+        if (!res.ok) throw new Error()
+        const result: SendResult = await res.json()
+        if (result.method === 'LINE' && result.line_url && !lineUrl) {
+          lineUrl = result.line_url
+        }
+      }
+      if (lineUrl) {
+        setLineResult({ orderIds: ids, url: lineUrl })
+      } else {
+        ids.forEach(id => removeSentOrder(id))
+        showToast('発注書を送信しました')
+      }
+    } catch {
+      showToast('送信に失敗しました')
+    } finally {
+      ids.forEach(id => setSendingOrderIds(prev => { const s = new Set(prev); s.delete(id); return s }))
+    }
+  }
+
+  function removeSentOrder(orderId: number) {
+    const order = pendingOrders.find(o => o.id === orderId)
+    if (order) {
+      const matIds = (order.items ?? []).map(it => Number(it.material_id))
+      setListIds(prev => { const s = new Set(prev); matIds.forEach(id => s.delete(id)); return s })
+      setSentIds(prev => { const s = new Set(prev); matIds.forEach(id => s.add(id)); return s })
+    }
+    setPendingOrders(prev => prev.filter(o => o.id !== orderId))
+  }
+
+  function confirmLineSent() {
+    if (!lineResult) return
+    lineResult.orderIds.forEach(id => removeSentOrder(id))
+    setLineResult(null)
+    showToast('発注書を送信しました')
+  }
+
+  async function handleQtyChange(orderId: number, materialId: number, delta: number) {
+    const order = pendingOrders.find(o => o.id === orderId)
+    const item = order?.items.find(it => it.material_id === materialId)
+    if (!item) return
+    const newQty = item.quantity + delta
+    if (newQty < 1) return
+
+    setPendingOrders(prev => prev.map(o =>
+      o.id !== orderId ? o : {
+        ...o, items: o.items.map(it => it.material_id !== materialId ? it : { ...it, quantity: newQty })
+      }
+    ))
+    const key = `${orderId}-${materialId}`
+    setUpdatingItems(prev => new Set(prev).add(key))
+    try {
+      const res = await api(`/api/v1/orders/${orderId}/items/${materialId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ quantity: newQty }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setPendingOrders(prev => prev.map(o =>
+        o.id !== orderId ? o : {
+          ...o, items: o.items.map(it => it.material_id !== materialId ? it : { ...it, quantity: item.quantity })
+        }
+      ))
+      showToast('数量の変更に失敗しました')
+    } finally {
+      setUpdatingItems(prev => { const s = new Set(prev); s.delete(key); return s })
+    }
+  }
+
+  async function handleItemDelete(orderId: number, materialId: number) {
+    try {
+      const res = await api(`/api/v1/orders/${orderId}/items/${materialId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      const result: { order_deleted: boolean } = await res.json()
+      if (result.order_deleted) {
+        const order = pendingOrders.find(o => o.id === orderId)
+        if (order) {
+          const matIds = (order.items ?? []).map(it => Number(it.material_id))
+          setListIds(prev => { const s = new Set(prev); matIds.forEach(id => s.delete(id)); return s })
+        }
+        setPendingOrders(prev => prev.filter(o => o.id !== orderId))
+      } else {
+        const updated = pendingOrders.map(o =>
+          o.id !== orderId ? o : { ...o, items: o.items.filter(it => it.material_id !== materialId) }
+        )
+        setPendingOrders(updated)
+        const stillInList = updated.some(o => o.items.some(it => Number(it.material_id) === materialId))
+        if (!stillInList) setListIds(prev => { const s = new Set(prev); s.delete(materialId); return s })
+      }
+    } catch {
+      showToast('削除に失敗しました')
+    }
+  }
+
   const displayItems = items.filter(it => {
-    if (filter === '送信済')  return sentIds.has(Number(it.material_id))
-    if (filter !== 'すべて'  && it.status !== filter) return false
+    const matId  = Number(it.material_id)
+    const inList = listIds.has(matId)
+    // カードに表示されるバッジと完全一致でフィルタリング（ダッシュボードと同じロジック）
+    const badge  = inList ? 'リスト中'
+                 : sentIds.has(matId) ? '送信済'
+                 : it.status
+    if (filter !== 'すべて' && badge !== filter) return false
     if (search) {
       const q = search.toLowerCase()
-      const matchName  = it.name.toLowerCase().includes(q)
-      const matchBrand = (it.brand ?? '').toLowerCase().includes(q)
-      const matchJan   = (it.jan_code ?? '') === search
-      if (!matchName && !matchBrand && !matchJan) return false
+      if (!it.name.toLowerCase().includes(q) &&
+          !(it.brand ?? '').toLowerCase().includes(q) &&
+          (it.jan_code ?? '') !== search) return false
     }
     return true
   })
@@ -1353,10 +1490,23 @@ export default function InventoryPage() {
   const currentStoreName = stores.find(s => s.id === currentStoreId)?.name ?? ''
 
   // 発注履歴グループ（月別）
+  // 発注リストタブ用: ディーラーごとグループ
+  const pendingGroups: { dealerName: string; contactMethod: string; orders: HistoryOrder[] }[] = []
+  const pendingGroupSeen = new Map<string, number>()
+  for (const o of pendingOrders) {
+    if (pendingGroupSeen.has(o.dealer_name)) {
+      pendingGroups[pendingGroupSeen.get(o.dealer_name)!].orders.push(o)
+    } else {
+      pendingGroupSeen.set(o.dealer_name, pendingGroups.length)
+      pendingGroups.push({ dealerName: o.dealer_name, contactMethod: o.contact_method, orders: [o] })
+    }
+  }
+
+  // 発注履歴タブ用: pending を除外して月別グループ
   const historyByMonth: { label: string; orders: HistoryOrder[] }[] = (() => {
     const map = new Map<string, HistoryOrder[]>()
     history
-      .filter(o => !currentStoreId || o.store_id === currentStoreId)
+      .filter(o => o.status !== 'pending' && (!currentStoreId || o.store_id === currentStoreId))
       .forEach(o => {
         const d = new Date(o.created_at)
         const key = `${d.getFullYear()}年${d.getMonth() + 1}月`
@@ -1368,37 +1518,37 @@ export default function InventoryPage() {
 
   if (view === 'master') {
     return (
-      <AppLayout>
-        <MaterialMasterScreen
-          onBack={() => setView('main')}
-          onChanged={reloadInventory}
-        />
-      </AppLayout>
+      <MaterialMasterScreen
+        onBack={() => setView('main')}
+        onChanged={reloadInventory}
+      />
     )
   }
 
   return (
-    <AppLayout>
+    <>
       {/* ヘッダー */}
       <div style={{ padding: '14px 20px 0', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: 19, fontWeight: 400, color: '#e8e4dc', fontFamily: zen }}>在庫管理</div>
-        {/* 店舗切替ボタン（manager のみ） */}
-        {isManager && stores.length > 1 && (
-          <div
-            onClick={() => setStoreModalOpen(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '6px 12px', background: surface,
-              border: `1px solid ${border}`, borderRadius: 2, cursor: 'pointer',
-            }}
-          >
-            <OrbitSVG size={10} />
-            <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 13, color: gold }}>{currentStoreName}</span>
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-              <polyline points="2,4 6,8 10,4" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-        )}
+        <div style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', fontFamily: zen }}>在庫管理</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* 店舗切替ボタン（manager のみ） */}
+          {isManager && stores.length > 1 && (
+            <div
+              onClick={() => setStoreModalOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px', background: surface,
+                border: `1px solid ${border}`, borderRadius: 2, cursor: 'pointer',
+              }}
+            >
+              <OrbitSVG size={10} />
+              <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 13, color: gold }}>{currentStoreName}</span>
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <polyline points="2,4 6,8 10,4" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 他店舗閲覧バナー */}
@@ -1415,23 +1565,27 @@ export default function InventoryPage() {
         </div>
       )}
 
-      {/* メインタブ（在庫状況 / 発注履歴） */}
+      {/* メインタブ（在庫状況 / 発注リスト / 発注履歴） */}
       <div style={{ display: 'flex', margin: '10px 20px 0', background: surface, border: `1px solid ${border}`, borderRadius: 4, overflow: 'hidden' }}>
-        {(['stock', 'history'] as const).map(t => {
-          const active = mainTab === t
+        {([
+          { key: 'stock',   label: '在庫状況' },
+          { key: 'orders',  label: '発注リスト' },
+          { key: 'history', label: '発注履歴' },
+        ] as const).map(({ key, label }) => {
+          const active = mainTab === key
           return (
             <button
-              key={t}
-              onClick={() => setMainTab(t)}
+              key={key}
+              onClick={() => setMainTab(key)}
               style={{
                 flex: 1, padding: 10, border: 'none',
                 background: active ? goldDim : 'transparent',
                 ...(active ? { border: `1px solid ${goldBorder}` } : {}),
                 color: active ? gold : muted,
-                fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.18em',
+                fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.12em',
                 textTransform: 'uppercase' as const, cursor: 'pointer',
               }}
-            >{t === 'stock' ? '在庫状況' : '発注履歴'}</button>
+            >{label}</button>
           )
         })}
       </div>
@@ -1440,7 +1594,7 @@ export default function InventoryPage() {
       {mainTab === 'stock' && (
         <>
           {/* フィルタ */}
-          <div style={{ padding: '10px 20px 0', display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0 }}>
+          <div className="inv-filter-row" style={{ padding: '10px 20px 0', display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0, scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
             {FILTERS.map(f => {
               const active = filter === f
               return (
@@ -1473,7 +1627,7 @@ export default function InventoryPage() {
                 autoCapitalize="none" autoCorrect="off"
                 style={{
                   flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
-                  padding: '10px 0', fontSize: 16, color: '#e8e4dc', fontFamily: zen, fontWeight: 300,
+                  padding: '10px 0', fontSize: 16, color: 'var(--text)', fontFamily: zen, fontWeight: 300,
                   WebkitAppearance: 'none',
                 } as React.CSSProperties}
               />
@@ -1518,14 +1672,15 @@ export default function InventoryPage() {
               return (
                 <div key={cat}>
                   {/* カテゴリラベル */}
-                  <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 14, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: '#e8e4dc', padding: '16px 0 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 14, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: 'var(--text)', padding: '16px 0 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
                     <OrbitSVG size={12} /> {cat}
                   </div>
                   {catItems.map(item => (
                     <InvCard
                       key={item.id}
                       item={item}
-                      sent={sentIds.has(Number(item.material_id))}
+                      inList={listIds.has(Number(item.material_id))}
+                      sent={sentIds.has(Number(item.material_id)) && !listIds.has(Number(item.material_id))}
                       readOnly={!isOwnStore}
                       onOrder={() => setOrderItem(item)}
                       onEdit={() => setEditItem(item)}
@@ -1536,6 +1691,188 @@ export default function InventoryPage() {
             })}
           </div>
         </>
+      )}
+
+      {/* 発注リストタブ */}
+      {mainTab === 'orders' && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 80px' }}>
+          {pendingOrdersLoading ? (
+            <div style={{ textAlign: 'center', padding: 40, color: muted, fontFamily: josefin, fontSize: 13 }}>読み込み中...</div>
+          ) : pendingGroups.length === 0 ? (
+            <div style={{ background: goldDim, border: `1px dashed ${goldBorder}`, borderRadius: 4, padding: '32px 20px', textAlign: 'center' }}>
+              <div style={{ fontSize: 14, color: muted, fontFamily: zen, lineHeight: 1.8, marginBottom: 16 }}>
+                発注リストは空です。<br />
+                在庫アラートが出た商品を「リストに追加」してください。
+              </div>
+              <button
+                onClick={() => setMainTab('stock')}
+                style={{
+                  background: 'transparent', border: `1px solid ${goldBorder}`, borderRadius: 2,
+                  padding: '8px 20px', color: gold, fontFamily: josefin, fontWeight: 100,
+                  fontSize: 12, letterSpacing: '0.15em', cursor: 'pointer',
+                }}
+              >在庫状況を見る</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {pendingGroups.map(group => {
+                const flatItems = group.orders.flatMap(o => (o.items ?? []).map(it => ({ orderId: o.id, item: it })))
+                const isLINE = group.contactMethod === 'LINE'
+                const firstOrder = group.orders[0]
+                const isSending = group.orders.some(o => sendingOrderIds.has(o.id))
+                return (
+                  <div key={group.dealerName} style={{ background: surface, border: `1px solid ${border}`, borderRadius: 4 }}>
+                    {/* ディーラー名 */}
+                    <div style={{ padding: '14px 16px 10px', borderBottom: `1px solid ${border}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <div style={{ fontSize: 11, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.18em', color: gold, marginBottom: 4 }}>DEALER</div>
+                          <div style={{ fontSize: 16, color: 'var(--text)', fontFamily: zen, fontWeight: 400 }}>{group.dealerName}</div>
+                        </div>
+                        <div style={{
+                          fontSize: 11, letterSpacing: '0.12em', fontFamily: josefin,
+                          padding: '4px 10px', borderRadius: 1,
+                          background: isLINE ? 'rgba(0,195,91,0.1)' : 'rgba(100,150,220,0.1)',
+                          border: `1px solid ${isLINE ? 'rgba(0,195,91,0.3)' : 'rgba(100,150,220,0.3)'}`,
+                          color: isLINE ? '#4dba7f' : '#6496dc',
+                        }}>{isLINE ? 'LINE' : 'Email'}</div>
+                      </div>
+                      {firstOrder?.is_next_month_invoice && (
+                        <div style={{ marginTop: 8, fontSize: 12, color: alertC, fontFamily: zen }}>⚠ 翌月伝票</div>
+                      )}
+                    </div>
+                    {/* 品目一覧 */}
+                    <div style={{ padding: '10px 16px' }}>
+                      <div style={{ fontSize: 11, fontFamily: josefin, fontWeight: 100, letterSpacing: '0.15em', color: muted, marginBottom: 8 }}>ORDER ITEMS</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                        {flatItems.map(({ orderId, item }, i) => {
+                          const itemKey = `${orderId}-${item.material_id}`
+                          const isUpdating = updatingItems.has(itemKey)
+                          return (
+                            <div
+                              key={itemKey}
+                              style={{
+                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                padding: '10px 0',
+                                borderBottom: i < flatItems.length - 1 ? `1px solid ${border}` : 'none',
+                                opacity: isUpdating ? 0.5 : 1,
+                              }}
+                            >
+                              {/* 品名 */}
+                              <div style={{ fontSize: 14, color: 'var(--text)', fontFamily: zen, flex: 1, minWidth: 0, paddingRight: 8 }}>{item.material_name}</div>
+                              {/* 数量コントロール */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                                <button
+                                  onClick={() => handleQtyChange(orderId, item.material_id, -1)}
+                                  disabled={isUpdating || item.quantity <= 1}
+                                  style={{
+                                    width: 28, height: 28, borderRadius: 2, border: `1px solid ${border}`,
+                                    background: 'transparent', color: item.quantity <= 1 ? 'rgba(232,228,220,0.2)' : muted,
+                                    fontFamily: josefin, fontSize: 16, lineHeight: 1, cursor: item.quantity <= 1 ? 'default' : 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  }}
+                                >−</button>
+                                <div style={{ minWidth: 32, textAlign: 'center' }}>
+                                  <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 18, color: gold }}>{item.quantity}</span>
+                                  <span style={{ fontSize: 12, color: muted, fontFamily: zen, marginLeft: 3 }}>{item.unit}</span>
+                                </div>
+                                <button
+                                  onClick={() => handleQtyChange(orderId, item.material_id, 1)}
+                                  disabled={isUpdating}
+                                  style={{
+                                    width: 28, height: 28, borderRadius: 2, border: `1px solid ${border}`,
+                                    background: 'transparent', color: muted,
+                                    fontFamily: josefin, fontSize: 16, lineHeight: 1, cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  }}
+                                >＋</button>
+                                {/* 削除ボタン */}
+                                <button
+                                  onClick={() => handleItemDelete(orderId, item.material_id)}
+                                  style={{
+                                    width: 28, height: 28, borderRadius: 2, border: `1px solid rgba(224,112,96,0.2)`,
+                                    background: 'transparent', color: 'rgba(224,112,96,0.5)',
+                                    fontSize: 14, lineHeight: 1, cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 4,
+                                  }}
+                                >×</button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    {/* 送信ボタン */}
+                    <div style={{ padding: '12px 16px 14px', borderTop: `1px solid ${border}` }}>
+                      <button
+                        onClick={() => handleSendAll(group.orders)}
+                        disabled={isSending}
+                        style={{
+                          width: '100%', padding: '13px 0',
+                          background: isSending ? 'rgba(200,168,130,0.3)' : gold,
+                          border: 'none', borderRadius: 2,
+                          fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.25em',
+                          textTransform: 'uppercase' as const,
+                          color: isSending ? muted : '#1a1816',
+                          cursor: isSending ? 'default' : 'pointer',
+                        }}
+                      >{isSending ? '送信中...' : isLINE ? 'LINE で送信する' : 'メールで送信する'}</button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          {/* LINE モーダル */}
+          {lineResult && (
+            <div style={{
+              position: 'fixed', inset: 0, zIndex: 400,
+              background: 'rgba(0,0,0,0.7)',
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            }}>
+              <div style={{
+                width: '100%', maxWidth: 480, background: 'var(--bg)',
+                borderTop: `1px solid ${goldBorder}`, borderRadius: '16px 16px 0 0',
+                padding: '24px 20px 40px',
+              }}>
+                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.25em', color: gold, marginBottom: 12 }}>LINE 発注</div>
+                <div style={{ fontSize: 15, color: 'var(--text)', fontFamily: zen, lineHeight: 1.8, marginBottom: 20 }}>
+                  下のボタンをタップするとLINEが開き、発注書のURLが貼り付けられます。<br />
+                  送信後、「送信完了」を押してステータスを更新してください。
+                </div>
+                <a
+                  href={lineResult.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'block', width: '100%', padding: '13px 0', marginBottom: 10, boxSizing: 'border-box' as const,
+                    background: '#00c35b', border: 'none', borderRadius: 2, textDecoration: 'none',
+                    fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.25em',
+                    textTransform: 'uppercase' as const, color: '#fff', textAlign: 'center' as const, cursor: 'pointer',
+                  }}
+                >LINE で開く</a>
+                <button
+                  onClick={() => confirmLineSent()}
+                  style={{
+                    width: '100%', padding: '13px 0', marginBottom: 8,
+                    background: 'transparent', border: `1px solid ${goldBorder}`, borderRadius: 2,
+                    fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.15em',
+                    color: gold, cursor: 'pointer',
+                  }}
+                >送信完了</button>
+                <button
+                  onClick={() => setLineResult(null)}
+                  style={{
+                    width: '100%', padding: '11px 0',
+                    background: 'transparent', border: 'none',
+                    fontFamily: josefin, fontSize: 12, letterSpacing: '0.1em',
+                    color: muted, cursor: 'pointer',
+                  }}
+                >キャンセル</button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* 発注履歴タブ */}
@@ -1569,7 +1906,7 @@ export default function InventoryPage() {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                       <div>
-                        <div style={{ fontSize: 15, fontWeight: 400, color: '#e8e4dc', fontFamily: zen, marginBottom: 3 }}>{productLabel}</div>
+                        <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 3 }}>{productLabel}</div>
                         <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>
                           {o.dealer_name} · {o.contact_method === 'LINE' ? 'LINE' : 'メール'}
                         </div>
@@ -1584,7 +1921,7 @@ export default function InventoryPage() {
                       <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>
                         {dateStr}{costLabel ? ` · ${costLabel}` : ''}
                       </div>
-                      {(o.status === 'pending' || o.status === 'sent') && !receivedOrderIds.has(o.id) && (
+                      {o.status === 'sent' && !receivedOrderIds.has(o.id) && (
                         <button
                           style={{
                             padding: '6px 14px', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2,
@@ -1631,10 +1968,10 @@ export default function InventoryPage() {
           dealers={dealers}
           onClose={() => setOrderItem(null)}
           onDone={() => {
-            setSentIds(prev => new Set(prev).add(Number(orderItem.material_id)))
-            setHistoryLoaded(false) // 次回履歴タブ開時に再取得
+            setListIds(prev => new Set(prev).add(Number(orderItem.material_id)))
+            setHistoryLoaded(false)
             setOrderItem(null)
-            showToast(`${orderItem.name} の発注を送信しました`)
+            showToast(`${orderItem.name} を発注リストに追加しました`)
           }}
         />
       )}
@@ -1670,6 +2007,6 @@ export default function InventoryPage() {
         />
       )}
       <Toast message={toastMsg} visible={toastVisible} />
-    </AppLayout>
+    </>
   )
 }

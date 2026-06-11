@@ -34,7 +34,7 @@ func (r *CustomerRepository) FindByID(ctx context.Context, id uint64) (*model.Cu
 }
 
 func (r *CustomerRepository) FindBySalonID(ctx context.Context, salonID uint64, q string) ([]*model.Customer, error) {
-	var list []*model.Customer
+	list := make([]*model.Customer, 0)
 	var err error
 	if q != "" {
 		err = r.db.SelectContext(ctx, &list,
