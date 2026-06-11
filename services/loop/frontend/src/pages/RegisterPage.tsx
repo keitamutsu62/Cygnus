@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { api } from '../lib/api'
 
 const S = {
   bg:          '#1a1816',
@@ -40,9 +41,8 @@ export default function RegisterPage() {
     }
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/register', {
+      const res = await api('/api/v1/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           salon_name:     form.salonName,
           owner_name:     form.ownerName,
