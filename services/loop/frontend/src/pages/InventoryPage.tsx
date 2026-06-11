@@ -1988,13 +1988,37 @@ export default function InventoryPage() {
               const barW = Math.min(100, Math.round((newQty / (thr * 2)) * 100))
               return { ...i, quantity: newQty, status, bar_width: barW }
             }))
-            setSentIds(prev => { const s = new Set(prev); s.delete(editItem.material_id); return s })
+
+            // この材料に紐づく sent 注文をすべて received に更新（DBも更新）
+            const matId = editItem.material_id
+            const sentOrders = history.filter(o =>
+              o.status === 'sent' &&
+              (o.items ?? []).some(it => Number(it.material_id) === matId)
+            )
+            if (sentOrders.length > 0) {
+              setSentIds(prev => { const s = new Set(prev); s.delete(matId); return s })
+              setHistory(prev => prev.map(o =>
+                sentOrders.some(so => so.id === o.id) ? { ...o, status: 'received' } : o
+              ))
+              sentOrders.forEach(o => {
+                api(`/api/v1/orders/${o.id}/status`, {
+                  method: 'PATCH',
+                  body: JSON.stringify({ status: 'received' }),
+                }).catch(() => {})
+              })
+            }
+
             if (editOrderId !== null) {
               const oid = editOrderId
               setReceivedOrderIds(prev => { const s = new Set(prev); s.add(oid); return s })
               setHistory(prev => prev.map(o => o.id === oid ? { ...o, status: 'received' } : o))
+              api(`/api/v1/orders/${oid}/status`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'received' }),
+              }).catch(() => {})
               setEditOrderId(null)
             }
+
             setEditItem(null)
             showToast('在庫数を更新しました')
           }}
