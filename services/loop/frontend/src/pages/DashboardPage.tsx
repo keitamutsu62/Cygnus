@@ -493,10 +493,10 @@ export default function DashboardPage() {
           (o.items ?? []).map(it => ({ name: it.material_name, qty: `${it.quantity}${it.unit}`, dealer: o.dealer_name }))
         )
       )
-      // pending（リスト中）と sent（送信済）の品目はアラートから除外
+      // pending（リスト中）の品目はアラートから除外。sent（送信済）はバッジ表示で残す
       setInvAlerts(
         (Array.isArray(invData) ? invData : [])
-          .filter(i => (i.status === '要発注' || i.status === '注意') && !pendingIds.has(i.material_id) && !sentIds.has(i.material_id))
+          .filter(i => (i.status === '要発注' || i.status === '注意') && !pendingIds.has(i.material_id))
           .slice(0, 3)
       )
     }).catch(() => showError('在庫アラートの読み込みに失敗しました'))
