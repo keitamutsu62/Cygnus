@@ -343,27 +343,3 @@ func (h *AdminHandler) GetAWSCost(c echo.Context) error {
 		"breakdown":         breakdown,
 	})
 }
-
-// GET /admin/v1/debug/salon-store-check — サロン名＝店舗名の重複チェック（確認後削除）
-func (h *AdminHandler) DebugSalonStoreCheck(c echo.Context) error {
-	type row struct {
-		SalonID    uint64 `db:"salon_id"    json:"salon_id"`
-		SalonName  string `db:"salon_name"  json:"salon_name"`
-		StoreID    uint64 `db:"store_id"    json:"store_id"`
-		StoreName  string `db:"store_name"  json:"store_name"`
-		IsMatch    bool   `db:"is_match"    json:"is_match"`
-	}
-	var rows []row
-	err := h.db.SelectContext(c.Request().Context(), &rows, `
-		SELECT s.id AS salon_id, s.name AS salon_name,
-		       st.id AS store_id, st.name AS store_name,
-		       (s.name = st.name) AS is_match
-		FROM salons s
-		JOIN stores st ON st.salon_id = s.id
-		ORDER BY s.id, st.id
-	`)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-	return c.JSON(http.StatusOK, rows)
-}

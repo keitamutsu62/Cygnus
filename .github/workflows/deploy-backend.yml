@@ -47,11 +47,33 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      - name: Force new ECS deployment
+      - name: Update ECS task definition with new image
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          CURRENT=$(aws ecs describe-task-definition \
+            --task-definition $ECS_SERVICE \
+            --query 'taskDefinition' --output json)
+          NEW_DEF=$(echo "$CURRENT" | python3 -c "
+import json,sys
+td=json.load(sys.stdin)
+td['containerDefinitions'][0]['image']='$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG'
+for k in ['taskDefinitionArn','revision','status','requiresAttributes','compatibilities','registeredAt','registeredBy']:
+    td.pop(k,None)
+print(json.dumps(td))
+")
+          NEW_REV=$(aws ecs register-task-definition \
+            --cli-input-json "$NEW_DEF" \
+            --query 'taskDefinition.revision' --output text)
+          echo "NEW_REVISION=$NEW_REV" >> $GITHUB_ENV
+
+      - name: Deploy new task definition
         run: |
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
+            --task-definition "$ECS_SERVICE:$NEW_REVISION" \
             --force-new-deployment \
             --query 'service.deployments[0].{status:status,desired:desiredCount}' \
             --output table
@@ -60,5 +82,5 @@ jobs:
         run: |
           aws ecs wait services-stable \
             --cluster $ECS_CLUSTER \
-            --services $ECS_SERVICE \
+            --services $ECS_SERVICE
         timeout-minutes: 15
