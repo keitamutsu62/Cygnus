@@ -67,8 +67,11 @@ export default function AppLayout() {
 
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'var(--bg)', display: 'flex', flexDirection: 'column',
+      height: '100%',
+      background: 'var(--bg)',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
     }}>
       {/* ヘッダー */}
       <div style={{
@@ -107,8 +110,6 @@ export default function AppLayout() {
         display: 'flex',
         background: 'var(--surface)',
         borderTop: '1px solid var(--border)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        position: 'relative',
         zIndex: 10,
       }}>
         {NAV.map(item => {
@@ -119,7 +120,7 @@ export default function AppLayout() {
               onClick={() => navigate(item.path)}
               style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                padding: '12px 0 10px', gap: 4, cursor: 'pointer',
+                padding: '25px 0 23px', gap: 4, cursor: 'pointer',
                 background: 'none', border: 'none', touchAction: 'manipulation',
               }}
             >

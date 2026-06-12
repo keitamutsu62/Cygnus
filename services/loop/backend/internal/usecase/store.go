@@ -95,3 +95,14 @@ func (u *StoreUsecase) AddSpecialClosure(ctx context.Context, storeID uint64, da
 func (u *StoreUsecase) DeleteSpecialClosure(ctx context.Context, id, storeID uint64) error {
 	return u.closureRepo.Delete(ctx, id, storeID)
 }
+
+func (u *StoreUsecase) Delete(ctx context.Context, id, salonID uint64) error {
+	s, err := u.storeRepo.FindByID(ctx, id)
+	if err != nil {
+		return apierror.ErrNotFound
+	}
+	if s.SalonID != salonID {
+		return apierror.ErrForbidden
+	}
+	return u.storeRepo.Delete(ctx, id)
+}

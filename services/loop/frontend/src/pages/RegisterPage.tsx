@@ -25,6 +25,7 @@ export default function RegisterPage() {
     ownerPassword:   '',
     confirmPassword: '',
   })
+  const [storeNames, setStoreNames] = useState([''])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -39,12 +40,18 @@ export default function RegisterPage() {
       setError('パスワードが一致しません')
       return
     }
+    const validStoreNames = storeNames.filter(s => s.trim() !== '')
+    if (validStoreNames.length === 0) {
+      setError('店舗名を1つ以上入力してください')
+      return
+    }
     setLoading(true)
     try {
       const res = await api('/api/v1/auth/register', {
         method: 'POST',
         body: JSON.stringify({
           salon_name:     form.salonName,
+          store_names:    validStoreNames,
           owner_name:     form.ownerName,
           owner_email:    form.ownerEmail,
           owner_password: form.ownerPassword,
@@ -123,7 +130,63 @@ export default function RegisterPage() {
 
         {/* フォーム */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {fields.map(f => (
+          {/* サロン名 */}
+          <FieldInput
+            label="サロン名" type="text"
+            value={form.salonName} onChange={v => handleChange('salonName', v)}
+            placeholder="Hair Studio LUNA"
+          />
+
+          {/* 店舗名（複数可） */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: S.muted, fontFamily: S.josefin, fontWeight: 100 }}>
+              店舗名
+            </div>
+            {storeNames.map((name, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => {
+                    const next = [...storeNames]
+                    next[i] = e.target.value
+                    setStoreNames(next)
+                  }}
+                  placeholder={i === 0 ? '渋谷店' : `店舗${i + 1}`}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(232,228,220,0.04)',
+                    border: '1px solid rgba(232,228,220,0.12)',
+                    borderRadius: 2,
+                    padding: '13px 14px',
+                    fontSize: 16,
+                    color: S.text,
+                    fontFamily: S.zen,
+                    fontWeight: 300,
+                    outline: 'none',
+                    WebkitAppearance: 'none',
+                  }}
+                />
+                {storeNames.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setStoreNames(storeNames.filter((_, j) => j !== i))}
+                    style={{ background: 'none', border: 'none', color: S.muted, fontSize: 20, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+                  >×</button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setStoreNames([...storeNames, ''])}
+              style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: S.gold, fontSize: 13, fontFamily: S.josefin, fontWeight: 100, letterSpacing: '0.1em', cursor: 'pointer', padding: '4px 0' }}
+            >
+              ＋ 店舗を追加
+            </button>
+          </div>
+
+          {/* オーナー情報 */}
+          {fields.slice(1).map(f => (
             <FieldInput
               key={f.key}
               label={f.label}

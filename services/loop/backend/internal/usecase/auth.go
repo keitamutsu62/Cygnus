@@ -25,6 +25,8 @@ type AuthUsecase struct {
 	accountRepo      repository.CygnusAccountRepository
 	membershipRepo   repository.SalonMembershipRepository
 	resetTokenRepo   repository.PasswordResetTokenRepository
+	storeRepo        repository.StoreRepository
+	bhRepo           repository.BusinessHoursRepository
 	mailer           Mailer
 	jwtSecret        string
 }
@@ -43,6 +45,8 @@ func NewAuthUsecase(
 	accountRepo repository.CygnusAccountRepository,
 	membershipRepo repository.SalonMembershipRepository,
 	resetTokenRepo repository.PasswordResetTokenRepository,
+	storeRepo repository.StoreRepository,
+	bhRepo repository.BusinessHoursRepository,
 	mailer Mailer,
 	jwtSecret string,
 ) *AuthUsecase {
@@ -55,6 +59,8 @@ func NewAuthUsecase(
 		accountRepo:      accountRepo,
 		membershipRepo:   membershipRepo,
 		resetTokenRepo:   resetTokenRepo,
+		storeRepo:        storeRepo,
+		bhRepo:           bhRepo,
 		mailer:           mailer,
 		jwtSecret:        jwtSecret,
 	}
@@ -62,6 +68,7 @@ func NewAuthUsecase(
 
 type RegisterInput struct {
 	SalonName     string
+	StoreNames    []string
 	OwnerName     string
 	OwnerEmail    string
 	OwnerPassword string
@@ -93,8 +100,33 @@ func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (string, e
 		return "", fmt.Errorf("Register: hash password: %w", err)
 	}
 
+	// 店舗を作成する（1件以上必須、未指定時はサロン名をフォールバック）
+	storeNames := in.StoreNames
+	if len(storeNames) == 0 {
+		storeNames = []string{in.SalonName}
+	}
+	var firstStoreID uint64
+	for i, sn := range storeNames {
+		if sn == "" {
+			continue
+		}
+		store := &model.Store{SalonID: salon.ID, Name: sn}
+		if err := u.storeRepo.Create(ctx, store); err != nil {
+			return "", fmt.Errorf("Register: create store: %w", err)
+		}
+		_ = u.bhRepo.Upsert(ctx, &model.BusinessHours{
+			StoreID:   store.ID,
+			OpenTime:  "09:00:00",
+			CloseTime: "19:00:00",
+		})
+		if i == 0 {
+			firstStoreID = store.ID
+		}
+	}
+
 	owner := &model.Staff{
 		SalonID:      salon.ID,
+		StoreID:      &firstStoreID,
 		Name:         in.OwnerName,
 		Email:        in.OwnerEmail,
 		PasswordHash: string(hash),
@@ -251,6 +283,31 @@ type AcceptInvitationInput struct {
 	Token    string
 	Name     string
 	Password string
+	StoreID  *uint64
+}
+
+type InviteInfoResult struct {
+	SalonName string
+	Stores    []*model.Store
+}
+
+func (u *AuthUsecase) GetInviteInfo(ctx context.Context, token string) (*InviteInfoResult, error) {
+	inv, err := u.invitationRepo.FindByToken(ctx, token)
+	if err != nil {
+		return nil, apierror.ErrInvalidToken
+	}
+	if inv.Status != model.InvitationPending || inv.ExpiresAt.Before(time.Now()) {
+		return nil, apierror.ErrInvalidToken
+	}
+	salon, err := u.salonRepo.FindByID(ctx, inv.SalonID)
+	if err != nil {
+		return nil, fmt.Errorf("GetInviteInfo: find salon: %w", err)
+	}
+	stores, err := u.storeRepo.FindBySalonID(ctx, inv.SalonID)
+	if err != nil {
+		return nil, fmt.Errorf("GetInviteInfo: find stores: %w", err)
+	}
+	return &InviteInfoResult{SalonName: salon.Name, Stores: stores}, nil
 }
 
 // AcceptInvitation 招待承諾。staffs + cygnus_accounts + salon_memberships を作成する。
@@ -270,6 +327,7 @@ func (u *AuthUsecase) AcceptInvitation(ctx context.Context, in AcceptInvitationI
 
 	staff := &model.Staff{
 		SalonID:      inv.SalonID,
+		StoreID:      in.StoreID,
 		Name:         in.Name,
 		Email:        inv.Email,
 		PasswordHash: string(hash),

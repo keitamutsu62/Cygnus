@@ -22,6 +22,8 @@ const purpleDim  = 'rgba(150,100,220,0.1)'
 const purple     = '#9664DC'
 const grayDim    = 'rgba(232,228,220,0.06)'
 const alertColor = '#e07060'
+const inputBg    = 'rgba(232,228,220,0.04)'
+const inputBorder = 'rgba(232,228,220,0.12)'
 
 // BottomSheet 内のキャンセルボタン共通コンポーネント。
 // setOpen(false) を直接呼ぶと exit アニメーションが飛ぶため、必ずこれを使う。
@@ -39,7 +41,7 @@ function SheetCancel({ label = 'キャンセル', style }: { label?: string; sty
 
 type Dealer = { id: number; name: string; contact_method: 'LINE' | 'email'; contact_info: string; closing_day: number | null; status: string }
 type BusinessHours = { open_time: string; close_time: string; closed_weekday: number | null }
-type SubPage = 'profile' | 'hours' | 'staff-list' | 'staff-detail' | 'pos' | null
+type SubPage = 'profile' | 'hours' | 'staff-list' | 'staff-detail' | 'pos' | 'stores' | null
 
 // ─── 招待モーダル ──────────────────────────────────────────────────────────────
 function InviteModal({ onClose }: { onClose: () => void }) {
@@ -1301,6 +1303,96 @@ function PosStoreSettings({ store, onBack }: { store: Store; onBack: () => void 
   )
 }
 
+// ─── 店舗管理サブページ ────────────────────────────────────────────────────────
+function StoreManagement({ storeList, onBack, onUpdated }: {
+  storeList: Store[]
+  onBack: () => void
+  onUpdated: () => void
+}) {
+  const [addName, setAddName] = useState('')
+  const [adding, setAdding]   = useState(false)
+  const [saving, setSaving]   = useState(false)
+
+  async function addStore() {
+    if (!addName.trim()) return
+    setSaving(true)
+    try {
+      const res = await api('/api/v1/stores', {
+        method: 'POST',
+        body: JSON.stringify({ name: addName.trim() }),
+      })
+      if (!res.ok) throw new Error()
+      setAddName('')
+      setAdding(false)
+      onUpdated()
+    } catch {
+      window.alert('店舗の追加に失敗しました')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function deleteStore(id: number, name: string) {
+    if (!window.confirm(`「${name}」を削除しますか？\n※この店舗に紐付いたスタッフの所属店舗が未設定になります。`)) return
+    try {
+      const res = await api(`/api/v1/stores/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      onUpdated()
+    } catch {
+      window.alert('店舗の削除に失敗しました')
+    }
+  }
+
+  return (
+    <div>
+      <BackHeader title="店舗管理" onBack={onBack} />
+      <GroupLabel>店舗一覧 ({storeList.length}店舗)</GroupLabel>
+      <SettingGroup>
+        {storeList.map((s, i) => (
+          <div key={s.id} style={{
+            padding: '14px 16px', display: 'flex', alignItems: 'center',
+            gap: 12, borderBottom: i < storeList.length - 1 ? `1px solid ${border}` : 'none',
+          }}>
+            <div style={{ flex: 1, fontSize: 15, color: txt, fontFamily: zen }}>{s.name}</div>
+            {storeList.length > 1 && (
+              <button
+                onClick={() => deleteStore(s.id, s.name)}
+                style={{ background: 'none', border: 'none', color: alertColor, fontSize: 12, fontFamily: zen, cursor: 'pointer', padding: '4px 8px' }}
+              >削除</button>
+            )}
+          </div>
+        ))}
+        {adding ? (
+          <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <input
+              autoFocus
+              type="text"
+              value={addName}
+              onChange={e => setAddName(e.target.value)}
+              placeholder="新しい店舗名"
+              style={{ background: inputBg, border: `1px solid ${inputBorder}`, borderRadius: 2, padding: '11px 12px', fontSize: 15, color: txt, fontFamily: zen, outline: 'none', width: '100%' }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { setAdding(false); setAddName('') }} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}>キャンセル</button>
+              <button onClick={addStore} disabled={saving || !addName.trim()} style={{ flex: 2, padding: '10px 0', background: (!addName.trim() || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 14, color: 'var(--on-accent)', cursor: addName.trim() && !saving ? 'pointer' : 'default' }}>
+                {saving ? '追加中...' : '追加する'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div onClick={() => setAdding(true)} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <line x1="7" y1="2" x2="7" y2="12" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <div style={{ fontSize: 15, color: gold, fontFamily: zen }}>店舗を追加</div>
+          </div>
+        )}
+      </SettingGroup>
+    </div>
+  )
+}
+
 // ─── POS連携サブページ（店舗一覧） ────────────────────────────────────────────
 function PosSettings({
   storeList,
@@ -1366,6 +1458,12 @@ export default function SettingsPage() {
   function loadDealers() {
     apiFetch<Dealer[]>('/api/v1/dealers')
       .then(d => setDealers(Array.isArray(d) ? d : []))
+      .catch(() => {})
+  }
+
+  function loadStores() {
+    apiFetch<Store[]>('/api/v1/stores')
+      .then(list => setStoreList(Array.isArray(list) ? list : []))
       .catch(() => {})
   }
 
@@ -1467,6 +1565,17 @@ export default function SettingsPage() {
       </div>
     )
   }
+  if (sub === 'stores') {
+    return (
+      <div style={{ padding: '14px 20px 80px' }}>
+        <StoreManagement
+          storeList={storeList}
+          onBack={() => setSub(null)}
+          onUpdated={() => loadStores()}
+        />
+      </div>
+    )
+  }
 
   const hoursLabel  = hours ? `${hours.open_time} 〜 ${hours.close_time}` : '—'
 
@@ -1482,9 +1591,15 @@ export default function SettingsPage() {
         {/* サロンカード */}
         <SalonCard salonName={claims?.salon_name ?? '—'} />
 
-        {/* スタッフ管理 */}
-        <GroupLabel>スタッフ管理</GroupLabel>
+        {/* サロン管理 */}
+        <GroupLabel>サロン管理</GroupLabel>
         <SettingGroup>
+          <SettingRow
+            icon={<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="4" width="10" height="8" rx="1" stroke={gold} strokeWidth="1.1"/><path d="M5 4V3C5 2.4 5.4 2 6 2H8C8.6 2 9 2.4 9 3V4" stroke={gold} strokeWidth="1.1"/><line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1" strokeDasharray="2 1.5"/></svg>} iconBg="gold"
+            label="店舗管理"
+            value={storeList.length > 0 ? `${storeList.length}店舗` : '店舗未登録'}
+            onClick={() => setSub('stores')}
+          />
           <SettingRow
             icon={<PersonIcon color={gold} />} iconBg="gold"
             label="スタッフ一覧・招待"

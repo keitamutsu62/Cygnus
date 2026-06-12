@@ -22,10 +22,11 @@ func NewAuthHandler(uc *usecase.AuthUsecase, frontendURL string) *AuthHandler {
 // POST /api/v1/auth/register
 func (h *AuthHandler) Register(c echo.Context) error {
 	var req struct {
-		SalonName     string `json:"salon_name"`
-		OwnerName     string `json:"owner_name"`
-		OwnerEmail    string `json:"owner_email"`
-		OwnerPassword string `json:"owner_password"`
+		SalonName     string   `json:"salon_name"`
+		StoreNames    []string `json:"store_names"`
+		OwnerName     string   `json:"owner_name"`
+		OwnerEmail    string   `json:"owner_email"`
+		OwnerPassword string   `json:"owner_password"`
 	}
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
@@ -36,6 +37,7 @@ func (h *AuthHandler) Register(c echo.Context) error {
 
 	token, err := h.uc.Register(c.Request().Context(), usecase.RegisterInput{
 		SalonName:     req.SalonName,
+		StoreNames:    req.StoreNames,
 		OwnerName:     req.OwnerName,
 		OwnerEmail:    req.OwnerEmail,
 		OwnerPassword: req.OwnerPassword,
@@ -212,12 +214,29 @@ func (h *AuthHandler) ChangePassword(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// GET /api/v1/auth/invite-info?token=xxx
+func (h *AuthHandler) InviteInfo(c echo.Context) error {
+	token := c.QueryParam("token")
+	if token == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "token is required")
+	}
+	info, err := h.uc.GetInviteInfo(c.Request().Context(), token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid or expired token")
+	}
+	return c.JSON(http.StatusOK, map[string]any{
+		"salon_name": info.SalonName,
+		"stores":     info.Stores,
+	})
+}
+
 // POST /api/v1/auth/accept-invitation
 func (h *AuthHandler) AcceptInvitation(c echo.Context) error {
 	var req struct {
-		Token    string `json:"token"`
-		Name     string `json:"name"`
-		Password string `json:"password"`
+		Token    string  `json:"token"`
+		Name     string  `json:"name"`
+		Password string  `json:"password"`
+		StoreID  *uint64 `json:"store_id"`
 	}
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
@@ -227,6 +246,7 @@ func (h *AuthHandler) AcceptInvitation(c echo.Context) error {
 		Token:    req.Token,
 		Name:     req.Name,
 		Password: req.Password,
+		StoreID:  req.StoreID,
 	})
 	if err != nil {
 		if errors.Is(err, apierror.ErrInvalidToken) {

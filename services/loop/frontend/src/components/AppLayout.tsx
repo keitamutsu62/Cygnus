@@ -64,11 +64,11 @@ export default function AppLayout() {
 
   return (
     <div style={{
-      position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
+      height: '100%',
       background: 'var(--bg)',
       display: 'flex',
       flexDirection: 'column',
+      overflow: 'hidden',
     }}>
       {/* トップバー */}
       <div style={{
@@ -140,8 +140,6 @@ export default function AppLayout() {
         display: 'flex',
         background: 'var(--surface)',
         borderTop: '1px solid var(--border)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        position: 'relative',
         zIndex: 10,
       }}>
         {NAV.map(item => {
@@ -156,7 +154,7 @@ export default function AppLayout() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 4,
-                padding: '12px 0 10px',
+                padding: '25px 0 23px',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',

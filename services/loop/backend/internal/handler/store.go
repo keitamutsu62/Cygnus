@@ -77,6 +77,19 @@ func (h *StoreHandler) GetHours(c echo.Context) error {
 	return c.JSON(http.StatusOK, bh)
 }
 
+// DELETE /api/v1/stores/:id
+func (h *StoreHandler) Delete(c echo.Context) error {
+	claims := claimsFrom(c)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	if err := h.uc.Delete(c.Request().Context(), id, claims.SalonID); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return c.NoContent(http.StatusNoContent)
+}
+
 // GET /api/v1/stores/:id/special-closures
 func (h *StoreHandler) ListSpecialClosures(c echo.Context) error {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)

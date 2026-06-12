@@ -101,7 +101,7 @@ func main() {
 	// ─── ユースケース ──────────────────────────────────────────
 	m := mailer.NewLogMailer()
 
-	authUC       := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, accountRepo, membershipRepo, resetTokenRepo, m, cfg.JWTSecret)
+	authUC       := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, accountRepo, membershipRepo, resetTokenRepo, storeRepo, bhRepo, m, cfg.JWTSecret)
 	staffUC      := usecase.NewStaffUsecase(staffRepo)
 	invtUC       := usecase.NewInventoryUsecase(invtRepo)
 	studioUC     := usecase.NewStudioUsecase(db, accountRepo, profileRepo, careerRepo, workRepo, memoRepo, imgStorage)
@@ -151,6 +151,7 @@ func main() {
 	auth := e.Group("/api/v1/auth")
 	auth.POST("/register", authH.Register)
 	auth.POST("/login", authH.Login)
+	auth.GET("/invite-info", authH.InviteInfo)
 	auth.POST("/accept-invitation", authH.AcceptInvitation)
 	auth.POST("/forgot-password", authH.ForgotPassword)
 	auth.POST("/reset-password", authH.ResetPassword)
@@ -198,6 +199,7 @@ func main() {
 	api.GET("/stores", storeH.List)
 	api.POST("/stores", storeH.Create)
 	api.PATCH("/stores/:id", storeH.Update)
+	api.DELETE("/stores/:id", storeH.Delete)
 	api.GET("/stores/:id/hours", storeH.GetHours)
 	api.PUT("/stores/:id/hours", storeH.UpdateHours)
 	api.GET("/stores/:id/special-closures", storeH.ListSpecialClosures)
@@ -271,6 +273,8 @@ func main() {
 	adm := e.Group("/admin/v1", middleware.AdminToken(cfg.AdminToken))
 	adm.GET("/stats", adminH.GetStats)
 	adm.GET("/aws-cost", adminH.GetAWSCost)
+	adm.GET("/salons", adminH.ListSalons)
+	adm.PATCH("/salons/:id", adminH.UpdateSalon)
 	adm.GET("/appointments", adminH.ListAppointments)
 	adm.POST("/appointments", adminH.CreateAppointment)
 	adm.PATCH("/appointments/:id", adminH.UpdateAppointment)
