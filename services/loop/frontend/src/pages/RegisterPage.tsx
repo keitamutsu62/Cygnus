@@ -167,13 +167,11 @@ export default function RegisterPage() {
                     WebkitAppearance: 'none',
                   }}
                 />
-                {storeNames.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => setStoreNames(storeNames.filter((_, j) => j !== i))}
-                    style={{ background: 'none', border: 'none', color: S.muted, fontSize: 20, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
-                  >×</button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setStoreNames(storeNames.filter((_, j) => j !== i))}
+                  style={{ background: 'none', border: 'none', color: S.muted, fontSize: 20, cursor: 'pointer', padding: '0 4px', lineHeight: 1, visibility: storeNames.length > 1 ? 'visible' : 'hidden', flexShrink: 0 }}
+                >×</button>
               </div>
             ))}
             <button
