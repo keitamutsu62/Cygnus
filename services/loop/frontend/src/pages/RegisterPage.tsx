@@ -143,7 +143,7 @@ export default function RegisterPage() {
               店舗名
             </div>
             {storeNames.map((name, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div key={i} style={{ position: 'relative' }}>
                 <input
                   type="text"
                   value={name}
@@ -154,11 +154,12 @@ export default function RegisterPage() {
                   }}
                   placeholder={i === 0 ? '渋谷店' : `店舗${i + 1}`}
                   style={{
-                    flex: 1,
+                    width: '100%',
+                    boxSizing: 'border-box' as const,
                     background: 'rgba(232,228,220,0.04)',
                     border: '1px solid rgba(232,228,220,0.12)',
                     borderRadius: 2,
-                    padding: '13px 14px',
+                    padding: storeNames.length > 1 ? '13px 40px 13px 14px' : '13px 14px',
                     fontSize: 16,
                     color: S.text,
                     fontFamily: S.zen,
@@ -167,11 +168,13 @@ export default function RegisterPage() {
                     WebkitAppearance: 'none',
                   }}
                 />
-                <button
-                  type="button"
-                  onClick={() => setStoreNames(storeNames.filter((_, j) => j !== i))}
-                  style={{ background: 'none', border: 'none', color: S.muted, fontSize: 20, cursor: 'pointer', padding: '0 4px', lineHeight: 1, visibility: storeNames.length > 1 ? 'visible' : 'hidden', flexShrink: 0 }}
-                >×</button>
+                {storeNames.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setStoreNames(storeNames.filter((_, j) => j !== i))}
+                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: S.muted, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+                  >×</button>
+                )}
               </div>
             ))}
             <button
