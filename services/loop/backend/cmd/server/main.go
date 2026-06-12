@@ -275,6 +275,7 @@ func main() {
 	adm.GET("/aws-cost", adminH.GetAWSCost)
 	adm.GET("/salons", adminH.ListSalons)
 	adm.PATCH("/salons/:id", adminH.UpdateSalon)
+	adm.GET("/debug/salon-store-check", adminH.DebugSalonStoreCheck)
 	adm.GET("/appointments", adminH.ListAppointments)
 	adm.POST("/appointments", adminH.CreateAppointment)
 	adm.PATCH("/appointments/:id", adminH.UpdateAppointment)
