@@ -100,16 +100,18 @@ func (u *AuthUsecase) Register(ctx context.Context, in RegisterInput) (string, e
 		return "", fmt.Errorf("Register: hash password: %w", err)
 	}
 
-	// 店舗を作成する（1件以上必須、未指定時はサロン名をフォールバック）
-	storeNames := in.StoreNames
-	if len(storeNames) == 0 {
-		storeNames = []string{in.SalonName}
+	// 店舗を作成する（1件以上必須）
+	var validStoreNames []string
+	for _, sn := range in.StoreNames {
+		if sn != "" {
+			validStoreNames = append(validStoreNames, sn)
+		}
+	}
+	if len(validStoreNames) == 0 {
+		return "", fmt.Errorf("Register: at least one store name is required")
 	}
 	var firstStoreID uint64
-	for i, sn := range storeNames {
-		if sn == "" {
-			continue
-		}
+	for i, sn := range validStoreNames {
 		store := &model.Store{SalonID: salon.ID, Name: sn}
 		if err := u.storeRepo.Create(ctx, store); err != nil {
 			return "", fmt.Errorf("Register: create store: %w", err)
