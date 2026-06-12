@@ -32,32 +32,127 @@ func (h *AdminHandler) GetStats(c echo.Context) error {
 	type row struct{ Count int `db:"count"` }
 	var salons, staffs, activeSubs row
 
-	// salon_id=1 は内部テスト用アカウントのため除外
-	const internalSalonID = 1
+	h.db.GetContext(ctx, &salons, `SELECT COUNT(*) AS count FROM salons WHERE is_internal = 0`)
+	h.db.GetContext(ctx, &staffs, `
+		SELECT COUNT(*) AS count FROM staffs
+		WHERE salon_id IN (SELECT id FROM salons WHERE is_internal = 0)
+		AND is_active = 1`)
+	h.db.GetContext(ctx, &activeSubs, `
+		SELECT COUNT(*) AS count FROM subscriptions
+		WHERE status = 'active'
+		AND salon_id IN (SELECT id FROM salons WHERE is_internal = 0)`)
 
-	h.db.GetContext(ctx, &salons, `SELECT COUNT(*) AS count FROM salons WHERE id != ?`, internalSalonID)
-	h.db.GetContext(ctx, &staffs, `SELECT COUNT(*) AS count FROM staffs WHERE salon_id != ?`, internalSalonID)
-	h.db.GetContext(ctx, &activeSubs, `SELECT COUNT(*) AS count FROM subscriptions WHERE status = 'active' AND salon_id != ?`, internalSalonID)
+	// MRR = SUM(base_price + per_staff_price × active_staff_count) per active subscription
+	var mrrRow struct{ MRR *int64 `db:"mrr"` }
+	h.db.GetContext(ctx, &mrrRow, `
+		SELECT COALESCE(SUM(
+			p.base_price + p.per_staff_price * (
+				SELECT COUNT(*) FROM staffs st
+				WHERE st.salon_id = sub.salon_id AND st.is_active = 1
+			)
+		), 0) AS mrr
+		FROM subscriptions sub
+		JOIN salons s  ON s.id  = sub.salon_id
+		JOIN plans  p  ON p.id  = sub.plan_id
+		WHERE sub.status = 'active'
+		AND s.is_internal = 0`)
 
-	// 今月売上合計（内部アカウント除外）
-	now := time.Now()
-	from := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
-	var totalSales struct{ Total *int64 `db:"total"` }
-	h.db.GetContext(ctx, &totalSales,
-		`SELECT SUM(total_sales + retail_sales) AS total FROM daily_sales WHERE date >= ? AND store_id NOT IN (SELECT id FROM stores WHERE salon_id = ?)`,
-		from.Format("2006-01-02"), internalSalonID)
-
-	total := int64(0)
-	if totalSales.Total != nil {
-		total = *totalSales.Total
+	mrr := int64(0)
+	if mrrRow.MRR != nil {
+		mrr = *mrrRow.MRR
 	}
 
 	return c.JSON(http.StatusOK, map[string]any{
 		"salon_count":      salons.Count,
 		"staff_count":      staffs.Count,
 		"active_sub_count": activeSubs.Count,
-		"monthly_sales":    total,
+		"mrr":              mrr,
 	})
+}
+
+// GET /admin/v1/salons
+func (h *AdminHandler) ListSalons(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	type salonRow struct {
+		ID           uint64  `db:"id"`
+		Name         string  `db:"name"`
+		IsInternal   bool    `db:"is_internal"`
+		PlanName     *string `db:"plan_name"`
+		BasePrice    *int64  `db:"base_price"`
+		PerStaff     *int64  `db:"per_staff_price"`
+		StaffCount   int     `db:"staff_count"`
+		SubStatus    *string `db:"sub_status"`
+		SubCreatedAt *string `db:"sub_created_at"`
+	}
+	var rows []salonRow
+	err := h.db.SelectContext(ctx, &rows, `
+		SELECT
+			s.id,
+			s.name,
+			s.is_internal,
+			p.name         AS plan_name,
+			p.base_price,
+			p.per_staff_price,
+			(SELECT COUNT(*) FROM staffs st WHERE st.salon_id = s.id AND st.is_active = 1) AS staff_count,
+			sub.status     AS sub_status,
+			DATE_FORMAT(sub.created_at, '%Y-%m-%d') AS sub_created_at
+		FROM salons s
+		LEFT JOIN subscriptions sub ON sub.salon_id = s.id
+		LEFT JOIN plans p ON p.id = sub.plan_id
+		ORDER BY s.id ASC`)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+
+	type salonResp struct {
+		ID           uint64  `json:"id"`
+		Name         string  `json:"name"`
+		IsInternal   bool    `json:"is_internal"`
+		PlanName     *string `json:"plan_name"`
+		StaffCount   int     `json:"staff_count"`
+		MRR          int64   `json:"mrr"`
+		SubStatus    *string `json:"sub_status"`
+		SubCreatedAt *string `json:"sub_created_at"`
+	}
+	result := make([]salonResp, len(rows))
+	for i, r := range rows {
+		mrr := int64(0)
+		if r.BasePrice != nil && r.PerStaff != nil {
+			mrr = *r.BasePrice + *r.PerStaff*int64(r.StaffCount)
+		}
+		result[i] = salonResp{
+			ID:           r.ID,
+			Name:         r.Name,
+			IsInternal:   r.IsInternal,
+			PlanName:     r.PlanName,
+			StaffCount:   r.StaffCount,
+			MRR:          mrr,
+			SubStatus:    r.SubStatus,
+			SubCreatedAt: r.SubCreatedAt,
+		}
+	}
+	return c.JSON(http.StatusOK, result)
+}
+
+// PATCH /admin/v1/salons/:id
+func (h *AdminHandler) UpdateSalon(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	var req struct {
+		IsInternal *bool `json:"is_internal"`
+	}
+	if err := c.Bind(&req); err != nil || req.IsInternal == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "is_internal required")
+	}
+	_, err = h.db.ExecContext(c.Request().Context(),
+		`UPDATE salons SET is_internal = ? WHERE id = ?`, *req.IsInternal, id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.NoContent(http.StatusNoContent)
 }
 
 // GET /admin/v1/appointments
