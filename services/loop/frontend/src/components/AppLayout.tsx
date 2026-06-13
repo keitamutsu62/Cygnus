@@ -64,11 +64,11 @@ export default function AppLayout() {
 
   return (
     <div style={{
-      height: '100%',
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
       background: 'var(--bg)',
       display: 'flex',
       flexDirection: 'column',
-      overflow: 'hidden',
     }}>
       {/* トップバー */}
       <div style={{
@@ -140,6 +140,7 @@ export default function AppLayout() {
         display: 'flex',
         background: 'var(--surface)',
         borderTop: '1px solid var(--border)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
         zIndex: 10,
       }}>
         {NAV.map(item => {
