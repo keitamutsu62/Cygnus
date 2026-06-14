@@ -577,6 +577,8 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
   const [aiLoading, setAiLoading]   = useState(false)
   const [aiError, setAiError]       = useState<string | null>(null)
 
+  useEffect(() => { setAiResult(null); setAiError(null) }, [selectedStaffId])
+
   useEffect(() => {
     apiFetch<Staff[]>('/api/v1/staffs')
       .then(data => setStaffList(Array.isArray(data) ? data : []))
@@ -698,7 +700,11 @@ function StaffView({ period, initStaffId }: { period: Period; initStaffId?: numb
           setAiLoading(true)
           setAiError(null)
           try {
-            const res = await api('/api/v1/staff/analysis', { method: 'POST' })
+            const res = await api('/api/v1/staff/analysis', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ staff_id: selectedStaffId }),
+            })
             if (!res.ok) throw new Error(`${res.status}`)
             const data = await res.json() as { analysis: string }
             setAiResult(data.analysis)
