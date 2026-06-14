@@ -48,6 +48,13 @@ func NewStudioUsecase(
 // ─── Profile ─────────────────────────────────────────────────
 
 func (u *StudioUsecase) UpdateMyAvatarURL(ctx context.Context, cygnusAccountID uint64, avatarURL string) error {
+	// base64 data URL の場合は imgStorage 経由でアップロード（R2設定時はCDN URLに変換）
+	if strings.HasPrefix(avatarURL, "data:") {
+		uploaded, err := u.imgStorage.Upload(ctx, avatarURL)
+		if err == nil {
+			avatarURL = uploaded
+		}
+	}
 	p, err := u.profileRepo.FindByAccountID(ctx, cygnusAccountID)
 	if err != nil {
 		p = &model.Profile{CygnusAccountID: cygnusAccountID}
@@ -76,6 +83,13 @@ type UpsertProfileInput struct {
 }
 
 func (u *StudioUsecase) UpsertProfile(ctx context.Context, in UpsertProfileInput) (*model.Profile, error) {
+	// base64 data URL の場合は imgStorage 経由でアップロード
+	if in.AvatarURL != nil && strings.HasPrefix(*in.AvatarURL, "data:") {
+		uploaded, err := u.imgStorage.Upload(ctx, *in.AvatarURL)
+		if err == nil {
+			in.AvatarURL = &uploaded
+		}
+	}
 	p := &model.Profile{
 		CygnusAccountID: in.AccountID,
 		AvatarURL:       in.AvatarURL,

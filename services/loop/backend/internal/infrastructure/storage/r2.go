@@ -52,7 +52,7 @@ func (s *R2Storage) Upload(ctx context.Context, dataURL string) (string, error) 
 	}
 
 	ext := extFromMIME(mimeType)
-	key := fmt.Sprintf("works/%d%s", time.Now().UnixNano(), ext)
+	key := fmt.Sprintf("images/%d%s", time.Now().UnixNano(), ext)
 
 	_, err = s.client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucket),
