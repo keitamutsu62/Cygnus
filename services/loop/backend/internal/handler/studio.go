@@ -305,7 +305,7 @@ func (h *StudioHandler) UpsertMemo(c echo.Context) error {
 	}
 	m, err := h.uc.UpsertMemo(c.Request().Context(), *claims.CygnusAccountID, req.Text)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 	}
 	return c.JSON(http.StatusOK, m)
 }
