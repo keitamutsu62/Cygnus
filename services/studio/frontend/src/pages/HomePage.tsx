@@ -50,7 +50,10 @@ export default function HomePage() {
   }
 
   const hasStats = stats && (stats.total_sales > 0 || stats.treatment_count > 0)
-  const todayMemos = allMemos.filter(m => parseMemoDate(m.memo_date).toISOString().slice(0, 10) === todayKey())
+  const todayMemos = allMemos.filter(m => {
+    const d = parseMemoDate(m.memo_date)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` === todayKey()
+  })
 
   return (
     <div>
