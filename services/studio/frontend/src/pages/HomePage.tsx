@@ -114,32 +114,6 @@ export default function HomePage() {
           <div style={{ fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: S.gold, fontFamily: S.josefin }}>今日のメモ</div>
         </div>
 
-        {/* 今日保存済みのメモ一覧 */}
-        {todayMemos.length > 0 && (
-          <div style={{ marginBottom: 10 }}>
-            {todayMemos.map((m, i) => (
-              <div key={m.id} style={{
-                padding: '12px 16px',
-                background: S.surface,
-                border: `1px solid ${S.border}`,
-                borderRadius: 2,
-                marginBottom: 6,
-                lineHeight: 1.75,
-                fontSize: 13,
-                fontFamily: S.zen,
-                color: S.text,
-                borderLeft: `2px solid ${S.gold}`,
-                position: 'relative',
-              }}>
-                {todayMemos.length > 1 && (
-                  <div style={{ fontSize: 9, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em', marginBottom: 4 }}>#{i + 1}</div>
-                )}
-                {m.text}
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* 新規入力ボタン */}
         <div
           onClick={() => setShowMemoEdit(true)}
