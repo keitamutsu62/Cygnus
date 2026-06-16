@@ -17,7 +17,7 @@ func NewStudioMemoRepository(db *sqlx.DB) *studioMemoRepository {
 
 func (r *studioMemoRepository) Upsert(ctx context.Context, m *model.StudioMemo) error {
 	res, err := r.db.ExecContext(ctx,
-		`INSERT INTO studio_memos (cygnus_account_id, memo_date, text) VALUES (?, ?, ?)`,
+		`INSERT INTO studio_memo_entries (cygnus_account_id, memo_date, text) VALUES (?, ?, ?)`,
 		m.CygnusAccountID, m.MemoDate, m.Text,
 	)
 	if err != nil {
@@ -31,7 +31,7 @@ func (r *studioMemoRepository) Upsert(ctx context.Context, m *model.StudioMemo) 
 func (r *studioMemoRepository) FindByAccountID(ctx context.Context, accountID uint64) ([]*model.StudioMemo, error) {
 	var rows []*model.StudioMemo
 	err := r.db.SelectContext(ctx, &rows,
-		`SELECT * FROM studio_memos WHERE cygnus_account_id = ? ORDER BY memo_date DESC, created_at DESC`,
+		`SELECT * FROM studio_memo_entries WHERE cygnus_account_id = ? ORDER BY memo_date DESC, created_at DESC`,
 		accountID,
 	)
 	return rows, err
@@ -40,7 +40,7 @@ func (r *studioMemoRepository) FindByAccountID(ctx context.Context, accountID ui
 func (r *studioMemoRepository) FindTodayByAccountID(ctx context.Context, accountID uint64, today string) (*model.StudioMemo, error) {
 	var m model.StudioMemo
 	err := r.db.GetContext(ctx, &m,
-		`SELECT * FROM studio_memos WHERE cygnus_account_id = ? AND memo_date = ? ORDER BY created_at DESC LIMIT 1`,
+		`SELECT * FROM studio_memo_entries WHERE cygnus_account_id = ? AND memo_date = ? ORDER BY created_at DESC LIMIT 1`,
 		accountID, today,
 	)
 	if errors.Is(err, sql.ErrNoRows) {

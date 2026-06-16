@@ -39,13 +39,20 @@ func main() {
 		INDEX idx_date (date)
 	)`)
 
-	// studio_memos: 1日複数メモ対応のため uq_account_date 一意制約を削除 (冪等)
-	// 存在しない場合は MySQL がエラーを返すが無視する
-	if _, err := db.Exec(`ALTER TABLE studio_memos DROP INDEX uq_account_date`); err != nil {
-		log.Printf("info: uq_account_date drop skipped (already gone or error): %v", err)
-	} else {
-		log.Println("info: dropped uq_account_date from studio_memos")
-	}
+	// studio_memo_entries: studio_memos の一意制約を回避する代替テーブル (冪等)
+	db.MustExec(`CREATE TABLE IF NOT EXISTS studio_memo_entries (
+		id                BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
+		cygnus_account_id BIGINT UNSIGNED  NOT NULL,
+		memo_date         DATE             NOT NULL,
+		text              TEXT             NOT NULL,
+		created_at        DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at        DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		PRIMARY KEY (id),
+		KEY idx_me_account_date (cygnus_account_id, memo_date)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`)
+	// 既存の studio_memos を移行 (冪等: 同じIDは IGNORE)
+	db.Exec(`INSERT IGNORE INTO studio_memo_entries (id, cygnus_account_id, memo_date, text, created_at, updated_at)
+		SELECT id, cygnus_account_id, memo_date, text, created_at, updated_at FROM studio_memos`)
 
 	// ─── リポジトリ ────────────────────────────────────────────
 	salonRepo        := mysql.NewSalonRepository(db)
