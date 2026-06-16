@@ -9,11 +9,16 @@ const S = {
   josefin: "'Josefin Sans', sans-serif", zen: "'Zen Kaku Gothic New', sans-serif",
 }
 
-type Memo = { id: number; memo_date: string; text: string }
+type Memo = { id: number; memo_date: string; text: string; created_at?: string }
 type MonthlyStats = { total_sales: number; treatment_count: number; repeat_rate: number; new_clients: number; sales_diff_pct: number | null; nomination_rate: number | null }
 type RecentTreatment = { id: number; menu_name: string; price: number; performed_at: string; performed_time: string; notes: string | null; client_name: string | null }
 
 function fmt(n: number) { return n.toLocaleString('ja-JP') }
+
+function todayKey() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 export default function HomePage() {
   const now = new Date()
@@ -45,6 +50,7 @@ export default function HomePage() {
   }
 
   const hasStats = stats && (stats.total_sales > 0 || stats.treatment_count > 0)
+  const todayMemos = allMemos.filter(m => parseMemoDate(m.memo_date).toISOString().slice(0, 10) === todayKey())
 
   return (
     <div>
@@ -105,16 +111,43 @@ export default function HomePage() {
           <div style={{ fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: S.gold, fontFamily: S.josefin }}>今日のメモ</div>
         </div>
 
+        {/* 今日保存済みのメモ一覧 */}
+        {todayMemos.length > 0 && (
+          <div style={{ marginBottom: 10 }}>
+            {todayMemos.map((m, i) => (
+              <div key={m.id} style={{
+                padding: '12px 16px',
+                background: S.surface,
+                border: `1px solid ${S.border}`,
+                borderRadius: 2,
+                marginBottom: 6,
+                lineHeight: 1.75,
+                fontSize: 13,
+                fontFamily: S.zen,
+                color: S.text,
+                borderLeft: `2px solid ${S.gold}`,
+                position: 'relative',
+              }}>
+                {todayMemos.length > 1 && (
+                  <div style={{ fontSize: 9, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em', marginBottom: 4 }}>#{i + 1}</div>
+                )}
+                {m.text}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 新規入力ボタン */}
         <div
           onClick={() => setShowMemoEdit(true)}
           style={{
             padding: '14px 16px', background: S.surface,
-            border: `1px solid ${S.border}`,
+            border: `1px dashed ${S.border}`,
             borderRadius: 2, cursor: 'pointer', lineHeight: 1.75,
             fontSize: 13, fontFamily: S.zen, color: S.muted,
           }}
         >
-          今日感じたこと、気づいたことを残しておく...
+          {todayMemos.length > 0 ? '+ もう一件追加する...' : '今日感じたこと、気づいたことを残しておく...'}
         </div>
 
         <div
@@ -196,19 +229,23 @@ function parseMemoDate(dateStr: string) {
   return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
 }
 
-type MonthGroup = { monthKey: string; label: string; items: Memo[] }
+type DayGroup   = { day: number; items: Memo[] }
+type MonthGroup = { monthKey: string; label: string; days: DayGroup[] }
 type YearGroup  = { year: number; months: MonthGroup[] }
 
-function groupByYearMonth(memos: Memo[]): YearGroup[] {
-  const yearMap = new Map<number, Map<string, Memo[]>>()
+function groupByYearMonthDay(memos: Memo[]): YearGroup[] {
+  const yearMap = new Map<number, Map<string, Map<number, Memo[]>>>()
   for (const m of memos) {
-    const d = parseMemoDate(m.memo_date)
-    const y = d.getFullYear()
+    const d  = parseMemoDate(m.memo_date)
+    const y  = d.getFullYear()
     const mk = `${y}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const day = d.getDate()
     if (!yearMap.has(y)) yearMap.set(y, new Map())
     const mmap = yearMap.get(y)!
-    if (!mmap.has(mk)) mmap.set(mk, [])
-    mmap.get(mk)!.push(m)
+    if (!mmap.has(mk)) mmap.set(mk, new Map())
+    const dmap = mmap.get(mk)!
+    if (!dmap.has(day)) dmap.set(day, [])
+    dmap.get(day)!.push(m)
   }
   return [...yearMap.entries()]
     .sort((a, b) => b[0] - a[0])
@@ -216,10 +253,12 @@ function groupByYearMonth(memos: Memo[]): YearGroup[] {
       year,
       months: [...mmap.entries()]
         .sort((a, b) => b[0].localeCompare(a[0]))
-        .map(([mk, items]) => ({
+        .map(([mk, dmap]) => ({
           monthKey: mk,
           label: `${Number(mk.split('-')[1])}月`,
-          items,
+          days: [...dmap.entries()]
+            .sort((a, b) => b[0] - a[0])
+            .map(([day, items]) => ({ day, items })),
         })),
     }))
 }
@@ -228,7 +267,7 @@ function MemoLogSheet({ memos }: { memos: Memo[] }) {
   const nowYear  = new Date().getFullYear()
   const nowMonth = `${nowYear}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
 
-  const yearGroups = groupByYearMonth(memos)
+  const yearGroups = groupByYearMonthDay(memos)
 
   const [openYears,  setOpenYears]  = useState<Set<number>>(() => new Set([nowYear]))
   const [openMonths, setOpenMonths] = useState<Set<string>>(() => new Set([nowMonth]))
@@ -240,9 +279,13 @@ function MemoLogSheet({ memos }: { memos: Memo[] }) {
     setOpenMonths(prev => { const s = new Set(prev); s.has(mk) ? s.delete(mk) : s.add(mk); return s })
   }
 
+  const totalCount = memos.length
+
   return (
     <>
-      <div style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: S.gold, marginBottom: 16, fontFamily: S.josefin }}>過去のメモ</div>
+      <div style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: S.gold, marginBottom: 16, fontFamily: S.josefin }}>
+        過去のメモ　<span style={{ opacity: 0.5 }}>{totalCount}件</span>
+      </div>
       {yearGroups.length === 0 && (
         <div style={{ textAlign: 'center', color: S.muted, fontSize: 12, fontFamily: S.zen, padding: '20px 0' }}>まだ記録がありません</div>
       )}
@@ -250,7 +293,6 @@ function MemoLogSheet({ memos }: { memos: Memo[] }) {
         const yOpen = openYears.has(yg.year)
         return (
           <div key={yg.year} style={{ marginBottom: 8 }}>
-            {/* 年ヘッダー */}
             <div
               onClick={() => toggleYear(yg.year)}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', cursor: 'pointer', borderBottom: `1px solid ${S.border}` }}
@@ -263,14 +305,16 @@ function MemoLogSheet({ memos }: { memos: Memo[] }) {
 
             {yOpen && yg.months.map(mg => {
               const mOpen = openMonths.has(mg.monthKey)
+              const monthCount = mg.days.reduce((s, d) => s + d.items.length, 0)
               return (
                 <div key={mg.monthKey} style={{ marginLeft: 12 }}>
-                  {/* 月ヘッダー */}
                   <div
                     onClick={() => toggleMonth(mg.monthKey)}
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', cursor: 'pointer', borderBottom: `1px solid ${S.border}` }}
                   >
-                    <span style={{ fontSize: 10, letterSpacing: '0.15em', color: S.muted, fontFamily: S.josefin }}>{mg.label}　<span style={{ opacity: 0.5 }}>{mg.items.length}件</span></span>
+                    <span style={{ fontSize: 10, letterSpacing: '0.15em', color: S.muted, fontFamily: S.josefin }}>
+                      {mg.label}　<span style={{ opacity: 0.5 }}>{monthCount}件</span>
+                    </span>
                     <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{ transition: 'transform 0.2s', transform: mOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                       <polyline points="2,4 6,8 10,4" stroke={S.muted} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -278,15 +322,24 @@ function MemoLogSheet({ memos }: { memos: Memo[] }) {
 
                   {mOpen && (
                     <div style={{ paddingTop: 10, paddingBottom: 4 }}>
-                      {mg.items.map(m => {
-                        const d = parseMemoDate(m.memo_date)
-                        return (
-                          <div key={m.id} style={{ marginBottom: 14 }}>
-                            <div style={{ fontSize: 9, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em', marginBottom: 5 }}>{d.getDate()}日</div>
-                            <div style={{ fontSize: 13, color: S.text, lineHeight: 1.75, fontFamily: S.zen }}>{m.text}</div>
+                      {mg.days.map(dg => (
+                        <div key={dg.day} style={{ marginBottom: 16 }}>
+                          <div style={{ fontSize: 9, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em', marginBottom: 6 }}>
+                            {dg.day}日
+                            {dg.items.length > 1 && <span style={{ opacity: 0.5, marginLeft: 4 }}>{dg.items.length}件</span>}
                           </div>
-                        )
-                      })}
+                          {dg.items.map((m, i) => (
+                            <div key={m.id} style={{
+                              fontSize: 13, color: S.text, lineHeight: 1.75, fontFamily: S.zen,
+                              paddingBottom: i < dg.items.length - 1 ? 10 : 0,
+                              marginBottom: i < dg.items.length - 1 ? 10 : 0,
+                              borderBottom: i < dg.items.length - 1 ? `1px dashed ${S.border}` : 'none',
+                            }}>
+                              {m.text}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

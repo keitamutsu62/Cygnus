@@ -31,7 +31,7 @@ func (r *studioMemoRepository) Upsert(ctx context.Context, m *model.StudioMemo) 
 func (r *studioMemoRepository) FindByAccountID(ctx context.Context, accountID uint64) ([]*model.StudioMemo, error) {
 	var rows []*model.StudioMemo
 	err := r.db.SelectContext(ctx, &rows,
-		`SELECT * FROM studio_memos WHERE cygnus_account_id = ? ORDER BY memo_date DESC`,
+		`SELECT * FROM studio_memos WHERE cygnus_account_id = ? ORDER BY memo_date DESC, created_at DESC`,
 		accountID,
 	)
 	return rows, err
