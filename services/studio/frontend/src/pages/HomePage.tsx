@@ -186,10 +186,12 @@ function MemoEditSheet({ onSaved }: { onSaved: () => void }) {
   const dismiss = useBottomSheetDismiss()
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   async function handleSave() {
     if (!text.trim()) { dismiss(); return }
     setLoading(true)
+    setSaveError(null)
     try {
       const res = await api('/api/v1/studio/memos', {
         method: 'POST',
@@ -198,7 +200,12 @@ function MemoEditSheet({ onSaved }: { onSaved: () => void }) {
       if (res.ok) {
         setText('')
         onSaved()
+      } else {
+        const body = await res.text().catch(() => '')
+        setSaveError(`保存できませんでした (${res.status}${body ? ': ' + body : ''})`)
       }
+    } catch (e) {
+      setSaveError(`通信エラー: ${e instanceof Error ? e.message : String(e)}`)
     } finally {
       setLoading(false)
     }
@@ -221,6 +228,11 @@ function MemoEditSheet({ onSaved }: { onSaved: () => void }) {
         <button onClick={dismiss} style={{ flex: 1, padding: 12, background: 'transparent', border: `1px solid ${S.border}`, borderRadius: 2, color: S.muted, fontSize: 11, letterSpacing: '0.12em', cursor: 'pointer', fontFamily: S.josefin }}>キャンセル</button>
         <button onClick={handleSave} disabled={loading} style={{ flex: 2, padding: 12, background: S.gold, border: 'none', borderRadius: 2, color: 'var(--bg)', fontSize: 11, letterSpacing: '0.2em', cursor: 'pointer', fontFamily: S.josefin, opacity: loading ? 0.7 : 1 }}>保存する</button>
       </div>
+      {saveError && (
+        <div style={{ marginTop: 10, padding: '8px 12px', background: 'rgba(220,60,60,0.1)', border: '1px solid rgba(220,60,60,0.3)', borderRadius: 2, fontSize: 11, color: 'rgba(220,120,120,1)', fontFamily: S.zen, lineHeight: 1.6 }}>
+          {saveError}
+        </div>
+      )}
     </>
   )
 }
