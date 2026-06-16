@@ -15,10 +15,6 @@ type RecentTreatment = { id: number; menu_name: string; price: number; performed
 
 function fmt(n: number) { return n.toLocaleString('ja-JP') }
 
-function todayKey() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
 
 export default function HomePage() {
   const now = new Date()
@@ -50,10 +46,6 @@ export default function HomePage() {
   }
 
   const hasStats = stats && (stats.total_sales > 0 || stats.treatment_count > 0)
-  const todayMemos = allMemos.filter(m => {
-    const d = parseMemoDate(m.memo_date)
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` === todayKey()
-  })
 
   return (
     <div>
