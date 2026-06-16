@@ -114,7 +114,7 @@ export default function HomePage() {
           <div style={{ fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: S.gold, fontFamily: S.josefin }}>今日のメモ</div>
         </div>
 
-        {/* 新規入力ボタン */}
+        {/* 入力ボタン */}
         <div
           onClick={() => setShowMemoEdit(true)}
           style={{
@@ -124,7 +124,7 @@ export default function HomePage() {
             fontSize: 13, fontFamily: S.zen, color: S.muted,
           }}
         >
-          {todayMemos.length > 0 ? '+ もう一件追加する...' : '今日感じたこと、気づいたことを残しておく...'}
+          メモを残す
         </div>
 
         <div
@@ -134,7 +134,7 @@ export default function HomePage() {
           {allMemos.length > 0 && (
             <span style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em' }}>{allMemos.length}件 · </span>
           )}
-          <span style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.12em' }}>過去の記録を見る</span>
+          <span style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.12em' }}>保存したメモを見る</span>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <polyline points="4,2 8,6 4,10" stroke="rgba(232,228,220,0.4)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -160,6 +160,7 @@ function MemoEditSheet({ onSaved }: { onSaved: () => void }) {
   const dismiss = useBottomSheetDismiss()
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
   async function handleSave() {
@@ -173,7 +174,8 @@ function MemoEditSheet({ onSaved }: { onSaved: () => void }) {
       })
       if (res.ok) {
         setText('')
-        onSaved()
+        setSaved(true)
+        setTimeout(() => onSaved(), 900)
       } else {
         const body = await res.text().catch(() => '')
         setSaveError(`保存できませんでした (${res.status}${body ? ': ' + body : ''})`)
@@ -183,6 +185,32 @@ function MemoEditSheet({ onSaved }: { onSaved: () => void }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (saved) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0', gap: 14 }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%',
+          background: 'rgba(109,186,142,0.12)', border: '1px solid rgba(109,186,142,0.35)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          animation: 'memo-pop 0.3s cubic-bezier(0.34,1.56,0.64,1) both',
+        }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <polyline
+              points="5,12 10,17 19,8"
+              stroke="#6dba8e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ strokeDasharray: 24, strokeDashoffset: 0, animation: 'memo-check 0.35s 0.15s ease both' }}
+            />
+          </svg>
+        </div>
+        <div style={{ fontSize: 11, letterSpacing: '0.2em', color: 'rgba(109,186,142,0.85)', fontFamily: S.josefin }}>保存しました</div>
+        <style>{`
+          @keyframes memo-pop { from { transform: scale(0.6); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+          @keyframes memo-check { from { stroke-dashoffset: 24 } to { stroke-dashoffset: 0 } }
+        `}</style>
+      </div>
+    )
   }
 
   return (
