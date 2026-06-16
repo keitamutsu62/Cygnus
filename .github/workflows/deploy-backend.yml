@@ -6,6 +6,7 @@ on:
     paths:
       - services/loop/backend/**
       - pkg/**
+      - db/migrations/**
       - .github/workflows/deploy-backend.yml
 
 env:
