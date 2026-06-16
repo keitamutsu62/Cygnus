@@ -39,6 +39,16 @@ func main() {
 		INDEX idx_date (date)
 	)`)
 
+	// studio_memos: 1日複数メモ対応のため uq_account_date 一意制約を削除 (冪等)
+	var uqCount int
+	if db.QueryRow(`SELECT COUNT(*) FROM information_schema.STATISTICS WHERE table_schema = DATABASE() AND table_name = 'studio_memos' AND index_name = 'uq_account_date'`).Scan(&uqCount) == nil && uqCount > 0 {
+		if _, err := db.Exec(`ALTER TABLE studio_memos DROP INDEX uq_account_date`); err != nil {
+			log.Printf("warn: failed to drop uq_account_date: %v", err)
+		} else {
+			log.Println("info: dropped uq_account_date from studio_memos")
+		}
+	}
+
 	// ─── リポジトリ ────────────────────────────────────────────
 	salonRepo        := mysql.NewSalonRepository(db)
 	planRepo         := mysql.NewPlanRepository(db)
