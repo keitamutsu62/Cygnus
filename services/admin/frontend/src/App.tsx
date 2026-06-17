@@ -25,7 +25,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   if (location.pathname === '/login') return <>{children}</>
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
       {/* トップバー */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -57,7 +57,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* コンテンツ */}
-      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
         {children}
       </div>
 
