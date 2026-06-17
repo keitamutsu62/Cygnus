@@ -155,8 +155,12 @@ function WorkDetail({ work, menus, onDelete, onTogglePublish }: {
   return (
     <>
       <img src={work.image_url} alt="" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 2, marginBottom: 16 }} />
-      {tags[0] && (
-        <div style={{ display: 'inline-block', fontSize: 10, fontFamily: S.josefin, letterSpacing: '0.12em', color: S.gold, background: S.goldDim, border: `1px solid ${S.goldBorder}`, padding: '4px 10px', borderRadius: 2, marginBottom: 14 }}>{tags[0]}</div>
+      {tags.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+          {tags.map(t => (
+            <div key={t} style={{ fontSize: 10, fontFamily: S.josefin, letterSpacing: '0.12em', color: S.gold, background: S.goldDim, border: `1px solid ${S.goldBorder}`, padding: '4px 10px', borderRadius: 2 }}>{t}</div>
+          ))}
+        </div>
       )}
       {work.description && <div style={{ fontSize: 13, color: S.text, lineHeight: 1.7, marginBottom: 14, fontFamily: S.zen }}>{work.description}</div>}
       <div style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em', marginBottom: 20 }}>
@@ -193,7 +197,7 @@ function AddWork({ menus, onAdded }: { menus: Menu[]; onAdded: (w: Work) => void
   const dismiss = useBottomSheetDismiss()
   const [imageUrl, setImageUrl] = useState('')
   const [description, setDescription] = useState('')
-  const [tag, setTag] = useState('')
+  const [tags, setTags] = useState<string[]>([])
   const [menuId, setMenuId] = useState<number | null>(null)
   const [isPublished, setIsPublished] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -232,7 +236,7 @@ function AddWork({ menus, onAdded }: { menus: Menu[]; onAdded: (w: Work) => void
         body: JSON.stringify({
           image_url: imageUrl,
           description: description || undefined,
-          tags: tag ? JSON.stringify([tag]) : undefined,
+          tags: tags.length > 0 ? JSON.stringify(tags) : undefined,
           is_published: isPublished,
           menu_id: menuId || undefined,
         }),
@@ -275,10 +279,10 @@ function AddWork({ menus, onAdded }: { menus: Menu[]; onAdded: (w: Work) => void
         <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.muted, fontFamily: S.josefin, marginBottom: 8 }}>ジャンル</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {['カラー', 'カット', 'パーマ', '縮毛矯正', 'トリートメント'].map(g => (
-            <div key={g} onClick={() => setTag(tag === g ? '' : g)} style={{
-              padding: '7px 14px', border: `1px solid ${tag === g ? S.goldBorder : S.border}`,
-              borderRadius: 2, fontSize: 11, color: tag === g ? S.gold : S.muted,
-              background: tag === g ? S.goldDim : 'transparent',
+            <div key={g} onClick={() => setTags(prev => prev.includes(g) ? prev.filter(t => t !== g) : [...prev, g])} style={{
+              padding: '7px 14px', border: `1px solid ${tags.includes(g) ? S.goldBorder : S.border}`,
+              borderRadius: 2, fontSize: 11, color: tags.includes(g) ? S.gold : S.muted,
+              background: tags.includes(g) ? S.goldDim : 'transparent',
               cursor: 'pointer', fontFamily: S.josefin,
             }}>{g}</div>
           ))}
