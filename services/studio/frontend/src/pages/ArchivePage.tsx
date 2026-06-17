@@ -12,7 +12,13 @@ const S = {
   josefin: "'Josefin Sans', sans-serif", zen: "'Zen Kaku Gothic New', sans-serif",
 }
 
-const GENRES = ['すべて', 'カラー', 'カット', 'パーマ', '縮毛矯正', 'トリートメント']
+const TAG_OPTIONS = ['カラー', 'カット', 'パーマ', '縮毛矯正', 'トリートメント']
+const GENRES = ['すべて', ...TAG_OPTIONS]
+
+function parseTags(raw: string | null | undefined): string[] {
+  if (!raw) return []
+  try { return (JSON.parse(raw) as string[]).filter(t => TAG_OPTIONS.includes(t)) } catch { return [] }
+}
 
 export default function ArchivePage() {
   const [works, setWorks] = useState<Work[]>([])
@@ -26,11 +32,7 @@ export default function ArchivePage() {
     apiFetch<Menu[] | null>('/api/v1/studio/menus').then(data => setMenus(data ?? [])).catch(() => {})
   }, [])
 
-  const filtered = filter === 'すべて' ? works : works.filter(w => {
-    if (!w.tags) return false
-    const tags = JSON.parse(w.tags) as string[]
-    return tags.includes(filter)
-  })
+  const filtered = filter === 'すべて' ? works : works.filter(w => parseTags(w.tags).includes(filter))
 
   async function handleDelete(id: number) {
     await api(`/api/v1/studio/works/${id}`, { method: 'DELETE' })
@@ -94,14 +96,14 @@ export default function ArchivePage() {
             overflow: 'hidden', cursor: 'pointer',
           }}>
             <img src={w.image_url} alt={w.title ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            {w.tags && (() => {
-              const tags = JSON.parse(w.tags) as string[]
-              return tags[0] ? (
+            {(() => {
+              const t = parseTags(w.tags)[0]
+              return t ? (
                 <div style={{
                   position: 'absolute', bottom: 6, left: 6,
                   fontSize: 9, fontFamily: S.josefin, letterSpacing: '0.08em',
                   background: 'rgba(26,24,22,0.8)', color: S.gold, padding: '2px 6px', borderRadius: 1,
-                }}>{tags[0]}</div>
+                }}>{t}</div>
               ) : null
             })()}
             <div style={{
@@ -149,7 +151,7 @@ function WorkDetail({ work, menus, onDelete, onTogglePublish }: {
   onTogglePublish: (w: Work) => void
 }) {
   const dismiss = useBottomSheetDismiss()
-  const tags = work.tags ? JSON.parse(work.tags) as string[] : []
+  const tags = parseTags(work.tags)
   const menuName = work.menu_id ? menus.find(m => m.id === work.menu_id)?.name : undefined
 
   return (
