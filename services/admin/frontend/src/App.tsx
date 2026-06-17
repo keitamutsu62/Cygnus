@@ -25,7 +25,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   if (location.pathname === '/login') return <>{children}</>
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
       {/* トップバー */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
