@@ -1,0 +1,9 @@
+{
+  "name": "CYGNUS ADMIN",
+  "short_name": "ADMIN",
+  "display": "standalone",
+  "start_url": "/",
+  "background_color": "#1a1816",
+  "theme_color": "#1a1816",
+  "icons": []
+}
