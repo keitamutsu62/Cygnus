@@ -39,6 +39,13 @@ func main() {
 		INDEX idx_date (date)
 	)`)
 
+	// plans: 料金カラム追加 (冪等)
+	db.Exec(`ALTER TABLE plans ADD COLUMN IF NOT EXISTS base_price      INT UNSIGNED NOT NULL DEFAULT 0`)
+	db.Exec(`ALTER TABLE plans ADD COLUMN IF NOT EXISTS per_staff_price INT UNSIGNED NOT NULL DEFAULT 0`)
+
+	// salons: 内部アカウント識別フラグ追加 (冪等)
+	db.Exec(`ALTER TABLE salons ADD COLUMN IF NOT EXISTS is_internal TINYINT(1) NOT NULL DEFAULT 0`)
+
 	// studio_memo_entries: studio_memos の一意制約を回避する代替テーブル (冪等)
 	db.MustExec(`CREATE TABLE IF NOT EXISTS studio_memo_entries (
 		id                BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,

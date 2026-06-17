@@ -3,6 +3,7 @@ import { clearToken, getToken } from './lib/api'
 import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
 import AppointmentsPage from './pages/AppointmentsPage'
+import SalonsPage from './pages/SalonsPage'
 
 const gold    = '#c8a882'
 const border  = 'rgba(232,228,220,0.08)'
@@ -15,6 +16,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
 const NAV = [
   { path: '/',             label: 'OVERVIEW' },
+  { path: '/salons',       label: 'SALONS' },
   { path: '/appointments', label: 'APPO' },
 ]
 
@@ -98,6 +100,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<RequireAuth><DashboardPage /></RequireAuth>} />
+          <Route path="/salons" element={<RequireAuth><SalonsPage /></RequireAuth>} />
           <Route path="/appointments" element={<RequireAuth><AppointmentsPage /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

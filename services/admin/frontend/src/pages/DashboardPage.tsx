@@ -16,7 +16,7 @@ type Stats = {
   salon_count:      number
   staff_count:      number
   active_sub_count: number
-  monthly_sales:    number
+  mrr:              number
 }
 
 type ServiceItem = { service: string; amount: string }
@@ -134,7 +134,7 @@ export default function DashboardPage() {
           <StatCard label="SALONS / サロン数"      value={fmt(stats.salon_count)}      unit="件" />
           <StatCard label="STAFFS / スタッフ数"    value={fmt(stats.staff_count)}      unit="人" />
           <StatCard label="ACTIVE SUBS / 契約中"   value={fmt(stats.active_sub_count)} unit="件" />
-          <StatCard label="MONTHLY SALES / 今月売上" value={`¥${fmt(stats.monthly_sales)}`} />
+          <StatCard label="MRR / 月次収益"          value={`¥${fmt(stats.mrr)}`} />
         </div>
       ) : !statsErr ? (
         <div style={{ color: muted, fontFamily: zen, fontSize: 14 }}>読み込み中...</div>

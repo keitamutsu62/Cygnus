@@ -12,6 +12,19 @@ export function clearToken() {
   localStorage.removeItem('admin_token')
 }
 
+export async function adminApi(path: string, opts?: RequestInit): Promise<Response> {
+  const res = await fetch(`${BASE}${path}`, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken()}`,
+      ...opts?.headers,
+    },
+  })
+  if (res.status === 401) { clearToken(); window.location.href = '/login'; throw new Error('unauthorized') }
+  return res
+}
+
 export async function adminFetch<T>(path: string, opts?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...opts,
