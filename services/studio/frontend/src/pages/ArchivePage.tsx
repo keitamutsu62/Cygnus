@@ -54,6 +54,16 @@ export default function ArchivePage() {
     setSelected(updated)
   }
 
+  async function handleUpdateTags(w: Work, newTags: string[]) {
+    const updated = { ...w, tags: newTags.length > 0 ? JSON.stringify(newTags) : undefined }
+    await api(`/api/v1/studio/works/${w.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ image_url: w.image_url, is_published: w.is_published, tags: updated.tags }),
+    })
+    setWorks(ws => ws.map(x => x.id === w.id ? updated : x))
+    setSelected(updated)
+  }
+
   return (
     <div style={{ paddingBottom: 20 }}>
       <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -135,6 +145,7 @@ export default function ArchivePage() {
             menus={menus}
             onDelete={handleDelete}
             onTogglePublish={handleTogglePublish}
+            onUpdateTags={handleUpdateTags}
           />
         </BottomSheet>
       )}
@@ -148,26 +159,47 @@ export default function ArchivePage() {
   )
 }
 
-function WorkDetail({ work, menus, onDelete, onTogglePublish }: {
+function WorkDetail({ work, menus, onDelete, onTogglePublish, onUpdateTags }: {
   work: Work
   menus: Menu[]
   onDelete: (id: number) => void
   onTogglePublish: (w: Work) => void
+  onUpdateTags: (w: Work, tags: string[]) => Promise<void>
 }) {
   const dismiss = useBottomSheetDismiss()
-  const tags = parseTags(work.tags)
+  const [editTags, setEditTags] = useState(() => parseTags(work.tags))
+  const [tagSaving, setTagSaving] = useState(false)
+  const tagsDirty = JSON.stringify([...editTags].sort()) !== JSON.stringify([...parseTags(work.tags)].sort())
   const menuName = work.menu_id ? menus.find(m => m.id === work.menu_id)?.name : undefined
+
+  async function saveTags() {
+    setTagSaving(true)
+    try { await onUpdateTags(work, editTags) } finally { setTagSaving(false) }
+  }
 
   return (
     <>
       <img src={work.image_url} alt="" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 2, marginBottom: 16 }} />
-      {tags.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-          {tags.map(t => (
-            <div key={t} style={{ fontSize: 10, fontFamily: S.josefin, letterSpacing: '0.12em', color: S.gold, background: S.goldDim, border: `1px solid ${S.goldBorder}`, padding: '4px 10px', borderRadius: 2 }}>{t}</div>
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.muted, fontFamily: S.josefin, marginBottom: 8 }}>ジャンル</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: tagsDirty ? 10 : 0 }}>
+          {TAG_OPTIONS.map(g => (
+            <div key={g} onClick={() => setEditTags(prev => prev.includes(g) ? prev.filter(t => t !== g) : [...prev, g])} style={{
+              padding: '7px 14px', border: `1px solid ${editTags.includes(g) ? S.goldBorder : S.border}`,
+              borderRadius: 2, fontSize: 11, color: editTags.includes(g) ? S.gold : S.muted,
+              background: editTags.includes(g) ? S.goldDim : 'transparent',
+              cursor: 'pointer', fontFamily: S.josefin,
+            }}>{g}</div>
           ))}
         </div>
-      )}
+        {tagsDirty && (
+          <button onClick={saveTags} disabled={tagSaving} style={{
+            padding: '8px 20px', background: S.gold, border: 'none', borderRadius: 2,
+            fontFamily: S.josefin, fontSize: 11, letterSpacing: '0.15em', color: 'var(--bg)',
+            cursor: tagSaving ? 'not-allowed' : 'pointer', opacity: tagSaving ? 0.7 : 1,
+          }}>{tagSaving ? '...' : '保存'}</button>
+        )}
+      </div>
       {work.description && <div style={{ fontSize: 13, color: S.text, lineHeight: 1.7, marginBottom: 14, fontFamily: S.zen }}>{work.description}</div>}
       <div style={{ fontSize: 10, color: S.muted, fontFamily: S.josefin, letterSpacing: '0.1em', marginBottom: 20 }}>
         {new Date(work.created_at).toLocaleDateString('ja-JP')}
