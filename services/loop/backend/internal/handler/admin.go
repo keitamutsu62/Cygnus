@@ -105,6 +105,20 @@ func (h *AdminHandler) ListSalons(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
 	}
 
+	// オーナーメール取得
+	ownerEmails := map[uint64]string{}
+	type emailRow struct {
+		SalonID uint64 `db:"salon_id"`
+		Email   string `db:"email"`
+	}
+	var emails []emailRow
+	h.db.SelectContext(ctx, &emails, `SELECT salon_id, email FROM staffs WHERE role='owner' ORDER BY id ASC`)
+	for _, e := range emails {
+		if _, ok := ownerEmails[e.SalonID]; !ok {
+			ownerEmails[e.SalonID] = e.Email
+		}
+	}
+
 	type salonResp struct {
 		ID           uint64  `json:"id"`
 		Name         string  `json:"name"`
@@ -114,6 +128,7 @@ func (h *AdminHandler) ListSalons(c echo.Context) error {
 		MRR          int64   `json:"mrr"`
 		SubStatus    *string `json:"sub_status"`
 		SubCreatedAt *string `json:"sub_created_at"`
+		OwnerEmail   string  `json:"owner_email"`
 	}
 	result := make([]salonResp, len(rows))
 	for i, r := range rows {
@@ -130,6 +145,7 @@ func (h *AdminHandler) ListSalons(c echo.Context) error {
 			MRR:          mrr,
 			SubStatus:    r.SubStatus,
 			SubCreatedAt: r.SubCreatedAt,
+			OwnerEmail:   ownerEmails[r.ID],
 		}
 	}
 	return c.JSON(http.StatusOK, result)
@@ -241,6 +257,62 @@ func (h *AdminHandler) DeleteAppointment(c echo.Context) error {
 	if err := h.apptRepo.Delete(c.Request().Context(), id); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
 	}
+	return c.NoContent(http.StatusNoContent)
+}
+
+// GET /admin/v1/staffs
+func (h *AdminHandler) ListStaffs(c echo.Context) error {
+	ctx := c.Request().Context()
+	type row struct {
+		ID               uint64  `db:"id"        json:"id"`
+		Name             string  `db:"name"      json:"name"`
+		Email            string  `db:"email"     json:"email"`
+		Role             string  `db:"role"      json:"role"`
+		SalonName        string  `db:"salon_name" json:"salon_name"`
+		CygnusAccountID  *uint64 `db:"cygnus_account_id" json:"cygnus_account_id"`
+		CygnusID         *string `db:"cygnus_id" json:"cygnus_id"`
+	}
+	var rows []row
+	err := h.db.SelectContext(ctx, &rows, `
+		SELECT s.id, s.name, s.email, s.role, sal.name AS salon_name,
+		       ca.id AS cygnus_account_id, ca.cygnus_id
+		FROM staffs s
+		JOIN salons sal ON sal.id = s.salon_id
+		LEFT JOIN cygnus_accounts ca ON ca.id = s.cygnus_account_id
+		ORDER BY sal.id, s.id`)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed")
+	}
+	return c.JSON(http.StatusOK, rows)
+}
+
+// DELETE /admin/v1/staffs/:id
+func (h *AdminHandler) DeleteStaff(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid id")
+	}
+	ctx := c.Request().Context()
+
+	// cygnus_account_id を取得
+	var caID *uint64
+	h.db.GetContext(ctx, &caID, `SELECT cygnus_account_id FROM staffs WHERE id = ?`, id)
+
+	// staff を削除
+	res, err := h.db.ExecContext(ctx, `DELETE FROM staffs WHERE id = ?`, id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to delete staff")
+	}
+	affected, _ := res.RowsAffected()
+	if affected == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, "not found")
+	}
+
+	// cygnus_account を削除（CASCADE で profiles/works/memberships 等も削除される）
+	if caID != nil {
+		h.db.ExecContext(ctx, `DELETE FROM cygnus_accounts WHERE id = ?`, *caID)
+	}
+
 	return c.NoContent(http.StatusNoContent)
 }
 

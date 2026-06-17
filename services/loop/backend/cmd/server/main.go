@@ -293,6 +293,8 @@ func main() {
 	adm.GET("/aws-cost", adminH.GetAWSCost)
 	adm.GET("/salons", adminH.ListSalons)
 	adm.PATCH("/salons/:id", adminH.UpdateSalon)
+	adm.GET("/staffs", adminH.ListStaffs)
+	adm.DELETE("/staffs/:id", adminH.DeleteStaff)
 	adm.GET("/appointments", adminH.ListAppointments)
 	adm.POST("/appointments", adminH.CreateAppointment)
 	adm.PATCH("/appointments/:id", adminH.UpdateAppointment)
