@@ -17,7 +17,12 @@ const GENRES = ['すべて', ...TAG_OPTIONS]
 
 function parseTags(raw: string | null | undefined): string[] {
   if (!raw) return []
-  try { return (JSON.parse(raw) as string[]).filter(t => TAG_OPTIONS.includes(t)) } catch { return [] }
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed
+    if (typeof parsed === 'string') return [parsed]
+    return []
+  } catch { return [raw] }
 }
 
 export default function ArchivePage() {
