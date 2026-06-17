@@ -303,6 +303,88 @@ func (u *DealerUsecase) SendOrder(ctx context.Context, orderID uint64, salonName
 	return result, nil
 }
 
+// SendOrderGroup は同一ディーラーの複数発注を1枚のPDFにまとめて送信する。
+func (u *DealerUsecase) SendOrderGroup(ctx context.Context, orderIDs []uint64, salonName string) (*SendOrderResult, error) {
+	if len(orderIDs) == 0 {
+		return nil, fmt.Errorf("SendOrderGroup: no order IDs")
+	}
+
+	// 代表 order からディーラー情報を取得
+	firstOrder, _, err := u.GetOrder(ctx, orderIDs[0])
+	if err != nil {
+		return nil, err
+	}
+	dealer, err := u.dealerRepo.FindByID(ctx, firstOrder.DealerID)
+	if err != nil {
+		return nil, fmt.Errorf("SendOrderGroup dealer: %w", err)
+	}
+
+	// 全 order の全アイテムをまとめて取得
+	rawItems, err := u.orderRepo.FindItemsForOrders(ctx, orderIDs)
+	if err != nil {
+		return nil, fmt.Errorf("SendOrderGroup items: %w", err)
+	}
+	pdfItems := make([]pdf.OrderPDFItem, len(rawItems))
+	for i, it := range rawItems {
+		pdfItems[i] = pdf.OrderPDFItem{
+			Name:          it.MaterialName,
+			JanCode:       it.JanCode,
+			Quantity:      it.Quantity,
+			Unit:          it.Unit,
+			EstimatedCost: it.EstimatedCost,
+		}
+	}
+
+	pdfData := pdf.OrderPDFData{
+		OrderNumber:        fmt.Sprintf("%d-%04d", firstOrder.CreatedAt.Year(), firstOrder.ID),
+		Date:               firstOrder.CreatedAt,
+		DealerName:         dealer.Name,
+		SalonName:          salonName,
+		IsNextMonthInvoice: firstOrder.IsNextMonthInvoice,
+		Items:              pdfItems,
+	}
+	pdfBytes, err := pdf.GenerateOrderPDF(pdfData)
+	if err != nil {
+		return nil, fmt.Errorf("SendOrderGroup pdf: %w", err)
+	}
+
+	fileName := fmt.Sprintf("order_group_%d_%s.pdf", firstOrder.ID, firstOrder.CreatedAt.Format("20060102"))
+
+	var presignedURL string
+	if u.pdfUploader != nil {
+		key := fmt.Sprintf("orders/%d/%s", firstOrder.SalonID, fileName)
+		presignedURL, err = u.pdfUploader.Upload(ctx, key, pdfBytes)
+		if err != nil {
+			return nil, fmt.Errorf("SendOrderGroup upload: %w", err)
+		}
+	}
+
+	// 全 order をまとめて sent に更新
+	for _, id := range orderIDs {
+		_ = u.orderRepo.UpdateStatus(ctx, id, model.OrderStatusSent)
+	}
+
+	result := &SendOrderResult{PDFURL: presignedURL}
+
+	switch dealer.ContactMethod {
+	case model.ContactMethodEmail:
+		result.Method = "email"
+		if u.emailSender != nil && dealer.ContactInfo != "" {
+			subject := fmt.Sprintf("【発注書】%s より", salonName)
+			body := fmt.Sprintf("いつもお世話になっております。\n%s より発注書をお送りします。\n\n添付のPDFをご確認ください。\n\n%s", salonName, salonName)
+			_ = u.emailSender.SendOrderEmail(ctx, dealer.ContactInfo, subject, body, pdfBytes, fileName)
+		}
+	case model.ContactMethodLINE:
+		result.Method = "LINE"
+		if presignedURL != "" {
+			msg := fmt.Sprintf("【発注書】\n%s よりご発注いただきました。\n発注書PDF: %s", salonName, presignedURL)
+			result.LineURL = "https://line.me/R/msg/text/?" + url.QueryEscape(msg)
+		}
+	}
+
+	return result, nil
+}
+
 func (u *DealerUsecase) ListOrdersHistory(ctx context.Context, salonID uint64) ([]*OrderHistoryEntry, error) {
 	orders, err := u.orderRepo.FindBySalonID(ctx, salonID)
 	if err != nil {

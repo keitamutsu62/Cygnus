@@ -167,6 +167,26 @@ func (h *DealerHandler) SendOrder(c echo.Context) error {
 	})
 }
 
+// POST /api/v1/orders/send-group
+func (h *DealerHandler) SendOrderGroup(c echo.Context) error {
+	claims := claimsFrom(c)
+	var req struct {
+		OrderIDs []uint64 `json:"order_ids"`
+	}
+	if err := c.Bind(&req); err != nil || len(req.OrderIDs) == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "order_ids required")
+	}
+	result, err := h.uc.SendOrderGroup(c.Request().Context(), req.OrderIDs, claims.SalonName)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to send orders")
+	}
+	return c.JSON(http.StatusOK, map[string]any{
+		"method":   result.Method,
+		"line_url": result.LineURL,
+		"pdf_url":  result.PDFURL,
+	})
+}
+
 // PATCH /api/v1/orders/:id/items/:material_id
 func (h *DealerHandler) UpdateOrderItem(c echo.Context) error {
 	orderID, err := strconv.ParseUint(c.Param("id"), 10, 64)

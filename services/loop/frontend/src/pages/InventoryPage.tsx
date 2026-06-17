@@ -1372,17 +1372,14 @@ export default function InventoryPage() {
     const ids = groupOrders.map(o => o.id)
     ids.forEach(id => setSendingOrderIds(prev => new Set(prev).add(id)))
     try {
-      let lineUrl = ''
-      for (const order of groupOrders) {
-        const res = await api(`/api/v1/orders/${order.id}/send`, { method: 'POST' })
-        if (!res.ok) throw new Error()
-        const result: SendResult = await res.json()
-        if (result.method === 'LINE' && result.line_url && !lineUrl) {
-          lineUrl = result.line_url
-        }
-      }
-      if (lineUrl) {
-        setLineResult({ orderIds: ids, url: lineUrl })
+      const res = await api('/api/v1/orders/send-group', {
+        method: 'POST',
+        body: JSON.stringify({ order_ids: ids }),
+      })
+      if (!res.ok) throw new Error()
+      const result: SendResult = await res.json()
+      if (result.method === 'LINE' && result.line_url) {
+        setLineResult({ orderIds: ids, url: result.line_url })
       } else {
         ids.forEach(id => removeSentOrder(id))
         showToast('発注書を送信しました')
@@ -1928,7 +1925,7 @@ export default function InventoryPage() {
                             fontSize: 12, color: muted, cursor: 'pointer', fontFamily: josefin, letterSpacing: '0.08em',
                           }}
                           onClick={() => {
-                            const inv = items.find(i => firstItem && i.name === firstItem.material_name)
+                            const inv = items.find(i => firstItem && Number(i.material_id) === firstItem.material_id)
                             if (inv) {
                               setEditItem(inv)
                               setEditOrderId(o.id)
@@ -2026,10 +2023,13 @@ export default function InventoryPage() {
               const oid = editOrderId
               setReceivedOrderIds(prev => { const s = new Set(prev); s.add(oid); return s })
               setHistory(prev => prev.map(o => o.id === oid ? { ...o, status: 'delivered' } : o))
-              api(`/api/v1/orders/${oid}/status`, {
-                method: 'PATCH',
-                body: JSON.stringify({ status: 'delivered' }),
-              }).catch(() => {})
+              const alreadyPatched = sentOrders.some(o => o.id === oid)
+              if (!alreadyPatched) {
+                api(`/api/v1/orders/${oid}/status`, {
+                  method: 'PATCH',
+                  body: JSON.stringify({ status: 'delivered' }),
+                }).catch(() => {})
+              }
               setEditOrderId(null)
             }
 

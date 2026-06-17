@@ -250,6 +250,7 @@ func main() {
 	api.POST("/orders", dealerH.CreateOrder)
 	api.GET("/orders/:id", dealerH.GetOrder)
 	api.POST("/orders/:id/send", dealerH.SendOrder)
+	api.POST("/orders/send-group", dealerH.SendOrderGroup)
 	api.PATCH("/orders/:id/items/:material_id", dealerH.UpdateOrderItem)
 	api.DELETE("/orders/:id/items/:material_id", dealerH.DeleteOrderItem)
 	api.PATCH("/orders/:id/status", dealerH.UpdateOrderStatus)
