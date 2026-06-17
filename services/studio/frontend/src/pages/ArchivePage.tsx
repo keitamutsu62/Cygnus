@@ -154,7 +154,7 @@ function WorkDetail({ work, menus, onDelete, onTogglePublish }: {
 
   return (
     <>
-      <img src={work.image_url} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 2, marginBottom: 16 }} />
+      <img src={work.image_url} alt="" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 2, marginBottom: 16 }} />
       {tags[0] && (
         <div style={{ display: 'inline-block', fontSize: 10, fontFamily: S.josefin, letterSpacing: '0.12em', color: S.gold, background: S.goldDim, border: `1px solid ${S.goldBorder}`, padding: '4px 10px', borderRadius: 2, marginBottom: 14 }}>{tags[0]}</div>
       )}
