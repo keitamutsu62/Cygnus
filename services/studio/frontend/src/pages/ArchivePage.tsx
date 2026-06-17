@@ -251,14 +251,15 @@ function AddWork({ menus, onAdded }: { menus: Menu[]; onAdded: (w: Work) => void
 
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
       <div onClick={() => fileRef.current?.click()} style={{
-        width: '100%', aspectRatio: '4/3', background: S.surface,
+        width: '100%', background: S.surface,
         border: `1px dashed ${imageUrl ? S.goldBorder : S.border}`,
         borderRadius: 2, marginBottom: 14, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
+        ...(imageUrl ? {} : { aspectRatio: '4/3' }),
       }}>
         {imageUrl ? (
-          <img src={imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={imageUrl} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
         ) : (
           <div style={{ textAlign: 'center', color: S.muted }}>
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ marginBottom: 8 }}>
