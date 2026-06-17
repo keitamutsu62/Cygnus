@@ -298,6 +298,9 @@ func (h *AdminHandler) DeleteStaff(c echo.Context) error {
 	var caID *uint64
 	h.db.GetContext(ctx, &caID, `SELECT cygnus_account_id FROM staffs WHERE id = ?`, id)
 
+	// treatments は staff_id NOT NULL + RESTRICT のため先に削除
+	h.db.ExecContext(ctx, `DELETE FROM treatments WHERE staff_id = ?`, id)
+
 	// staff を削除
 	res, err := h.db.ExecContext(ctx, `DELETE FROM staffs WHERE id = ?`, id)
 	if err != nil {
