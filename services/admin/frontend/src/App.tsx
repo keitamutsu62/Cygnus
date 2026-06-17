@@ -29,7 +29,10 @@ function Layout({ children }: { children: React.ReactNode }) {
       {/* トップバー */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 20px',
+        paddingTop: 'max(12px, env(safe-area-inset-top))',
+        paddingBottom: '12px',
+        paddingLeft: '20px',
+        paddingRight: '20px',
         borderBottom: `1px solid ${border}`,
         flexShrink: 0,
       }}>
