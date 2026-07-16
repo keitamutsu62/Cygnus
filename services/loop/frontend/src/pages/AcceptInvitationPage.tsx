@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { api } from '../lib/api'
 
 type Store = { id: number; name: string }
 
@@ -21,7 +22,7 @@ export default function AcceptInvitationPage() {
 
   useEffect(() => {
     if (!token) { setInfoLoading(false); return }
-    fetch(`/api/v1/auth/invite-info?token=${encodeURIComponent(token)}`)
+    api(`/api/v1/auth/invite-info?token=${encodeURIComponent(token)}`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
         setSalonName(data.salon_name ?? '')
@@ -40,9 +41,8 @@ export default function AcceptInvitationPage() {
     if (stores.length > 0 && storeId === null) { setError('所属店舗を選択してください'); return }
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/accept-invitation', {
+      const res = await api('/api/v1/auth/accept-invitation', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, name, password, store_id: storeId }),
       })
       if (!res.ok) { setError('招待リンクが無効または期限切れです'); return }
@@ -56,13 +56,13 @@ export default function AcceptInvitationPage() {
 
   const josefin = "'Josefin Sans', sans-serif"
   const zen     = "'Zen Kaku Gothic New', sans-serif"
-  const gold    = '#c8a882'
-  const text    = '#e8e4dc'
-  const muted   = 'rgba(232,228,220,0.55)'
-  const border  = 'rgba(232,228,220,0.12)'
+  const gold    = 'var(--accent)'
+  const text    = 'var(--text)'
+  const muted   = 'var(--text-muted)'
+  const border  = 'var(--border)'
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#1a1816', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '0 28px 40px', overflowY: 'auto' }}>
 
         {/* ロゴエリア */}
@@ -105,8 +105,8 @@ export default function AcceptInvitationPage() {
                       onClick={() => setStoreId(s.id)}
                       style={{
                         padding: '13px 14px',
-                        background: storeId === s.id ? 'rgba(200,168,130,0.12)' : 'rgba(232,228,220,0.04)',
-                        border: `1px solid ${storeId === s.id ? 'rgba(200,168,130,0.5)' : border}`,
+                        background: storeId === s.id ? 'var(--accent-dim)' : 'var(--input-bg)',
+                        border: `1px solid ${storeId === s.id ? 'var(--accent)' : border}`,
                         borderRadius: 2,
                         fontSize: 15,
                         color: storeId === s.id ? gold : text,
@@ -133,7 +133,7 @@ export default function AcceptInvitationPage() {
             <button
               type="submit"
               disabled={loading}
-              style={{ width: '100%', padding: 15, background: gold, border: 'none', borderRadius: 2, fontFamily: josefin, fontWeight: 200, fontSize: 14, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#1a1816', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: 6, WebkitAppearance: 'none' }}
+              style={{ width: '100%', padding: 15, background: gold, border: 'none', borderRadius: 2, fontFamily: josefin, fontWeight: 200, fontSize: 14, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--on-accent)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: 6, WebkitAppearance: 'none' }}
             >
               {loading ? '...' : 'チームに参加する'}
             </button>
@@ -154,11 +154,11 @@ function FieldInput({ label, type, value, onChange, placeholder }: {
   const [focused, setFocused] = useState(false)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-      <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(232,228,220,0.55)', fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}>{label}</div>
+      <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}>{label}</div>
       <input
         type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        style={{ background: 'rgba(232,228,220,0.04)', border: `1px solid ${focused ? 'rgba(200,168,130,0.4)' : 'rgba(232,228,220,0.12)'}`, borderRadius: 2, padding: '13px 14px', fontSize: 16, color: '#e8e4dc', fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 300, outline: 'none', WebkitAppearance: 'none', width: '100%' }}
+        style={{ background: 'var(--input-bg)', border: `1px solid ${focused ? 'var(--accent)' : 'var(--input-border)'}`, borderRadius: 2, padding: '13px 14px', fontSize: 16, color: 'var(--text)', fontFamily: "'Zen Kaku Gothic New', sans-serif", fontWeight: 300, outline: 'none', WebkitAppearance: 'none', width: '100%' }}
       />
     </div>
   )

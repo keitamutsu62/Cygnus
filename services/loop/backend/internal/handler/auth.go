@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/keitamutsu62/cygnus/services/loop/backend/internal/domain/model"
@@ -101,6 +102,9 @@ func (h *AuthHandler) Invite(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, apierror.ErrStaffLimitExceed) {
 			return echo.NewHTTPError(http.StatusForbidden, "staff limit exceeded for current plan")
+		}
+		if errors.Is(err, apierror.ErrEmailAlreadyInUse) {
+			return echo.NewHTTPError(http.StatusConflict, "email already in use")
 		}
 		return echo.NewHTTPError(http.StatusInternalServerError, "invite failed")
 	}
@@ -249,6 +253,7 @@ func (h *AuthHandler) AcceptInvitation(c echo.Context) error {
 		StoreID:  req.StoreID,
 	})
 	if err != nil {
+		log.Printf("[auth.accept-invitation] err=%v token=%q email(from token)=? ", err, req.Token)
 		if errors.Is(err, apierror.ErrInvalidToken) {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid or expired invitation token")
 		}

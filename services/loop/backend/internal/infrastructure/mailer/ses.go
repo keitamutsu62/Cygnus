@@ -33,6 +33,66 @@ func NewSESMailer(region, from string) (*SESMailer, error) {
 	}, nil
 }
 
+// SendInvitation — スタッフ招待メール
+func (m *SESMailer) SendInvitation(ctx context.Context, to, salonName, inviteURL string) error {
+	subject := fmt.Sprintf("【%s】Cygnus LOOP スタッフ招待のご案内", salonName)
+	body := fmt.Sprintf(`%s から Cygnus LOOP のスタッフとして招待されました。
+
+以下のURLを開いて登録を完了してください：
+
+%s
+
+（このリンクの有効期限は72時間です）
+
+――
+Cygnus LOOP
+`, salonName, inviteURL)
+	return m.sendSimpleText(ctx, to, subject, body)
+}
+
+// SendPasswordReset — パスワードリセットメール
+func (m *SESMailer) SendPasswordReset(ctx context.Context, to, resetURL string) error {
+	subject := "【Cygnus LOOP】パスワードリセットのご案内"
+	body := fmt.Sprintf(`パスワードリセットのリクエストを受け付けました。
+
+以下のURLを開いてパスワードを再設定してください：
+
+%s
+
+（このリンクの有効期限は1時間です）
+心当たりがない場合は、このメールを破棄してください。
+
+――
+Cygnus LOOP
+`, resetURL)
+	return m.sendSimpleText(ctx, to, subject, body)
+}
+
+func (m *SESMailer) sendSimpleText(ctx context.Context, to, subject, body string) error {
+	_, err := m.client.SendEmail(ctx, &sesv2.SendEmailInput{
+		FromEmailAddress:     aws.String(m.from),
+		ConfigurationSetName: aws.String("cygnus-main"),
+		Destination: &sestypes.Destination{
+			ToAddresses: []string{to},
+		},
+		Content: &sestypes.EmailContent{
+			Simple: &sestypes.Message{
+				Subject: &sestypes.Content{
+					Data:    aws.String(subject),
+					Charset: aws.String("UTF-8"),
+				},
+				Body: &sestypes.Body{
+					Text: &sestypes.Content{
+						Data:    aws.String(body),
+						Charset: aws.String("UTF-8"),
+					},
+				},
+			},
+		},
+	})
+	return err
+}
+
 // SendOrderEmail はPDF添付メールを発注先に送信する。
 func (m *SESMailer) SendOrderEmail(ctx context.Context, to, subject, bodyText string, pdfBytes []byte, fileName string) error {
 	raw, err := buildMIMEMessage(m.from, to, subject, bodyText, pdfBytes, fileName)
@@ -41,7 +101,8 @@ func (m *SESMailer) SendOrderEmail(ctx context.Context, to, subject, bodyText st
 	}
 
 	_, err = m.client.SendEmail(ctx, &sesv2.SendEmailInput{
-		FromEmailAddress: aws.String(m.from),
+		FromEmailAddress:     aws.String(m.from),
+		ConfigurationSetName: aws.String("cygnus-main"),
 		Destination: &sestypes.Destination{
 			ToAddresses: []string{to},
 		},

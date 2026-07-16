@@ -251,6 +251,11 @@ func (u *AuthUsecase) Invite(ctx context.Context, in InviteInput) error {
 		}
 	}
 
+	// 既に同じメールで staffs が存在する場合は重複エラー
+	if existing, _ := u.staffRepo.FindByEmail(ctx, in.Email); existing != nil {
+		return apierror.ErrEmailAlreadyInUse
+	}
+
 	token, err := generateToken()
 	if err != nil {
 		return fmt.Errorf("Invite: generate token: %w", err)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { api } from '../lib/api'
 
 const S = {
   bg:          '#1a1816',
@@ -38,9 +39,8 @@ export default function ResetPasswordPage() {
     }
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/reset-password', {
+      const res = await api('/api/v1/auth/reset-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, new_password: password }),
       })
       if (!res.ok) {
