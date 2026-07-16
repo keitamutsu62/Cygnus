@@ -74,6 +74,9 @@ func main() {
 	invtWriteRepo    := mysql.NewInventoryWriteRepository(db)
 	treatmentRepo    := mysql.NewTreatmentRepository(db)
 	menuRepo         := mysql.NewMenuRepository(db)
+	reviewRepo       := mysql.NewReviewRepository(db)
+	staffAnalysisRepo := mysql.NewStaffAnalysisRepository(db)
+	storeAnalysisRepo := mysql.NewStoreAnalysisRepository(db)
 	customerRepo     := mysql.NewCustomerRepository(db)
 	appointmentRepo  := mysql.NewAppointmentRepository(db)
 	storeRepo        := mysql.NewStoreRepository(db)
@@ -117,7 +120,18 @@ func main() {
 	}
 
 	// ─── ユースケース ──────────────────────────────────────────
-	m := mailer.NewLogMailer()
+	var m usecase.Mailer
+	if cfg.SESFrom != "" {
+		if sm, err := mailer.NewSESMailer(cfg.OrdersRegion, cfg.SESFrom); err == nil {
+			m = sm
+			log.Printf("Auth mailer: SES (%s)", cfg.SESFrom)
+		} else {
+			log.Printf("SESMailer init error, fallback to LogMailer: %v", err)
+			m = mailer.NewLogMailer()
+		}
+	} else {
+		m = mailer.NewLogMailer()
+	}
 
 	authUC       := usecase.NewAuthUsecase(salonRepo, planRepo, subRepo, staffRepo, invRepo, accountRepo, membershipRepo, resetTokenRepo, storeRepo, bhRepo, m, cfg.JWTSecret)
 	staffUC      := usecase.NewStaffUsecase(staffRepo)
@@ -125,6 +139,10 @@ func main() {
 	studioUC     := usecase.NewStudioUsecase(db, accountRepo, profileRepo, careerRepo, workRepo, memoRepo, imgStorage)
 	treatmentUC  := usecase.NewTreatmentUsecase(treatmentRepo, salesRepo, appointmentRepo)
 	menuUC       := usecase.NewMenuUsecase(menuRepo)
+	reviewUC     := usecase.NewReviewUsecase(reviewRepo)
+	reviewImportUC := usecase.NewReviewImportUsecase(staffRepo, reviewRepo)
+	staffAnalysisUC := usecase.NewStaffAnalysisUsecase(staffAnalysisRepo, reviewRepo, staffRepo, db)
+	storeAnalysisUC := usecase.NewStoreAnalysisUsecase(storeAnalysisRepo, reviewRepo, storeRepo, db)
 	customerUC   := usecase.NewCustomerUsecase(customerRepo)
 	appointmentUC := usecase.NewAppointmentUsecase(appointmentRepo)
 	storeUC      := usecase.NewStoreUsecase(storeRepo, bhRepo, closureRepo)
@@ -149,12 +167,17 @@ func main() {
 	retailSaleH     := handler.NewRetailSaleHandler(retailSaleUC)
 	aiH             := handler.NewAIHandler(aiUC)
 	settingsH       := handler.NewSettingsHandler(salonRepo)
+	reviewH         := handler.NewReviewHandler(reviewUC, menuUC, staffUC, storeRepo)
+	reviewImportH   := handler.NewReviewImportHandler(reviewImportUC)
+	staffAnalysisH  := handler.NewStaffAnalysisHandler(staffAnalysisUC)
+	storeAnalysisH  := handler.NewStoreAnalysisHandler(storeAnalysisUC)
 	adminH          := handler.NewAdminHandler(db, adminApptRepo)
 
 	// ─── Echo ─────────────────────────────────────────────────
 	e := echo.New()
 	e.Use(echomiddleware.Logger())
 	e.Use(echomiddleware.Recover())
+	e.Use(echomiddleware.BodyLimit("50M"))
 	e.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -176,9 +199,12 @@ func main() {
 	auth.POST("/studio/register", authH.StudioRegister)
 	auth.POST("/studio/login", authH.StudioLogin)
 
-	// 公開（RESERVE が参照）
+	// 公開（RESERVE / VOICE が参照）
 	pub := e.Group("/api/v1/public")
 	pub.GET("/stylists/:cygnus_id", studioH.GetPublicProfile)
+	pub.GET("/stores/:store_id/menus", reviewH.PublicListMenus)
+	pub.GET("/stores/:store_id/staffs", reviewH.PublicListStaffs)
+	pub.POST("/stores/:store_id/reviews", reviewH.PublicCreate)
 
 	// ─── STUDIO認証必要（cygnus_account_id のみ） ──────────────
 	studio := e.Group("/api/v1/studio", middleware.StudioJWT(cfg.JWTSecret))
@@ -223,6 +249,17 @@ func main() {
 	api.GET("/stores/:id/special-closures", storeH.ListSpecialClosures)
 	api.POST("/stores/:id/special-closures", storeH.AddSpecialClosure)
 	api.DELETE("/stores/:id/special-closures/:closureId", storeH.DeleteSpecialClosure)
+
+	// 口コミ（VOICE 経由で保存されたお客様の声）
+	api.GET("/reviews", reviewH.List)
+	api.POST("/reviews/import/analyze", reviewImportH.Analyze)
+	api.POST("/reviews/import", reviewImportH.BulkSave)
+
+	// スタッフAI分析
+	api.GET("/staffs/:id/analysis", staffAnalysisH.Get)
+	api.POST("/staffs/:id/analysis", staffAnalysisH.Generate)
+	api.GET("/stores/:id/analysis", storeAnalysisH.Get)
+	api.POST("/stores/:id/analysis", storeAnalysisH.Generate)
 
 	// メニュー（RESERVE の予約フロー・duration で空き枠計算に使用）
 	api.GET("/menus", menuH.List)

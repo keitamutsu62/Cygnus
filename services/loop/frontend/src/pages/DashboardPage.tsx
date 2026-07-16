@@ -1,845 +1,635 @@
-import { createPortal } from 'react-dom'
-import { useEffect, useMemo, useRef, useState } from 'react'
-
-import { useNavigate, useLocation } from 'react-router-dom'
-import { api, apiFetch } from '../lib/api'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getClaims, getSalonName } from '../lib/auth'
-import { businessDaysToClosing } from '../lib/businessDays'
-import { Toast, useToast } from '../components/Toast'
-import type { DailySales, Staff, StaffSalesSummary } from '../types'
+import { apiFetch } from '../lib/api'
+import type { DailySales, Staff, Store } from '../types'
 
 const josefin = "'Josefin Sans', sans-serif"
 const zen     = "'Zen Kaku Gothic New', sans-serif"
+const gold    = 'var(--accent)'
+const text    = 'var(--text)'
 const muted   = 'var(--text-muted)'
 const border  = 'var(--border)'
-const gold    = 'var(--accent)'
-const alertC  = '#e07060'
+const surface = 'var(--surface)'
 const green   = '#6dba8e'
-const alertDim = 'rgba(224,112,96,0.1)'
-const goldDim    = 'var(--accent-dim)'
-const goldBorder = 'var(--accent-border)'
-
-const DAYS_JP = ['日', '月', '火', '水', '木', '金', '土']
-function fmt(n: number) { return n.toLocaleString('ja-JP') }
-function toDateStr(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-}
-function jpDate(d: Date) {
-  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${DAYS_JP[d.getDay()]}）`
-}
-function dayLabel(i: number) {
-  if (i === 0) return '本日'; if (i === 1) return '1日前'; return `${i}日前`
-}
-
 
 const OrbitSVG = () => (
   <svg width="12" height="12" viewBox="0 0 80 80" fill="none">
-    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)"  stroke="var(--accent)" strokeWidth="6" opacity="0.9"/>
-    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="var(--accent)" strokeWidth="6" opacity="0.5"/>
+    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)"  stroke={gold} strokeWidth="6" opacity="0.9"/>
+    <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke={gold} strokeWidth="6" opacity="0.5"/>
   </svg>
 )
 
-// ─── BottomSheet CSS を <head> に一度だけ注入（Safari ポータル対応）────────
-const BS_CSS = `
-.bs-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200;
-  background: rgba(0,0,0,0.7);
-  display: flex; align-items: flex-end; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.3s ease;
+// ─── 日付ユーティリティ ─────────────────────────────────────
+function toDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
-.bs-overlay.open { opacity: 1; pointer-events: auto; }
-.bs-panel {
-  width: 100%; max-width: 480px; box-sizing: border-box;
-  background: var(--bg);
-  border-top: 1px solid var(--accent-border);
-  border-radius: 16px 16px 0 0;
-  padding: 24px 20px 40px;
-  transform: translateY(100%);
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-  max-height: 85vh; min-height: 280px; overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  will-change: transform;
+function startOfWeek(d: Date): Date {
+  // 月曜始まり
+  const n = new Date(d)
+  const day = n.getDay() // 0=日, 1=月, ..., 6=土
+  const diff = day === 0 ? -6 : 1 - day
+  n.setDate(n.getDate() + diff)
+  n.setHours(0, 0, 0, 0)
+  return n
 }
-.bs-overlay.open .bs-panel { transform: translateY(0); }
-`
-;(function injectBsStyles() {
-  const existing = document.getElementById('bs-styles')
-  if (existing) existing.remove()
-  const el = document.createElement('style')
-  el.id = 'bs-styles'
-  el.textContent = BS_CSS
-  document.head.appendChild(el)
-})()
+function addDays(d: Date, n: number): Date {
+  const x = new Date(d); x.setDate(x.getDate() + n); return x
+}
+function jpDateRange(from: Date, to: Date): string {
+  return `${from.getMonth() + 1}月${from.getDate()}日 - ${to.getMonth() + 1}月${to.getDate()}日`
+}
 
-function BottomSheet({ onClose, children }: {
-  onClose: () => void
-  children: (close: () => void) => React.ReactNode
-}) {
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const panelRef   = useRef<HTMLDivElement>(null)
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+function SectionLabel({ label, sub }: { label: string; sub?: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 7, margin: '24px 0 12px' }}>
+      <OrbitSVG />
+      <span style={{ fontFamily: josefin, fontWeight: 200, fontSize: 13, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: text }}>{label}</span>
+      {sub && <span style={{ fontFamily: zen, fontWeight: 300, fontSize: 12, color: muted }}>· {sub}</span>}
+    </div>
+  )
+}
 
-  function close() {
-    const overlay = overlayRef.current
-    const panel   = panelRef.current
-    // overlay を固定（フェードさせない）、パネルだけ下にスライド
-    if (overlay) {
-      overlay.style.transition    = 'none'
-      overlay.style.opacity       = '1'       // .open 除去後も不透明を維持
-      overlay.style.pointerEvents = 'none'
-      overlay.classList.remove('open')        // CSS の translateY(0) ルールを解除
-    }
-    if (panel) {
-      panel.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
-      panel.style.transform  = 'translateY(100%)'
-    }
-    setTimeout(() => onCloseRef.current(), 450)
+// ─── 型 ─────────────────────────────────────────────────────
+type ReviewDetail = {
+  id: number
+  staff_id: number | null
+  staff_name: string | null
+  menu_id: number | null
+  menu_name: string | null
+  rating_overall: number
+  rating_finish: number
+  rating_service: number
+  comment: string | null
+  created_at: string
+}
+type HealthItem = {
+  key: string
+  label: string
+  value: string
+  sub: string
+  trend: 'up' | 'flat' | 'wip'
+  dest: string
+}
+type FocusStaff = {
+  id: number
+  name: string
+  count: number
+  overall: number
+  tone: 'good' | 'grow' | 'focus'
+  title: string
+  detail: string
+}
+
+// ─── 集計 ───────────────────────────────────────────────────
+function buildHealth(
+  thisWeekSales: DailySales[],
+  lastWeekSales: DailySales[],
+  reviews: ReviewDetail[],
+): HealthItem[] {
+  const thisTotal = thisWeekSales.reduce((s, d) => s + d.total_sales, 0)
+  const lastTotal = lastWeekSales.reduce((s, d) => s + d.total_sales, 0)
+
+  let salesValue = '—'
+  let salesSub   = '前週比 (データ待ち)'
+  let salesTrend: 'up' | 'flat' | 'wip' = 'wip'
+  if (lastTotal > 0) {
+    const diff = Math.round(((thisTotal - lastTotal) / lastTotal) * 100)
+    salesValue = `${diff >= 0 ? '+' : ''}${diff}%`
+    salesSub   = '前週比'
+    salesTrend = diff >= 0 ? 'up' : 'flat'
+  } else if (thisTotal > 0) {
+    salesValue = '¥' + thisTotal.toLocaleString('ja-JP')
+    salesSub   = '今週合計'
+    salesTrend = 'up'
   }
 
-  // 入場: 2フレーム後に .open を付与 → CSS transition が走る
-  useEffect(() => {
-    const id1 = requestAnimationFrame(() => {
-      const id2 = requestAnimationFrame(() => {
-        overlayRef.current?.classList.add('open')
-      })
-      return () => cancelAnimationFrame(id2)
-    })
-    return () => cancelAnimationFrame(id1)
-  }, [])
+  let reviewValue = '—'
+  let reviewSub   = '平均評価 (データ待ち)'
+  let reviewTrend: 'up' | 'flat' | 'wip' = 'wip'
+  if (reviews.length > 0) {
+    const avg = reviews.reduce((s, r) => s + r.rating_overall, 0) / reviews.length
+    reviewValue = avg.toFixed(1)
+    reviewSub   = `平均評価 · ${reviews.length}件`
+    reviewTrend = avg >= 4 ? 'up' : 'flat'
+  }
 
-  // 背景スクロール禁止（オーバーレイ上のtouchmoveをパネル外でブロック）
-  useEffect(() => {
-    const overlay = overlayRef.current
-    const panel   = panelRef.current
-    if (!overlay || !panel) return
-    const stop = (e: TouchEvent) => { if (!panel.contains(e.target as Node)) e.preventDefault() }
-    overlay.addEventListener('touchmove', stop, { passive: false })
-    return () => overlay.removeEventListener('touchmove', stop)
-  }, [])
-
-  // スワイプで閉じる
-  useEffect(() => {
-    const el = panelRef.current
-    if (!el) return
-    let sy = 0, isDragging = false
-
-    const onStart = (e: TouchEvent) => { sy = e.touches[0].clientY; isDragging = true }
-    const onMove  = (e: TouchEvent) => {
-      if (!isDragging) return
-      const dy = e.touches[0].clientY - sy
-      if (dy > 0 && el.scrollTop === 0) {
-        e.preventDefault()
-        el.style.transition = 'none'
-        el.style.transform  = `translateY(${dy}px)`
-      }
-    }
-    const onEnd = (e: TouchEvent) => {
-      isDragging = false
-      const dy = e.changedTouches[0].clientY - sy
-      if (dy > 80 && el.scrollTop === 0) {
-        const overlay = overlayRef.current
-        if (overlay) {
-          overlay.style.transition    = 'none'
-          overlay.style.opacity       = '1'
-          overlay.style.pointerEvents = 'none'
-          overlay.classList.remove('open')
-        }
-        el.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
-        el.style.transform  = 'translateY(100%)'
-        setTimeout(() => onCloseRef.current(), 450)
-      } else {
-        el.style.transition = 'transform 0.35s ease'
-        el.style.transform  = 'translateY(0)'
-        setTimeout(() => { el.style.transition = ''; el.style.transform = '' }, 350)
-      }
-    }
-    el.addEventListener('touchstart', onStart, { passive: true })
-    el.addEventListener('touchmove',  onMove,  { passive: false })
-    el.addEventListener('touchend',   onEnd,   { passive: true })
-    return () => {
-      el.removeEventListener('touchstart', onStart)
-      el.removeEventListener('touchmove',  onMove)
-      el.removeEventListener('touchend',   onEnd)
-    }
-  }, [])
-
-  return createPortal(
-    <div ref={overlayRef} className="bs-overlay"
-      onClick={e => { if (e.target === e.currentTarget) close() }}
-    >
-      <div ref={panelRef} className="bs-panel">
-        <div style={{ width: 40, height: 3, background: 'rgba(232,228,220,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
-        {children(close)}
-      </div>
-    </div>,
-    document.body
-  )
+  return [
+    { key: 'sales',  label: '売上',         value: salesValue,  sub: salesSub,  trend: salesTrend, dest: '/sales' },
+    { key: 'review', label: '口コミ',       value: reviewValue, sub: reviewSub, trend: reviewTrend, dest: '/reviews' },
+    { key: 'repeat', label: 'リピート売上', value: '—',         sub: '準備中',  trend: 'wip', dest: '/sales' },
+    { key: 'nomi',   label: '指名売上',     value: '—',         sub: '準備中',  trend: 'wip', dest: '/sales' },
+  ]
 }
 
-// ─── 通知パネル ────────────────────────────────────────────────
-type NotifItem = { id: number; borderColor: string; meta: string; title: string; sub: string }
-function NotifPanel({ items, onClose }: { items: NotifItem[]; onClose: () => void }) {
+function buildFocusStaffs(reviews: ReviewDetail[]): FocusStaff[] {
+  const map = new Map<number, { name: string; ratings: number[] }>()
+  for (const r of reviews) {
+    if (r.staff_id == null || r.staff_name == null) continue
+    if (!map.has(r.staff_id)) map.set(r.staff_id, { name: r.staff_name, ratings: [] })
+    map.get(r.staff_id)!.ratings.push(r.rating_overall)
+  }
+  const arr = Array.from(map.entries()).map(([id, v]) => {
+    const overall = v.ratings.reduce((s, n) => s + n, 0) / v.ratings.length
+    return { id, name: v.name, count: v.ratings.length, overall }
+  })
+  arr.sort((a, b) => b.count - a.count)
+
+  return arr.slice(0, 3).map(s => {
+    let tone: 'good' | 'grow' | 'focus'
+    let title: string
+    let detail: string
+    const roundedAvg = Math.round(s.overall * 10) / 10
+    if (s.overall >= 4.5) {
+      tone = 'good'
+      title = `高評価が集まっています（平均 ${roundedAvg}）`
+      detail = `直近 ${s.count} 件の口コミで平均評価が高水準。強みを言語化してチームに共有すると効果的です。`
+    } else if (s.overall >= 4.0) {
+      tone = 'grow'
+      title = `安定した評価が続いています（平均 ${roundedAvg}）`
+      detail = `${s.count} 件の口コミが集まりました。細部の磨き込みで次のステップに進めるタイミングです。`
+    } else {
+      tone = 'focus'
+      title = `伸びしろポイントが見えています（平均 ${roundedAvg}）`
+      detail = `${s.count} 件の声から改善の芽があります。詳細を確認して、次の一手を一緒に整理しましょう。`
+    }
+    return { id: s.id, name: s.name, count: s.count, overall: s.overall, tone, title, detail }
+  })
+}
+
+// ─── 部品 ─────────────────────────────────────────────────────
+function HealthCard({ item, onClick }: { item: HealthItem; onClick: () => void }) {
+  const trendC = item.trend === 'up' ? green : muted
+  const isWip = item.trend === 'wip'
   return (
-    <BottomSheet onClose={onClose}>
-      {close => (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
-            <OrbitSVG />
-            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: gold }}>通知</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {items.map(n => (
-              <div key={n.id} style={{
-                background: 'var(--surface)', border: `1px solid ${border}`,
-                borderLeft: `3px solid ${n.borderColor}`, borderRadius: 2, padding: '14px 16px',
-              }}>
-                <div style={{ fontSize: 13, color: muted, fontFamily: josefin, marginBottom: 4 }}>{n.meta}</div>
-                <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen }}>{n.title}</div>
-                <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100, marginTop: 3 }}>{n.sub}</div>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={close}
-            style={{
-              width: '100%', padding: 13, marginTop: 16,
-              background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
-              fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.15em',
-              textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
-            }}
-          >閉じる</button>
-        </>
-      )}
-    </BottomSheet>
+    <div onClick={onClick} style={{
+      background: surface, border: `1px solid ${border}`, borderRadius: 6,
+      padding: '14px 14px', cursor: 'pointer',
+      display: 'flex', flexDirection: 'column', gap: 6,
+      opacity: isWip ? 0.55 : 1,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: josefin, fontWeight: 200, fontSize: 10, letterSpacing: '0.15em', color: muted, textTransform: 'uppercase' as const }}>{item.label}</span>
+        {item.trend === 'up' && (
+          <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke={trendC} strokeWidth="2" strokeLinecap="round">
+            <path d="M3 12L8 5L13 12" />
+          </svg>
+        )}
+      </div>
+      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 26, color: text, lineHeight: 1 }}>{item.value}</div>
+      <div style={{ fontFamily: zen, fontWeight: 300, fontSize: 11, color: muted }}>{item.sub}</div>
+    </div>
   )
 }
 
-// ─── 発注確認モーダル ────────────────────────────────────────────
-type InvAlert = { id: number; name: string; brand: string | null; quantity: number; threshold: number; stock_unit: string; status: string; material_id: number }
-type Dealer   = { id: number; name: string; contact_method: string; closing_day: number | null }
+function StaffFocusCard({ s, onClick }: { s: FocusStaff; onClick: () => void }) {
+  const accent = s.tone === 'good' ? green : s.tone === 'grow' ? gold : '#dbb98b'
+  const badge  = s.tone === 'good' ? '伸びている' : s.tone === 'grow' ? '成長中' : '注目'
+  return (
+    <div onClick={onClick} style={{
+      background: surface, border: `1px solid ${border}`, borderLeft: `3px solid ${accent}`,
+      borderRadius: 4, padding: '14px 16px', cursor: 'pointer',
+      display: 'flex', flexDirection: 'column', gap: 6,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+            background: 'var(--accent-dim)', border: `1px solid ${border}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold,
+          }}>{s.name[0]}</div>
+          <div>
+            <div style={{ fontFamily: zen, fontWeight: 400, fontSize: 14, color: text, lineHeight: 1.3 }}>{s.name}</div>
+            <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, color: muted, letterSpacing: '0.08em' }}>{s.count}件の口コミ</div>
+          </div>
+        </div>
+        <span style={{
+          fontFamily: josefin, fontWeight: 200, fontSize: 9, letterSpacing: '0.18em',
+          padding: '3px 8px', borderRadius: 2,
+          background: `${accent}1f`, color: accent, border: `1px solid ${accent}40`,
+        }}>{badge}</span>
+      </div>
+      <div style={{ fontFamily: zen, fontWeight: 400, fontSize: 14, color: text, lineHeight: 1.5 }}>{s.title}</div>
+      <div style={{ fontFamily: zen, fontWeight: 300, fontSize: 12, color: muted, lineHeight: 1.6 }}>{s.detail}</div>
+    </div>
+  )
+}
 
-function OrderModal({ item, storeId, dealers, onClose, onDone }: {
-  item: InvAlert; storeId: number; dealers: Dealer[]; onClose: () => void; onDone: (dealerName: string, qty: string) => void
+function EmptyBlock({ message }: { message: string }) {
+  return (
+    <div style={{
+      background: surface, border: `1px dashed ${border}`, borderRadius: 4,
+      padding: '18px 16px', textAlign: 'center' as const,
+    }}>
+      <p style={{ fontFamily: zen, fontWeight: 300, fontSize: 12, color: muted, margin: 0, lineHeight: 1.7 }}>{message}</p>
+    </div>
+  )
+}
+
+// ─── Weekly Insight 型 ─────────────────────────────
+type StoreMetrics = {
+  period_start: string
+  period_end: string
+  total_sales: number
+  tech_sales: number
+  retail_sales: number
+  client_count: number
+  treatment_count: number
+  average_per_client: number | null
+  nomination_ratio: number | null
+  review_count: number
+  finish_star5_rate: number | null
+  service_star5_rate: number | null
+  star_low_count: number
+  response_rate: number | null
+}
+type StoreObservation = {
+  key: string
+  label: string
+  evidence: string
+  tone: 'positive' | 'neutral' | 'attention'
+}
+type StoreCommentElement = { element: string; count: number; category: string }
+type StoreNarratives = {
+  strength: string
+  change?: string | null
+  room?: string | null
+  mirror: string
+}
+type StoreAnalysis = {
+  id: number
+  store_id: number
+  metrics: StoreMetrics
+  comment_elements: StoreCommentElement[]
+  narratives: StoreNarratives
+  observations: StoreObservation[]
+  previous_metrics?: StoreMetrics | null
+  previous_generated_at?: string | null
+  review_count: number
+  generated_at: string
+}
+
+function fmtYen(v: number | null | undefined): string {
+  if (v == null) return '—'
+  return '¥' + Math.round(v).toLocaleString('ja-JP')
+}
+function fmtPct(v: number | null | undefined): string {
+  if (v == null) return '—'
+  return `${Math.round(v * 100)}%`
+}
+function fmtDiffYen(cur: number, prev: number | null | undefined): string | null {
+  if (prev == null || prev === 0) return null
+  const d = cur - prev
+  const sign = d >= 0 ? '+' : ''
+  return `${sign}${d.toLocaleString('ja-JP')}円`
+}
+function fmtDiffPct(cur: number | null, prev: number | null): string | null {
+  if (cur == null || prev == null) return null
+  const d = Math.round((cur - prev) * 100)
+  const sign = d >= 0 ? '+' : ''
+  return `${sign}${d}pt`
+}
+function fmtDiffCount(cur: number, prev: number, suffix: string): string | null {
+  const d = cur - prev
+  if (d === 0) return null
+  const sign = d >= 0 ? '+' : ''
+  return `${sign}${d}${suffix}`
+}
+
+function WeeklyInsightMetric({ label, value, diff }: { label: string; value: string; diff?: string | null }) {
+  return (
+    <div style={{
+      background: surface, border: `1px solid ${border}`, borderRadius: 4,
+      padding: '10px 12px',
+      display: 'flex', flexDirection: 'column', gap: 3,
+    }}>
+      <span style={{ fontFamily: josefin, fontWeight: 200, fontSize: 9, letterSpacing: '0.15em', color: muted, textTransform: 'uppercase' as const }}>{label}</span>
+      <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 20, color: text, lineHeight: 1 }}>{value}</span>
+      {diff && <span style={{ fontFamily: zen, fontWeight: 300, fontSize: 10, color: muted }}>前週比 {diff}</span>}
+    </div>
+  )
+}
+
+function WeeklyInsightBlock({
+  storeId, storeName, canGenerate,
+}: {
+  storeId: number | null
+  storeName: string
+  canGenerate: boolean
 }) {
-  const [dealerId,      setDealerId]      = useState(() => dealers[0]?.id ?? 0)
-  const [qty,           setQty]           = useState(String(item.threshold))
-  const [loading,       setLoading]       = useState(false)
-  const [confirmed,     setConfirmed]     = useState(false)
-  const [closedWeekday, setClosedWeekday] = useState<number | null>(null)
-  const closeRef = useRef<(() => void) | null>(null)
+  const [analysis, setAnalysis] = useState<StoreAnalysis | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
 
   useEffect(() => {
-    apiFetch<{ closed_weekday: number | null }>(`/api/v1/stores/${storeId}/hours`)
-      .then(d => setClosedWeekday(d.closed_weekday ?? null))
-      .catch(() => {})
+    if (storeId == null) { setLoading(false); return }
+    setLoading(true)
+    apiFetch<StoreAnalysis | null>(`/api/v1/stores/${storeId}/analysis`)
+      .then(r => setAnalysis(r ?? null))
+      .catch(() => setAnalysis(null))
+      .finally(() => setLoading(false))
   }, [storeId])
 
-  const dealer   = dealers.find(d => d.id === dealerId)
-  const closingDay = dealer?.closing_day ?? 20
-  const daysLeft = businessDaysToClosing(closingDay, closedWeekday)
-  const showWarn = daysLeft <= 5
-
-  async function submit() {
-    if (!dealerId || !qty || Number(qty) <= 0) return
-    setLoading(true)
+  const onGenerate = async () => {
+    if (storeId == null || generating) return
+    setGenerating(true)
+    setErr(null)
     try {
-      const res = await api('/api/v1/orders', {
-        method: 'POST',
-        body: JSON.stringify({
-          store_id: storeId, dealer_id: dealerId,
-          is_next_month_invoice: false,
-          items: [{ material_id: item.material_id, quantity: Number(qty), unit: item.stock_unit }],
-        }),
-      })
-      if (!res.ok) throw new Error()
-      // 成功時は loading をリセットしない（ボタンが「発注を送信する」に戻るのを防ぐ）
-      setConfirmed(true)
-      setTimeout(() => {
-        onDone(dealer?.name ?? '', qty)
-        closeRef.current?.()
-      }, 2000)
-    } catch {
-      alert('発注に失敗しました')
-      setLoading(false)
+      const r = await apiFetch<StoreAnalysis>(`/api/v1/stores/${storeId}/analysis`, { method: 'POST' })
+      setAnalysis(r)
+    } catch (e) {
+      setErr((e as Error).message || '生成に失敗しました')
+    } finally {
+      setGenerating(false)
     }
   }
 
-  return (
-    <BottomSheet onClose={onClose}>
-      {close => {
-        closeRef.current = close
-        return (
-          <div style={{ position: 'relative', width: '100%' }}>
-
-            {/* ─ フォーム（confirmed 時はフェードアウト） ─ */}
-            <div style={{
-              opacity: confirmed ? 0 : 1,
-              transition: 'opacity 0.25s ease',
-              pointerEvents: confirmed ? 'none' : 'all',
+  if (loading) {
+    return <EmptyBlock message="読み込み中..." />
+  }
+  if (storeId == null) {
+    return <EmptyBlock message="店舗が登録されていません。" />
+  }
+  if (!analysis) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <EmptyBlock message={`「${storeName}」の週次インサイトはまだ生成されていません。`} />
+        {canGenerate && (
+          <button
+            onClick={onGenerate}
+            disabled={generating}
+            style={{
+              background: 'var(--accent-dim)', color: gold,
+              border: `1px solid var(--accent-border)`,
+              borderRadius: 4, padding: '10px 14px',
+              fontFamily: josefin, fontWeight: 200, fontSize: 12, letterSpacing: '0.15em',
+              cursor: generating ? 'wait' : 'pointer',
             }}>
-              {showWarn && (
-                <div style={{ background: alertDim, border: `1px solid rgba(224,112,96,0.2)`, borderRadius: 2, padding: '10px 12px', marginBottom: 16, fontSize: 14, color: alertC, fontFamily: zen, lineHeight: 1.7 }}>
-                  あと<strong style={{ margin: '0 4px' }}>{daysLeft}</strong>営業日で翌月伝票になります。このまま発注しますか？
-                </div>
-              )}
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: 'rgba(200,168,130,0.7)', marginBottom: 6 }}>リストに追加</div>
-              <div style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 18 }}>{item.name}</div>
-              <div style={{ background: 'var(--surface)', border: `1px solid ${border}`, borderRadius: 2, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <div style={{ paddingBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 14, color: muted }}>発注数</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <input
-                        type="number" value={qty} min="1"
-                        onChange={e => setQty(e.target.value)}
-                        style={{
-                          width: 80, padding: '4px 8px', textAlign: 'right' as const,
-                          background: 'transparent', border: `1px solid rgba(232,228,220,0.15)`, borderRadius: 2,
-                          color: 'var(--text)', fontFamily: josefin, fontSize: 16, outline: 'none',
-                        }}
-                      />
-                      <span style={{ fontSize: 14, color: muted }}>{item.stock_unit}</span>
-                    </div>
-                  </div>
-                </div>
-                <ModalRow label="仕入れ先">
-                  <select
-                    value={dealerId}
-                    onChange={e => setDealerId(Number(e.target.value))}
-                    style={{
-                      background: 'transparent', border: 'none', outline: 'none',
-                      color: 'var(--text)', fontFamily: zen, fontSize: 16, textAlign: 'right' as const,
-                      maxWidth: 180,
-                    }}
-                  >
-                    {dealers.map(d => <option key={d.id} value={d.id} style={{ background: 'var(--bg)' }}>{d.name}</option>)}
-                  </select>
-                </ModalRow>
-                <ModalRow label="送信方法"><span style={{ fontSize: 15, color: 'var(--text)', fontWeight: 400 }}>LINE</span></ModalRow>
-              </div>
-              <button
-                onClick={submit}
-                disabled={loading || confirmed}
-                style={{
-                  width: '100%', padding: 15, marginBottom: 10,
-                  background: (loading || confirmed) ? 'rgba(200,168,130,0.3)' : gold,
-                  border: 'none', borderRadius: 2,
-                  fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.25em',
-                  textTransform: 'uppercase' as const,
-                  color: (loading || confirmed) ? muted : '#1a1816',
-                  cursor: (loading || confirmed) ? 'default' : 'pointer',
-                }}
-              >{(loading || confirmed) ? '追加中...' : 'リストに追加する'}</button>
-              <button
-                onClick={close}
-                style={{
-                  width: '100%', padding: 13,
-                  background: 'transparent', border: '1px solid rgba(232,228,220,0.1)', borderRadius: 2,
-                  fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.15em',
-                  textTransform: 'uppercase' as const, color: 'rgba(232,228,220,0.4)', cursor: 'pointer',
-                }}
-              >キャンセル</button>
-            </div>
-
-            {/* ─ 完了アニメーション（confirmed=true のときだけマウント） ─ */}
-            {confirmed && (
-              <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: 16,
-                background: 'var(--bg)',
-              }}>
-                {/* 丸: マウント直後からポップイン */}
-                <div style={{
-                  width: 64, height: 64, borderRadius: '50%',
-                  background: 'transparent',
-                  border: `2px solid ${green}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0,
-                  opacity: 0,
-                  animation: 'circlePop 0.35s ease both 0.2s',
-                }}>
-                  {/* チェックマーク: 先端から手書き風に描画 */}
-                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none"
-                    style={{ display: 'block', background: 'transparent', overflow: 'visible' }}
-                  >
-                    <polyline
-                      points="6,14 12,20 22,9"
-                      stroke={green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                      style={{
-                        strokeDasharray: 24,
-                        strokeDashoffset: 24,
-                        animation: 'drawCheck 0.4s ease both 0.55s',
-                      }}
-                    />
-                  </svg>
-                </div>
-                <div style={{
-                  fontFamily: josefin, fontWeight: 100, fontSize: 14, letterSpacing: '0.12em',
-                  color: green, textAlign: 'center' as const,
-                  opacity: 0,
-                  animation: 'checkFade 0.25s ease both 0.7s',
-                }}>リスト追加完了</div>
-              </div>
-            )}
-
-          </div>
-        )
-      }}
-    </BottomSheet>
-  )
-}
-
-function ModalRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: `1px solid ${border}` }}>
-      <span style={{ fontSize: 14, color: muted }}>{label}</span>
-      {children}
-    </div>
-  )
-}
-
-function SectionTitle({ label, sub, link, onLink }: {
-  label: string; sub: string; link: string; onLink: () => void
-}) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: josefin, fontWeight: 200, fontSize: 15, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--text)' }}>
-        <OrbitSVG />{label}
-        <span style={{ fontSize: 13, color: muted, fontWeight: 300, letterSpacing: '0.05em', textTransform: 'none' as const }}>{sub}</span>
+            {generating ? '生成中...' : 'AI で今週のインサイトを生成'}
+          </button>
+        )}
+        {err && <div style={{ color: '#d68585', fontSize: 12, fontFamily: zen }}>{err}</div>}
       </div>
-      <div style={{ fontSize: 14, color: gold, opacity: 0.8, cursor: 'pointer' }} onClick={onLink}>{link}</div>
+    )
+  }
+
+  const m = analysis.metrics
+  const p = analysis.previous_metrics
+  const toneColor = (t: string) => t === 'positive' ? green : t === 'attention' ? '#dbb98b' : muted
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <WeeklyInsightMetric label="総売上" value={fmtYen(m.total_sales)} diff={p ? fmtDiffYen(m.total_sales, p.total_sales) : null} />
+        <WeeklyInsightMetric label="客単価" value={fmtYen(m.average_per_client)} diff={p && p.average_per_client != null && m.average_per_client != null ? fmtDiffYen(Math.round(m.average_per_client), Math.round(p.average_per_client)) : null} />
+        <WeeklyInsightMetric label="客数" value={m.client_count + '名'} diff={p ? fmtDiffCount(m.client_count, p.client_count, '名') : null} />
+        <WeeklyInsightMetric label="口コミ" value={m.review_count + '件'} diff={p ? fmtDiffCount(m.review_count, p.review_count, '件') : null} />
+        <WeeklyInsightMetric label="仕上がり★5率" value={fmtPct(m.finish_star5_rate)} diff={p ? fmtDiffPct(m.finish_star5_rate, p.finish_star5_rate) : null} />
+        <WeeklyInsightMetric label="接客★5率" value={fmtPct(m.service_star5_rate)} diff={p ? fmtDiffPct(m.service_star5_rate, p.service_star5_rate) : null} />
+      </div>
+
+      {analysis.narratives.strength && (
+        <div style={{
+          background: surface, border: `1px solid ${border}`, borderLeft: `3px solid ${gold}`,
+          borderRadius: 4, padding: '14px 16px',
+        }}>
+          <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 9, letterSpacing: '0.18em', color: muted, textTransform: 'uppercase' as const, marginBottom: 6 }}>STRENGTH</div>
+          <div style={{ fontFamily: zen, fontWeight: 400, fontSize: 13, color: text, lineHeight: 1.7 }}>{analysis.narratives.strength}</div>
+        </div>
+      )}
+
+      {analysis.narratives.change && (
+        <div style={{
+          background: surface, border: `1px solid ${border}`, borderLeft: `3px solid ${green}`,
+          borderRadius: 4, padding: '14px 16px',
+        }}>
+          <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 9, letterSpacing: '0.18em', color: muted, textTransform: 'uppercase' as const, marginBottom: 6 }}>CHANGE</div>
+          <div style={{ fontFamily: zen, fontWeight: 400, fontSize: 13, color: text, lineHeight: 1.7 }}>{analysis.narratives.change}</div>
+        </div>
+      )}
+
+      {analysis.observations.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 9, letterSpacing: '0.18em', color: muted, textTransform: 'uppercase' as const }}>OBSERVATIONS</div>
+          {analysis.observations.map((o, i) => (
+            <div key={i} style={{
+              background: surface, border: `1px solid ${border}`, borderLeft: `3px solid ${toneColor(o.tone)}`,
+              borderRadius: 4, padding: '10px 14px',
+              display: 'flex', flexDirection: 'column', gap: 3,
+            }}>
+              <div style={{ fontFamily: zen, fontWeight: 400, fontSize: 12, color: text, lineHeight: 1.5 }}>{o.label}</div>
+              <div style={{ fontFamily: zen, fontWeight: 300, fontSize: 11, color: muted, lineHeight: 1.5 }}>{o.evidence}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {analysis.comment_elements.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontFamily: josefin, fontWeight: 200, fontSize: 9, letterSpacing: '0.18em', color: muted, textTransform: 'uppercase' as const }}>ELEMENTS</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
+            {analysis.comment_elements.slice(0, 8).map((e, i) => (
+              <span key={i} style={{
+                background: 'var(--accent-dim)', color: gold,
+                border: `1px solid var(--accent-border)`,
+                borderRadius: 2, padding: '3px 8px',
+                fontFamily: zen, fontWeight: 300, fontSize: 11,
+              }}>
+                {e.element}（{e.count}）
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {analysis.narratives.mirror && (
+        <div style={{ fontFamily: zen, fontWeight: 300, fontSize: 11, color: muted, lineHeight: 1.6, padding: '4px 4px 0' }}>
+          {analysis.narratives.mirror}
+        </div>
+      )}
+
+      {canGenerate && (
+        <button
+          onClick={onGenerate}
+          disabled={generating}
+          style={{
+            background: 'transparent', color: muted,
+            border: `1px solid ${border}`,
+            borderRadius: 4, padding: '8px 12px',
+            fontFamily: josefin, fontWeight: 200, fontSize: 10, letterSpacing: '0.15em',
+            cursor: generating ? 'wait' : 'pointer',
+            alignSelf: 'flex-end' as const,
+          }}>
+          {generating ? '更新中...' : 'AI で再生成'}
+        </button>
+      )}
+      {err && <div style={{ color: '#d68585', fontSize: 12, fontFamily: zen }}>{err}</div>}
     </div>
   )
 }
 
-// ─── メインページ ──────────────────────────────────────────────
-type DayEntry = { date: Date; dateStr: string; data: DailySales | null }
-
+// ─── ページ本体 ──────────────────────────────────────────────
 export default function DashboardPage() {
+  const navigate = useNavigate()
   const salonName = getSalonName()
-  const claims    = getClaims()
-  const isManager = claims?.role === 'owner' || claims?.role === 'admin'
-  const storeId   = claims?.store_id
-  const navigate  = useNavigate()
-
-  // 今日 + 前週同曜日 = 8日分（index 0=今日 … index 7=前週同曜日）
-  const days = useMemo<DayEntry[]>(() => Array.from({ length: 8 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - i)
-    return { date: d, dateStr: toDateStr(d), data: null }
-  }), [])
-
-  const [salesDays,   setSalesDays]   = useState<DayEntry[]>(days)
-  const [dayOffset,   setDayOffset]   = useState(0)
-  const [staffList,   setStaffList]   = useState<StaffSalesSummary[]>([])
+  const claims = getClaims()
+  const [showNotif, setShowNotif] = useState(false)
   const [myAvatarUrl, setMyAvatarUrl] = useState<string | null>(null)
-  const [invAlerts,   setInvAlerts]   = useState<InvAlert[]>([])
-  const [dealers,     setDealers]     = useState<Dealer[]>([])
-  const [orderTarget, setOrderTarget] = useState<InvAlert | null>(null)
-  const [listOrders,  setListOrders]  = useState<{ name: string; qty: string; dealer: string }[]>([])
-  const [showNotif,        setShowNotif]        = useState(false)
-  const location = useLocation()
-  const { msg: toastMsg, isError: toastIsError, showError, showSuccess } = useToast()
+  const [myInitial, setMyInitial] = useState<string>('')
 
-  const cardRef      = useRef<HTMLDivElement>(null)
-  const dayOffsetRef = useRef(0)
+  const [thisWeekSales, setThisWeekSales] = useState<DailySales[]>([])
+  const [lastWeekSales, setLastWeekSales] = useState<DailySales[]>([])
+  const [reviews, setReviews] = useState<ReviewDetail[]>([])
+  const [stores, setStores] = useState<Store[]>([])
+  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null)
 
-  function goToDay(n: number) { dayOffsetRef.current = n; setDayOffset(n) }
-
-  useEffect(() => {
-    if ((location.state as { registered?: boolean } | null)?.registered) {
-      showSuccess('サロン登録が完了しました！ようこそ Cygnus LOOP へ。')
-    }
-  }, [])
+  const now = new Date()
+  const thisWeekStart = startOfWeek(now)
+  const thisWeekEnd   = addDays(thisWeekStart, 6)
+  const lastWeekStart = addDays(thisWeekStart, -7)
+  const lastWeekEnd   = addDays(thisWeekStart, -1)
+  const weekLabel     = jpDateRange(thisWeekStart, thisWeekEnd)
 
   useEffect(() => {
     apiFetch<Staff[]>('/api/v1/staffs')
       .then(list => {
         const me = (Array.isArray(list) ? list : []).find(s => s.id === claims?.staff_id)
         setMyAvatarUrl(me?.avatar_url ?? null)
+        setMyInitial(me?.name?.slice(0, 1) ?? '')
+      })
+      .catch(() => {})
+  }, [claims?.staff_id])
+
+  useEffect(() => {
+    // 口コミ（全期間、直近200件）
+    apiFetch<ReviewDetail[] | null>('/api/v1/reviews?limit=200')
+      .then(list => setReviews(Array.isArray(list) ? list : []))
+      .catch(() => setReviews([]))
+
+    // 売上（今週・先週）— 全店舗合算
+    apiFetch<Store[]>('/api/v1/stores')
+      .then(list => {
+        const arr = Array.isArray(list) ? list : []
+        setStores(arr)
+        if (arr.length > 0 && selectedStoreId == null) setSelectedStoreId(arr[0].id)
+        if (arr.length === 0) return
+        const thisFrom = toDateStr(thisWeekStart)
+        const thisTo   = toDateStr(thisWeekEnd)
+        const lastFrom = toDateStr(lastWeekStart)
+        const lastTo   = toDateStr(lastWeekEnd)
+        Promise.all(arr.map(s =>
+          apiFetch<DailySales[]>(`/api/v1/sales/store?store_id=${s.id}&from=${thisFrom}&to=${thisTo}`).catch(() => [] as DailySales[])
+        )).then(all => setThisWeekSales(all.flat()))
+        Promise.all(arr.map(s =>
+          apiFetch<DailySales[]>(`/api/v1/sales/store?store_id=${s.id}&from=${lastFrom}&to=${lastTo}`).catch(() => [] as DailySales[])
+        )).then(all => setLastWeekSales(all.flat()))
       })
       .catch(() => {})
   }, [])
 
-  useEffect(() => {
-    if (!storeId) return
-    apiFetch<DailySales[]>(`/api/v1/sales/store?store_id=${storeId}&from=${days[7].dateStr}&to=${days[0].dateStr}`)
-      .then(list => {
-        const map = new Map((Array.isArray(list) ? list : []).map(d => [d.date.slice(0, 10), d]))
-        setSalesDays(days.map(d => ({ ...d, data: map.get(d.dateStr) ?? null })))
-      }).catch(() => showError('売上データの読み込みに失敗しました'))
-
-    // 在庫と発注履歴を並行取得
-    Promise.all([
-      apiFetch<InvAlert[]>(`/api/v1/inventory?store_id=${storeId}`).catch(() => [] as InvAlert[]),
-      apiFetch<{ id: number; status: string; dealer_name: string; items: { material_id: number; material_name: string; quantity: number; unit: string }[] }[]>('/api/v1/orders/history').catch(() => []),
-    ]).then(([invData, ordersData]) => {
-      const orders = Array.isArray(ordersData) ? ordersData : []
-      const pending = orders.filter(o => o.status === 'pending')
-      const sent    = orders.filter(o => o.status === 'sent')
-      // pending・sent どちらも「発注済み」としてアラートから除外（重複発注防止）
-      const orderedIds = new Set<number>([
-        ...pending.flatMap(o => (o.items ?? []).map(it => Number(it.material_id))),
-        ...sent.flatMap(o => (o.items ?? []).map(it => Number(it.material_id))),
-      ])
-      setListOrders(
-        pending.flatMap(o =>
-          (o.items ?? []).map(it => ({ name: it.material_name, qty: `${it.quantity}${it.unit}`, dealer: o.dealer_name }))
-        )
-      )
-      setInvAlerts(
-        (Array.isArray(invData) ? invData : [])
-          .filter(i => (i.status === '要発注' || i.status === '注意') && !orderedIds.has(i.material_id))
-          .slice(0, 3)
-      )
-    }).catch(() => showError('在庫アラートの読み込みに失敗しました'))
-
-    apiFetch<Dealer[]>('/api/v1/dealers')
-      .then(d => setDealers(Array.isArray(d) ? d : []))
-      .catch(() => showError('ディーラー情報の読み込みに失敗しました'))
-
-    if (isManager) {
-      apiFetch<StaffSalesSummary[]>(`/api/v1/sales/store/staff?store_id=${storeId}&date=${days[0].dateStr}`)
-        .then(d => setStaffList(Array.isArray(d) ? d : []))
-        .catch(() => {})
-    }
-  }, [storeId])
-
-  // 売上カードスワイプ
-  useEffect(() => {
-    const card = cardRef.current
-    if (!card) return
-    let sx = 0, sy = 0, swiping = false
-
-    const onStart = (e: TouchEvent) => {
-      sx = e.touches[0].clientX; sy = e.touches[0].clientY; swiping = false
-      card.style.transition = 'none'
-    }
-    const onMove = (e: TouchEvent) => {
-      const dx = e.touches[0].clientX - sx
-      const dy = e.touches[0].clientY - sy
-      if (!swiping && Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > 10) swiping = true
-      if (swiping) { e.preventDefault(); card.style.transform = `translateX(${dx * 0.4}px)` }
-    }
-    const onEnd = (e: TouchEvent) => {
-      const dx = e.changedTouches[0].clientX - sx
-      if (!swiping) return; swiping = false
-      if (Math.abs(dx) > 40) {
-        const dir = dx < 0 ? 1 : -1
-        const next = dayOffsetRef.current + dir
-        if (next >= 0 && next < 8) {
-          card.style.transition = 'transform 0.2s ease, opacity 0.2s ease'
-          card.style.transform  = dx < 0 ? 'translateX(-100%)' : 'translateX(100%)'
-          card.style.opacity    = '0'
-          setTimeout(() => {
-            goToDay(next)
-            card.style.transition = 'none'
-            card.style.transform  = dx < 0 ? 'translateX(100%)' : 'translateX(-100%)'
-            card.style.opacity    = '0'
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-              card.style.transition = 'transform 0.25s ease, opacity 0.2s ease'
-              card.style.transform  = 'translateX(0)'
-              card.style.opacity    = '1'
-            }))
-          }, 200)
-          return
-        }
-      }
-      card.style.transition = 'transform 0.3s ease'
-      card.style.transform  = 'translateX(0)'
-    }
-    card.addEventListener('touchstart', onStart, { passive: true })
-    card.addEventListener('touchmove',  onMove,  { passive: false })
-    card.addEventListener('touchend',   onEnd,   { passive: true })
-    return () => {
-      card.removeEventListener('touchstart', onStart)
-      card.removeEventListener('touchmove',  onMove)
-      card.removeEventListener('touchend',   onEnd)
-    }
-  }, [])
-
-  const cur       = salesDays[dayOffset]
-  const data      = cur?.data
-  const unitPrice = data && data.client_count > 0 ? Math.round(data.total_sales / data.client_count) : 0
-
-  // 通知リスト（在庫アラートを実データから生成）
-  const notifItems = [
-    ...invAlerts.map(a => ({
-      id: a.id,
-      borderColor: a.status === '要発注' ? alertC : gold,
-      meta: `在庫アラート · たった今`,
-      title: `${a.name} が閾値を下回っています`,
-      sub: `残り ${a.quantity}${a.stock_unit} / 閾値 ${a.threshold}${a.stock_unit}`,
-    })),
-    { id: -1, borderColor: green,  meta: '日次レポート · 昨日', title: '昨日の売上サマリ', sub: salesDays[1]?.data ? `¥${fmt(salesDays[1].data.total_sales)} · ${salesDays[1].data.client_count}名来店` : 'データなし' },
-  ]
+  const health       = useMemo(() => buildHealth(thisWeekSales, lastWeekSales, reviews),        [thisWeekSales, lastWeekSales, reviews])
+  const focusStaffs  = useMemo(() => buildFocusStaffs(reviews),                                  [reviews])
 
   return (
-    <>
-      <style>{`
-        @keyframes circlePop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
-        @keyframes checkFade{0%{opacity:0}100%{opacity:1}}
-        @keyframes drawCheck{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
-      `}</style>
+    <div style={{ padding: '14px 20px 32px' }}>
 
-      <div style={{ padding: '14px 20px 32px' }}>
-
-        {/* ストア未設定の案内 */}
-        {!storeId && (
-          <div style={{
-            background: 'var(--accent-dim)', border: '1px solid var(--accent-border)',
-            borderRadius: 6, padding: '14px 16px', marginBottom: 16,
-            fontSize: 14, color: 'var(--text)', fontFamily: zen, lineHeight: 1.7,
+      {/* グリーティング */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <div>
+          <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 3 }}>おはようございます</div>
+          <div style={{ fontSize: 17, fontWeight: 400, color: text, fontFamily: zen }}>{salonName}</div>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <div onClick={() => setShowNotif(true)} style={{
+            width: 34, height: 34, borderRadius: '50%',
+            background: surface, border: `1px solid ${border}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
           }}>
-            <div style={{ fontWeight: 500, marginBottom: 4, color: 'var(--accent)' }}>ストアの設定が必要です</div>
-            サロンの登録が完了しました。管理者にストアの設定を依頼してください。設定後にダッシュボードのデータが表示されます。
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1C8 1 5 3 5 7V10L4 11V12H12V11L11 10V7C11 3 8 1 8 1Z" stroke={text} strokeWidth="1" fill="none"/>
+              <path d="M6.5 12C6.5 12.8 7.2 13.5 8 13.5C8.8 13.5 9.5 12.8 9.5 12" stroke={text} strokeWidth="1" fill="none"/>
+            </svg>
           </div>
-        )}
-
-        {/* グリーティング + アイコン */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: 14, color: muted, fontFamily: zen, marginBottom: 4 }}>おはようございます</div>
-            <div style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', fontFamily: zen }}>{salonName}</div>
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <div onClick={() => setShowNotif(true)} style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'var(--surface)', border: `1px solid ${border}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', position: 'relative',
-            }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 1C8 1 5 3 5 7V10L4 11V12H12V11L11 10V7C11 3 8 1 8 1Z" stroke="#e8e4dc" strokeWidth="1" fill="none"/>
-                <path d="M6.5 12C6.5 12.8 7.2 13.5 8 13.5C8.8 13.5 9.5 12.8 9.5 12" stroke="#e8e4dc" strokeWidth="1" fill="none"/>
-              </svg>
-              {invAlerts.length > 0 && (
-                <div style={{
-                  position: 'absolute', top: 7, right: 7,
-                  width: 7, height: 7, borderRadius: '50%',
-                  background: alertC, border: '1.5px solid #1a1816',
-                }} />
-              )}
-            </div>
-            <div
-              onClick={() => navigate('/settings', { state: { sub: 'profile' } })}
-              style={{
-                width: 34, height: 34, borderRadius: '50%',
-                background: goldDim, border: '1px solid rgba(200,168,130,0.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold, cursor: 'pointer',
-                overflow: 'hidden',
-              }}
-            >
-              {myAvatarUrl
-                ? <img src={myAvatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : (claims?.avatar_initials ?? (claims?.role === 'owner' ? 'OW' : '??'))}
-            </div>
+          <div onClick={() => navigate('/settings')} style={{
+            width: 34, height: 34, borderRadius: '50%',
+            background: 'var(--accent-dim)', border: '1px solid rgba(200,168,130,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: josefin, fontWeight: 100, fontSize: 14, color: gold, cursor: 'pointer',
+            overflow: 'hidden',
+          }}>
+            {myAvatarUrl
+              ? <img src={myAvatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : (myInitial || 'S')}
           </div>
         </div>
-
-        {/* 日付ストリップ */}
-        <div style={{ marginTop: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{ flex: 1, height: 1, background: border }} />
-            <div style={{ fontSize: 14, color: muted, whiteSpace: 'nowrap', letterSpacing: '0.04em', fontFamily: josefin, fontWeight: 100 }}>
-              {cur && jpDate(cur.date)} · {dayLabel(dayOffset)}
-            </div>
-            <div style={{ flex: 1, height: 1, background: border }} />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginBottom: 12 }}>
-            {salesDays.map((_, i) => (
-              <div key={i} onClick={() => goToDay(i)} style={{
-                width: i === dayOffset ? 16 : 6, height: 6, borderRadius: 3,
-                background: i === dayOffset ? gold : 'rgba(200,168,130,0.25)',
-                transition: 'all 0.3s ease', cursor: 'pointer',
-              }} />
-            ))}
-          </div>
-        </div>
-
-        {/* ─── 売上カード ─── */}
-        <div
-          ref={cardRef}
-          style={{
-            background: 'var(--surface)', border: `1px solid ${border}`, borderRadius: 2,
-            padding: '16px 20px', marginBottom: 4,
-            position: 'relative', overflow: 'hidden',
-          }}
-        >
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, #c8a882, transparent)' }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <div style={{ fontSize: 11, letterSpacing: '0.2em', fontFamily: josefin, fontWeight: 100, color: muted, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <OrbitSVG />
-              {dayOffset === 0 ? "TODAY'S SALES" : `${cur?.date.getMonth()+1}月${cur?.date.getDate()}日の売上`}
-            </div>
-            <div style={{ fontSize: 14, color: muted, fontFamily: zen }}>
-              {data ? `${data.client_count}名来店` : '—'}
-            </div>
-          </div>
-          <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 40, color: 'var(--text)', lineHeight: 1, marginBottom: 12, letterSpacing: '0.02em' }}>
-            {data
-              ? <><span style={{ fontSize: 16, color: muted, marginRight: 2 }}>¥</span>{fmt(data.total_sales)}</>
-              : <span style={{ fontSize: 28, color: muted }}>—</span>
-            }
-          </div>
-          <div style={{ display: 'flex', gap: 16, paddingTop: 12, borderTop: `1px solid ${border}` }}>
-            {[
-              { label: '客単価',   value: data ? `¥${fmt(unitPrice)}`         : '—' },
-              { label: '技術売上', value: data ? `¥${fmt(data.tech_sales)}`   : '—' },
-              { label: '物販',     value: data ? `¥${fmt(data.retail_sales)}` : '—' },
-            ].map((kpi, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div style={{ fontSize: 12, color: muted, letterSpacing: '0.1em', fontFamily: josefin }}>{kpi.label}</div>
-                <div style={{ fontSize: 15, color: 'var(--text)', fontFamily: josefin, fontWeight: 100 }}>{kpi.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ─── 在庫アラート ─── */}
-        {invAlerts.length > 0 && (
-          <>
-            <SectionTitle label="在庫アラート" sub="· 要発注 上位3件" link="すべて見る →" onLink={() => navigate('/inventory')} />
-            {invAlerts.map(item => {
-              const crit = item.status === '要発注'
-              return (
-                <div key={item.id} style={{
-                  background: 'var(--surface)',
-                  border: `1px solid ${border}`,
-                  borderLeft: `3px solid ${crit ? alertC : gold}`,
-                  borderRadius: 2, padding: '14px 16px', marginBottom: 10,
-                  display: 'flex', flexDirection: 'column', gap: 10,
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 3 }}>{item.name}</div>
-                      {item.brand && <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>{item.brand}</div>}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 22, color: crit ? alertC : gold, lineHeight: 1 }}>
-                        {item.quantity}<span style={{ fontSize: 13, marginLeft: 2 }}>{item.stock_unit}</span>
-                      </div>
-                      <div style={{
-                        fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
-                        padding: '2px 8px', borderRadius: 1,
-                        background: crit ? alertDim : goldDim,
-                        color: crit ? alertC : gold,
-                        border: `1px solid ${crit ? 'rgba(224,112,96,0.25)' : 'rgba(200,168,130,0.2)'}`,
-                      }}>{item.status}</div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>
-                      閾値 {item.threshold}{item.stock_unit}
-                    </div>
-                    <button
-                      onClick={() => setOrderTarget(item)}
-                      style={{
-                        padding: '6px 14px',
-                        background: crit ? gold : goldDim,
-                        border: crit ? 'none' : '1px solid rgba(200,168,130,0.3)',
-                        borderRadius: 2,
-                        fontFamily: josefin, fontWeight: 100, fontSize: 12,
-                        letterSpacing: '0.12em', textTransform: 'uppercase' as const,
-                        color: crit ? '#1a1816' : gold, cursor: 'pointer', flexShrink: 0,
-                        WebkitAppearance: 'none',
-                      }}
-                    >リストに追加</button>
-                  </div>
-                </div>
-              )
-            })}
-          </>
-        )}
-
-        {/* ─── 発注リスト ─── */}
-        <>
-          <SectionTitle
-            label="発注リスト" sub="· 未送信" link="リストを開く →"
-            onLink={() => navigate('/inventory', { state: { tab: 'orders' } })}
-          />
-          {listOrders.length === 0 ? (
-            <div style={{ fontSize: 14, color: muted, fontFamily: zen, padding: '4px 0 8px', lineHeight: 1.7 }}>発注リストは空です</div>
-          ) : listOrders.map((o, i) => (
-            <div key={i} style={{
-              background: 'var(--surface)', border: `1px solid ${border}`, borderRadius: 2,
-              padding: '14px 16px', marginBottom: 10,
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            }}>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 3 }}>{o.name} × {o.qty}</div>
-                <div style={{ fontSize: 14, color: muted, fontFamily: josefin, fontWeight: 100 }}>{o.dealer} · 発注リスト中</div>
-              </div>
-              <div style={{
-                fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
-                padding: '3px 10px', borderRadius: 1, whiteSpace: 'nowrap' as const,
-                background: goldDim, color: gold,
-                border: `1px solid ${goldBorder}`,
-              }}>リスト中</div>
-            </div>
-          ))}
-        </>
-
-        {/* ─── スタッフ売上 ─── */}
-        {isManager && staffList.length > 0 && (
-          <>
-            <SectionTitle label="スタッフ売上" sub="· 本日" link="詳細 →" onLink={() => navigate('/sales', { state: { tab: 'staff' } })} />
-            {staffList.map(s => (
-              <div key={s.staff_id}
-                onClick={() => navigate('/sales', { state: { tab: 'staff', staffId: s.staff_id } })}
-                style={{
-                  background: 'var(--surface)', border: `1px solid ${border}`, borderRadius: 2,
-                  padding: '12px 16px', marginBottom: 8,
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  cursor: 'pointer',
-                }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  background: '#2a2826', border: `1px solid ${border}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, color: muted, fontFamily: josefin, flexShrink: 0,
-                }}>
-                  {s.avatar_initials ?? s.name.slice(0, 1)}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text)', fontFamily: zen, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
-                  <div style={{ fontSize: 13, color: muted, fontFamily: josefin, fontWeight: 100 }}>
-                    {s.client_count > 0 ? `スタイリスト · ${s.client_count}名担当` : 'スタイリスト · 本日未来店'}
-                  </div>
-                </div>
-                <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 17, color: 'var(--text)', flexShrink: 0 }}>
-                  <span style={{ fontSize: 13, color: muted, marginRight: 1 }}>¥</span>{fmt(s.total_sales)}
-                </div>
-              </div>
-            ))}
-          </>
-        )}
       </div>
 
-      {/* ─── 発注確認モーダル ─── */}
-      {orderTarget && storeId && (
-        <OrderModal
-          item={orderTarget}
-          storeId={storeId}
-          dealers={dealers}
-          onClose={() => setOrderTarget(null)}
-          onDone={(dealerName, qtyStr) => {
-            const target = orderTarget
-            setInvAlerts(prev => prev.filter(a => a.id !== target.id))
-            setListOrders(prev => [{ name: target.name, qty: qtyStr, dealer: dealerName }, ...prev])
-          }}
-        />
+      {/* 店舗ヘルス */}
+      <SectionLabel label="Health" sub={weekLabel} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {health.map(h => <HealthCard key={h.key} item={h} onClick={() => navigate(h.dest)} />)}
+      </div>
+
+      {/* 要注目スタッフ */}
+      <SectionLabel label="Focus Staff" sub="今週のハイライト" />
+      {focusStaffs.length === 0 ? (
+        <EmptyBlock message="口コミが集まると、注目すべきスタッフをAIが自動で抽出します。" />
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {focusStaffs.map(s => <StaffFocusCard key={s.id} s={s} onClick={() => navigate('/reviews')} />)}
+        </div>
       )}
 
-      {/* ─── 通知パネル ─── */}
+      {/* 今週のインサイト */}
+      <SectionLabel label="Weekly Insight" sub={stores.length > 1 && selectedStoreId != null ? (stores.find(s => s.id === selectedStoreId)?.name ?? '') : weekLabel} />
+      {stores.length > 1 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6, marginBottom: 10 }}>
+          {stores.map(s => (
+            <button
+              key={s.id}
+              onClick={() => setSelectedStoreId(s.id)}
+              style={{
+                background: s.id === selectedStoreId ? 'var(--accent-dim)' : 'transparent',
+                color: s.id === selectedStoreId ? gold : muted,
+                border: `1px solid ${s.id === selectedStoreId ? 'var(--accent-border)' : border}`,
+                borderRadius: 2, padding: '4px 10px',
+                fontFamily: zen, fontWeight: 300, fontSize: 11,
+                cursor: 'pointer',
+              }}>
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
+      <WeeklyInsightBlock
+        storeId={selectedStoreId}
+        storeName={stores.find(s => s.id === selectedStoreId)?.name ?? ''}
+        canGenerate={true}
+      />
+
+      {/* 通知パネル（簡易） */}
       {showNotif && (
-        <NotifPanel items={notifItems} onClose={() => setShowNotif(false)} />
+        <div onClick={() => setShowNotif(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100,
+          display: 'flex', alignItems: 'flex-end',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', background: 'var(--bg)',
+            borderRadius: '16px 16px 0 0', padding: '24px 20px 36px',
+            borderTop: `1px solid ${border}`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <span style={{ fontFamily: josefin, fontWeight: 200, fontSize: 12, letterSpacing: '0.18em', color: text }}>NOTIFICATIONS</span>
+              <button onClick={() => setShowNotif(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: josefin, fontSize: 12, color: muted, letterSpacing: '0.1em' }}>CLOSE</button>
+            </div>
+            <div style={{ fontFamily: zen, fontWeight: 300, fontSize: 13, color: muted, lineHeight: 1.8 }}>
+              新しい通知はありません
+            </div>
+          </div>
+        </div>
       )}
-
-    <Toast msg={toastMsg} isError={toastIsError} />
-    </>
+    </div>
   )
 }
