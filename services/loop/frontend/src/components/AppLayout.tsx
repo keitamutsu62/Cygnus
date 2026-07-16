@@ -7,26 +7,12 @@ const text   = 'var(--text)'
 
 const NAV = [
   {
-    path: '/dashboard',
-    label: 'ホーム',
+    path: '/insights',
+    label: 'インサイト',
     icon: (active: boolean) => (
       <svg viewBox="0 0 22 22" fill="none" width="22" height="22">
-        <rect x="2" y="2" width="8" height="8" rx="1.5" stroke={active ? accent : text} strokeWidth="1.5"/>
-        <rect x="12" y="2" width="8" height="8" rx="1.5" stroke={active ? accent : text} strokeWidth="1.5"/>
-        <rect x="2" y="12" width="8" height="8" rx="1.5" stroke={active ? accent : text} strokeWidth="1.5"/>
-        <rect x="12" y="12" width="8" height="8" rx="1.5" stroke={active ? accent : text} strokeWidth="1.5"/>
-      </svg>
-    ),
-  },
-  {
-    path: '/inventory',
-    label: '在庫',
-    icon: (active: boolean) => (
-      <svg viewBox="0 0 22 22" fill="none" width="22" height="22">
-        <rect x="2" y="5" width="18" height="14" rx="1.5" stroke={active ? accent : text} strokeWidth="1.5"/>
-        <line x1="7" y1="2" x2="7" y2="8" stroke={active ? accent : text} strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1="15" y1="2" x2="15" y2="8" stroke={active ? accent : text} strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1="6" y1="13" x2="16" y2="13" stroke={active ? accent : text} strokeWidth="1" strokeLinecap="round"/>
+        <circle cx="11" cy="11" r="8" stroke={active ? accent : text} strokeWidth="1.5"/>
+        <path d="M11 6v5l3 2" stroke={active ? accent : text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
   },
@@ -37,6 +23,16 @@ const NAV = [
       <svg viewBox="0 0 22 22" fill="none" width="22" height="22">
         <polyline points="2,16 7,10 11,13 16,7 20,9" stroke={active ? accent : text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         <line x1="2" y1="19" x2="20" y2="19" stroke={active ? accent : text} strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+      </svg>
+    ),
+  },
+  {
+    path: '/reviews',
+    label: '口コミ',
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 22 22" fill="none" width="22" height="22">
+        <path d="M3 5C3 4.4 3.4 4 4 4H18C18.6 4 19 4.4 19 5V14C19 14.6 18.6 15 18 15H9L5 19V15H4C3.4 15 3 14.6 3 14V5Z" stroke={active ? accent : text} strokeWidth="1.5" strokeLinejoin="round"/>
+        <path d="M11 7.5L12 9.5L14 9.7L12.5 11L13 13L11 12L9 13L9.5 11L8 9.7L10 9.5L11 7.5Z" stroke={active ? accent : text} strokeWidth="1" strokeLinejoin="round" fill="none"/>
       </svg>
     ),
   },

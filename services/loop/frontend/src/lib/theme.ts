@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import { getClaims } from './auth'
 
-export type Theme = 'dark' | 'light' | 'pop'
+export type Theme = 'sand' | 'peach' | 'dark'
 
 export const THEME_LABELS: Record<Theme, string> = {
-  dark:  'ダーク',
-  light: 'ライト',
-  pop:   'ポップ',
+  sand:  'サンド',
+  peach: 'ピーチ',
+  dark:  'Cygnus',
 }
 
 const THEME_COLORS: Record<Theme, string> = {
+  sand:  '#f5f1ea',
+  peach: '#fff5ec',
   dark:  '#1a1816',
-  light: '#f7f3ee',
-  pop:   '#ffffff',
 }
+
+const VALID_THEMES: Theme[] = ['sand', 'peach', 'dark']
 
 function storageKey(): string {
   const claims = getClaims()
@@ -22,10 +24,10 @@ function storageKey(): string {
 
 export function loadTheme(): Theme {
   try {
-    return (localStorage.getItem(storageKey()) as Theme) ?? 'dark'
-  } catch {
-    return 'dark'
-  }
+    const stored = localStorage.getItem(storageKey()) as Theme | null
+    if (stored && VALID_THEMES.includes(stored)) return stored
+  } catch {}
+  return 'sand'
 }
 
 export function applyTheme(theme: Theme): void {

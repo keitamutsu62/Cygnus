@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-const SHEET_BG    = '#1a1816'
-const HANDLE_BG   = 'rgba(232,228,220,0.18)'
-const GOLD_BORDER = 'rgba(200,168,130,0.2)'
+const SHEET_BG    = 'var(--bg)'
+const HANDLE_BG   = 'var(--border)'
+const GOLD_BORDER = 'var(--accent-border)'
 const DISMISS_THRESHOLD = 80
 const ANIM_MS = 240
 

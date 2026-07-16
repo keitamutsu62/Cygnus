@@ -40,7 +40,7 @@ export default function LoginPage() {
       }
       const { token } = await res.json()
       localStorage.setItem('token', token)
-      navigate('/dashboard')
+      navigate('/insights')
     } catch {
       setError('通信エラーが発生しました')
     } finally {

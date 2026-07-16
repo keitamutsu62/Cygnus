@@ -20,10 +20,10 @@ const green      = '#6dba8e'
 const greenDim   = 'rgba(109,186,142,0.1)'
 const purpleDim  = 'rgba(150,100,220,0.1)'
 const purple     = '#9664DC'
-const grayDim    = 'rgba(232,228,220,0.06)'
+const grayDim    = 'var(--surface-2)'
 const alertColor = '#e07060'
-const inputBg    = 'rgba(232,228,220,0.04)'
-const inputBorder = 'rgba(232,228,220,0.12)'
+const inputBg    = 'var(--input-bg)'
+const inputBorder = 'var(--input-border)'
 
 // BottomSheet 内のキャンセルボタン共通コンポーネント。
 // setOpen(false) を直接呼ぶと exit アニメーションが飛ぶため、必ずこれを使う。
@@ -39,9 +39,8 @@ function SheetCancel({ label = 'キャンセル', style }: { label?: string; sty
   )
 }
 
-type Dealer = { id: number; name: string; contact_method: 'LINE' | 'email'; contact_info: string; closing_day: number | null; status: string }
 type BusinessHours = { open_time: string; close_time: string; closed_weekday: number | null }
-type SubPage = 'profile' | 'hours' | 'staff-list' | 'staff-detail' | 'pos' | 'stores' | null
+type SubPage = 'profile' | 'hours' | 'staff-list' | 'staff-detail' | 'stores' | null
 
 // ─── 招待モーダル ──────────────────────────────────────────────────────────────
 function InviteModal({ onClose }: { onClose: () => void }) {
@@ -57,6 +56,14 @@ function InviteModal({ onClose }: { onClose: () => void }) {
         method: 'POST',
         body: JSON.stringify({ email: email.trim(), role }),
       })
+      if (res.status === 409) {
+        window.alert('このメールアドレスは既にスタッフとして登録されています。')
+        return
+      }
+      if (res.status === 403) {
+        window.alert('現在のプランのスタッフ上限に達しています。')
+        return
+      }
       if (!res.ok) throw new Error()
       onClose()
     } catch {
@@ -67,8 +74,8 @@ function InviteModal({ onClose }: { onClose: () => void }) {
   }
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
-    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
+    width: '100%', boxSizing: 'border-box', background: 'var(--input-bg)',
+    border: `1px solid var(--input-border)`, borderRadius: 2, padding: '10px 12px',
     fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
   }
 
@@ -92,10 +99,10 @@ function InviteModal({ onClose }: { onClose: () => void }) {
           </select>
         </div>
       </div>
-      <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2 }}>
+      <div style={{ marginTop: 16, padding: '12px 14px', background: 'var(--accent-dim)', border: `1px solid ${goldBorder}`, borderRadius: 2 }}>
         <div style={{ fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>招待メールが送信されます。受け取った方は<br/>メール内のURLからアカウントを登録できます。</div>
       </div>
-      <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
+      <button onClick={send} disabled={sending || !email.trim()} style={{ width: '100%', marginTop: 16, padding: 14, background: (!email.trim() || sending) ? 'var(--accent-dim)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: sending || !email.trim() ? 'default' : 'pointer' }}>
         {sending ? '送信中...' : '招待メールを送信する'}
       </button>
       <SheetCancel style={{ marginTop: 8 }} />
@@ -113,8 +120,8 @@ function PasswordChangeSheet({ onClose }: { onClose: () => void }) {
   const dismiss = useBottomSheetDismiss()
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
-    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
+    width: '100%', boxSizing: 'border-box', background: 'var(--input-bg)',
+    border: `1px solid var(--input-border)`, borderRadius: 2, padding: '10px 12px',
     fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
   }
 
@@ -166,7 +173,7 @@ function PasswordChangeSheet({ onClose }: { onClose: () => void }) {
       )}
       <button
         onClick={save} disabled={saving}
-        style={{ width: '100%', marginTop: 16, padding: 14, background: saving ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: saving ? 'default' : 'pointer' }}
+        style={{ width: '100%', marginTop: 16, padding: 14, background: saving ? 'var(--accent-dim)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: saving ? 'default' : 'pointer' }}
       >
         {saving ? '変更中...' : '変更する'}
       </button>
@@ -221,8 +228,8 @@ function SpecialClosureSheet({ storeId, onClose }: { storeId: number; onClose: (
   }
 
   const inputStyle: React.CSSProperties = {
-    flex: 1, boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
-    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
+    flex: 1, boxSizing: 'border-box', background: 'var(--input-bg)',
+    border: `1px solid var(--input-border)`, borderRadius: 2, padding: '10px 12px',
     fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
   }
 
@@ -269,7 +276,7 @@ function SpecialClosureSheet({ storeId, onClose }: { storeId: number; onClose: (
       </div>
       <button
         onClick={add} disabled={adding || !newDate}
-        style={{ width: '100%', padding: 14, background: (!newDate || adding) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: (!newDate || adding) ? 'default' : 'pointer' }}
+        style={{ width: '100%', padding: 14, background: (!newDate || adding) ? 'var(--accent-dim)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: 'var(--on-accent)', cursor: (!newDate || adding) ? 'default' : 'pointer' }}
       >
         {adding ? '追加中...' : '追加する'}
       </button>
@@ -285,12 +292,6 @@ const OrbitSVG = ({ size = 10 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 80 80" fill="none" style={{ flexShrink: 0 }}>
     <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)"  stroke={gold} strokeWidth="6" opacity="0.9"/>
     <ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke={gold} strokeWidth="6" opacity="0.5"/>
-  </svg>
-)
-const PosCardIcon = ({ color }: { color: string }) => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <rect x="1" y="3" width="12" height="9" rx="1.5" stroke={color} strokeWidth="1.1"/>
-    <path d="M4 3V2C4 1.4 4.4 1 5 1H9C9.6 1 10 1.4 10 2V3" stroke={color} strokeWidth="1.1"/>
   </svg>
 )
 const MenuListIcon = ({ color }: { color: string }) => (
@@ -399,23 +400,11 @@ function SettingRow({
   )
 }
 
-function SBadge({ type }: { type: 'connected' | 'warning' }) {
-  const s: Record<string, React.CSSProperties> = {
-    connected: { background: greenDim, color: green, border: '1px solid rgba(109,186,142,0.3)' },
-    warning:   { background: goldDim,  color: gold,  border: `1px solid ${goldBorder}` },
-  }
-  return (
-    <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1, ...s[type] }}>
-      {type === 'connected' ? '接続中' : '未接続'}
-    </div>
-  )
-}
-
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
     <div
       onClick={e => { e.stopPropagation(); onToggle() }}
-      style={{ width: 36, height: 20, borderRadius: 10, background: on ? green : 'rgba(232,228,220,0.15)', position: 'relative', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}
+      style={{ width: 36, height: 20, borderRadius: 10, background: on ? green : 'var(--border)', position: 'relative', cursor: 'pointer', flexShrink: 0, transition: 'background 0.2s' }}
     >
       <div style={{ position: 'absolute', top: 2, left: on ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: 'white', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}/>
     </div>
@@ -449,189 +438,6 @@ function SalonCard({ salonName }: { salonName: string }) {
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <polyline points="6,4 10,8 6,12" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
       </svg>
-    </div>
-  )
-}
-
-// ─── ディーラー締日編集モーダル ───────────────────────────────────────────────
-function DealerEditModal({
-  dealer,
-  onClose,
-  onSaved,
-}: {
-  dealer: Dealer
-  onClose: () => void
-  onSaved: () => void
-}) {
-  const [input,       setInput]       = useState(dealer.closing_day !== null ? String(dealer.closing_day) : '')
-  const [saving,      setSaving]      = useState(false)
-  const [confirmDel,  setConfirmDel]  = useState(false)
-  const dismiss = useBottomSheetDismiss()
-
-  async function saveClosingDay() {
-    const v = input.trim() === '' ? null : parseInt(input)
-    if (v !== null && (isNaN(v) || v < 1 || v > 28)) return
-    setSaving(true)
-    try {
-      const body = { name: dealer.name, contact_method: dealer.contact_method, contact_info: dealer.contact_info, status: dealer.status, closing_day: v }
-      const res = await api(`/api/v1/dealers/${dealer.id}`, { method: 'PATCH', body: JSON.stringify(body) })
-      if (!res.ok) throw new Error()
-      onSaved()
-      dismiss()
-    } catch {
-      window.alert('保存に失敗しました')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function deleteDealer() {
-    setSaving(true)
-    try {
-      const res = await api(`/api/v1/dealers/${dealer.id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error()
-      onSaved()
-      dismiss()
-    } catch {
-      window.alert('削除に失敗しました')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <BottomSheet onClose={onClose}>
-      <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 15, color: txt, marginBottom: 16 }}>{dealer.name}</div>
-
-      {/* 締日 */}
-      <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>締日（1〜28日、空欄で未設定）</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: 15, color: muted, fontFamily: zen }}>毎月</span>
-        <input
-          type="number" min="1" max="28"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="例: 20"
-          style={{ flex: 1, background: 'rgba(232,228,220,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '10px 12px', color: txt, fontSize: 16, fontFamily: josefin, fontWeight: 100, outline: 'none' }}
-        />
-        <span style={{ fontSize: 15, color: muted, fontFamily: zen }}>日</span>
-      </div>
-      <button
-        onClick={saveClosingDay} disabled={saving}
-        style={{ width: '100%', padding: 12, background: goldDim, border: `1px solid ${goldBorder}`, borderRadius: 2, fontFamily: zen, fontSize: 15, color: gold, cursor: 'pointer', marginBottom: 16 }}
-      >
-        {saving ? '保存中...' : '締日を保存する'}
-      </button>
-
-      {/* 削除（インライン確認） */}
-      <div style={{ borderTop: `1px solid ${border}`, paddingTop: 14 }}>
-        {confirmDel ? (
-          <>
-            <div style={{ fontSize: 14, color: muted, fontFamily: zen, marginBottom: 10, textAlign: 'center' as const }}>
-              本当に削除しますか？この操作は取り消せません。
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                onClick={() => setConfirmDel(false)}
-                style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}
-              >
-                やめる
-              </button>
-              <button
-                onClick={deleteDealer} disabled={saving}
-                style={{ flex: 2, padding: '11px 0', background: 'rgba(224,112,96,0.15)', border: '1px solid rgba(224,112,96,0.4)', borderRadius: 2, fontFamily: zen, fontSize: 14, color: alertColor, cursor: 'pointer' }}
-              >
-                {saving ? '削除中...' : '削除する'}
-              </button>
-            </div>
-          </>
-        ) : (
-          <button
-            onClick={() => setConfirmDel(true)}
-            style={{ width: '100%', padding: 12, background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}
-          >
-            このディーラーを削除する
-          </button>
-        )}
-      </div>
-
-      {!confirmDel && <SheetCancel />}
-    </BottomSheet>
-  )
-}
-
-// ─── ディーラー追加フォーム ────────────────────────────────────────────────────
-function DealerAddForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
-  const [name,       setName]       = useState('')
-  const [method,     setMethod]     = useState<'LINE' | 'email'>('LINE')
-  const [info,       setInfo]       = useState('')
-  const [closingDay, setClosingDay] = useState('')
-  const [saving,     setSaving]     = useState(false)
-  const canSave = name.trim() && info.trim()
-
-  async function save() {
-    if (!canSave) return
-    const cd = closingDay.trim() === '' ? null : parseInt(closingDay)
-    if (cd !== null && (isNaN(cd) || cd < 1 || cd > 28)) return
-    setSaving(true)
-    try {
-      const res = await api('/api/v1/dealers', {
-        method: 'POST',
-        body: JSON.stringify({ name: name.trim(), contact_method: method, contact_info: info.trim(), closing_day: cd }),
-      })
-      if (!res.ok) throw new Error()
-      onDone()
-    } catch {
-      window.alert('保存に失敗しました')
-      setSaving(false)
-    }
-  }
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
-    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
-    fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
-  }
-
-  return (
-    <div style={{ padding: '14px 16px', borderTop: `1px solid ${border}`, background: 'rgba(232,228,220,0.02)' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-        <input placeholder="ディーラー名" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
-        <div style={{ display: 'flex', gap: 6 }}>
-          {(['LINE', 'email'] as const).map(m => (
-            <button key={m} onClick={() => setMethod(m)} style={{
-              flex: 1, padding: '8px 0', borderRadius: 2, cursor: 'pointer',
-              fontFamily: josefin, fontWeight: 100, fontSize: 13, letterSpacing: '0.1em',
-              border: `1px solid ${method === m ? goldBorder : border}`,
-              background: method === m ? goldDim : 'transparent',
-              color: method === m ? gold : muted,
-            }}>
-              {m === 'LINE' ? 'LINE' : 'メール'}
-            </button>
-          ))}
-        </div>
-        <input
-          placeholder={method === 'LINE' ? '@account_id' : 'order@example.com'}
-          value={info} onChange={e => setInfo(e.target.value)}
-          style={inputStyle}
-        />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 14, color: muted, fontFamily: zen, whiteSpace: 'nowrap' as const }}>締日（任意）</span>
-          <input
-            type="number" min="1" max="28"
-            placeholder="例: 20"
-            value={closingDay} onChange={e => setClosingDay(e.target.value)}
-            style={{ ...inputStyle, width: 80, flexShrink: 0 }}
-          />
-          <span style={{ fontSize: 14, color: muted, fontFamily: zen }}>日</span>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={onCancel} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}>キャンセル</button>
-        <button onClick={save} disabled={saving || !canSave} style={{ flex: 2, padding: '10px 0', background: (!canSave || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 14, color: 'var(--on-accent)', cursor: canSave && !saving ? 'pointer' : 'default' }}>
-          {saving ? '保存中...' : '追加する'}
-        </button>
-      </div>
     </div>
   )
 }
@@ -816,7 +622,7 @@ function StaffDetail({
               min="0"
               value={shimeiInput}
               onChange={e => setShimeiInput(e.target.value)}
-              style={{ flex: 1, background: 'rgba(232,228,220,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '10px 12px', color: txt, fontSize: 16, fontFamily: josefin, fontWeight: 100, outline: 'none' }}
+              style={{ flex: 1, background: 'var(--surface-2)', border: `1px solid ${goldBorder}`, borderRadius: 2, padding: '10px 12px', color: txt, fontSize: 16, fontFamily: josefin, fontWeight: 100, outline: 'none' }}
             />
           </div>
           <button
@@ -967,22 +773,26 @@ function ProfileSettings({ onBack }: { onBack: () => void }) {
       <div style={{ margin: '0 16px', background: 'var(--surface)', borderRadius: 8, padding: '14px 16px' }}>
         <div style={{ fontSize: 11, color: muted, fontFamily: zen, marginBottom: 12 }}>アプリの表示テーマを選択してください</div>
         <div style={{ display: 'flex', gap: 8 }}>
-          {(['dark', 'light', 'pop'] as Theme[]).map(t => (
-            <button
-              key={t}
-              onClick={() => setTheme(t)}
-              style={{
-                flex: 1, padding: '10px 4px', border: `1px solid ${theme === t ? gold : border}`,
-                borderRadius: 6, background: theme === t ? goldDim : 'transparent',
-                cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-              }}
-            >
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: t === 'dark' ? '#1a1816' : t === 'light' ? '#f7f3ee' : '#ffffff', border: '1px solid rgba(128,128,128,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: t === 'dark' ? '#c8a882' : t === 'light' ? '#9b7c5a' : '#f06292' }} />
-              </div>
-              <span style={{ fontSize: 10, fontFamily: josefin, letterSpacing: '0.08em', color: theme === t ? gold : muted }}>{THEME_LABELS[t]}</span>
-            </button>
-          ))}
+          {(['sand', 'peach', 'dark'] as Theme[]).map(t => {
+            const swatchBg = t === 'sand' ? '#f5f1ea' : t === 'peach' ? '#fff5ec' : '#1a1816'
+            const swatchAccent = t === 'sand' ? '#b8945a' : t === 'peach' ? '#e89a5f' : '#c8a882'
+            return (
+              <button
+                key={t}
+                onClick={() => setTheme(t)}
+                style={{
+                  flex: 1, padding: '10px 4px', border: `1px solid ${theme === t ? gold : border}`,
+                  borderRadius: 6, background: theme === t ? goldDim : 'transparent',
+                  cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                }}
+              >
+                <div style={{ width: 24, height: 24, borderRadius: '50%', background: swatchBg, border: '1px solid rgba(128,128,128,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: swatchAccent }} />
+                </div>
+                <span style={{ fontSize: 10, fontFamily: josefin, letterSpacing: '0.08em', color: theme === t ? gold : muted }}>{THEME_LABELS[t]}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -1057,8 +867,8 @@ function HoursSettings({ onBack }: { onBack: () => void }) {
 
   const inputStyle: React.CSSProperties = {
     display: 'block', width: '100%', maxWidth: '100%', boxSizing: 'border-box',
-    background: 'rgba(232,228,220,0.04)',
-    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
+    background: 'var(--input-bg)',
+    border: `1px solid var(--input-border)`, borderRadius: 2, padding: '10px 12px',
     fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
   }
 
@@ -1107,7 +917,7 @@ function HoursSettings({ onBack }: { onBack: () => void }) {
 
           <button
             onClick={save} disabled={saving}
-            style={{ width: '100%', padding: 14, background: saved ? greenDim : saving ? 'rgba(200,168,130,0.4)' : gold, border: saved ? '1px solid rgba(109,186,142,0.3)' : 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: saved ? green : '#1a1816', cursor: saving ? 'default' : 'pointer' }}
+            style={{ width: '100%', padding: 14, background: saved ? greenDim : saving ? 'var(--accent-dim)' : gold, border: saved ? '1px solid rgba(109,186,142,0.3)' : 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: saved ? green : 'var(--on-accent)', cursor: saving ? 'default' : 'pointer' }}
           >
             {saving ? '保存中...' : saved ? '保存しました ✓' : '保存する'}
           </button>
@@ -1179,131 +989,71 @@ function StaffListSettings({
   )
 }
 
-type PosType = 'none' | 'smaregi' | 'square'
-const POS_LABEL: Record<PosType, string> = { none: '未設定', smaregi: 'スマレジ', square: 'Square' }
+function VoiceQrSheet({ url, storeName, onClose }: { url: string; storeName: string; onClose: () => void }) {
+  const [dataUrl, setDataUrl] = useState<string>('')
+  const [sharing, setSharing] = useState(false)
+  useEffect(() => {
+    import('qrcode').then(QRCode => {
+      QRCode.toDataURL(url, { width: 640, margin: 2, color: { dark: '#1a1816', light: '#ffffff' } })
+        .then(setDataUrl)
+        .catch(() => setDataUrl(''))
+    })
+  }, [url])
 
-// ─── Square設定フォーム ───────────────────────────────────────────────────────
-function SquareSettings({ inputStyle }: { inputStyle: React.CSSProperties }) {
-  const [locationId, setLocationId] = useState('')
-  const [token,      setToken]      = useState('')
-  const [showToken,  setShowToken]  = useState(false)
+  async function share() {
+    if (!dataUrl) return
+    setSharing(true)
+    try {
+      const blob = await (await fetch(dataUrl)).blob()
+      const file = new File([blob], `voice-qr-${storeName}.png`, { type: 'image/png' })
+      if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: `VOICE QR - ${storeName}` })
+      } else {
+        // fallback: 通常ダウンロード
+        const a = document.createElement('a')
+        a.href = dataUrl
+        a.download = file.name
+        document.body.appendChild(a); a.click(); a.remove()
+      }
+    } catch { /* user cancelled */ }
+    finally { setSharing(false) }
+  }
 
   return (
-    <SettingGroup>
-      <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
-        <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>Location ID</div>
-        <input
-          type="text" value={locationId} onChange={e => setLocationId(e.target.value)}
-          placeholder="例: LXXXXXXXXXXXXXXXXX"
-          style={inputStyle}
-        />
-      </div>
-      <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>Access Token</div>
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg)', border: `1px solid ${border}`, borderRadius: 8,
+        padding: '20px 20px 24px', maxWidth: 360, width: '100%',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+      }}>
+        <div style={{ fontSize: 13, color: muted, fontFamily: zen, textAlign: 'center' }}>{storeName}</div>
+        {dataUrl
+          ? <img src={dataUrl} alt="QR" style={{ width: 240, height: 240, background: '#fff', borderRadius: 4 }} />
+          : <div style={{ width: 240, height: 240, background: 'var(--surface)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', fontSize: 11, color: muted }}>Generating…</div>
+        }
+        <div style={{ fontFamily: 'monospace', fontSize: 10, color: muted, wordBreak: 'break-all', textAlign: 'center', lineHeight: 1.5 }}>{url}</div>
+        <div style={{ fontSize: 11, color: muted, fontFamily: zen, textAlign: 'center', lineHeight: 1.7 }}>
+          画像を長押しでも保存できます
+        </div>
+        <div style={{ display: 'flex', gap: 8, width: '100%' }}>
           <button
-            onClick={() => setShowToken(v => !v)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: muted, fontFamily: josefin, letterSpacing: '0.1em' }}
-          >
-            {showToken ? '隠す' : '表示'}
-          </button>
-        </div>
-        <input
-          type={showToken ? 'text' : 'password'}
-          value={token} onChange={e => setToken(e.target.value)}
-          placeholder="EAAAxxxxxxxxxxxxxxxxxxxxxxxxx"
-          style={inputStyle}
-        />
-      </div>
-      <div style={{ padding: '12px 16px' }}>
-        <div style={{ fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
-          Square DeveloperダッシュボードからAccess TokenとLocation IDを発行・確認できます。
+            onClick={onClose}
+            style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 4, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}
+          >閉じる</button>
+          <button
+            onClick={share}
+            disabled={!dataUrl || sharing}
+            style={{ flex: 2, padding: '11px 0', background: gold, border: 'none', borderRadius: 4, fontFamily: zen, fontSize: 14, color: 'var(--on-accent)', cursor: dataUrl && !sharing ? 'pointer' : 'default', opacity: dataUrl && !sharing ? 1 : 0.5 }}
+          >{sharing ? '準備中…' : '保存 / 共有'}</button>
         </div>
       </div>
-    </SettingGroup>
-  )
-}
-
-// ─── POS店舗別設定画面 ─────────────────────────────────────────────────────────
-function PosStoreSettings({ store, onBack }: { store: Store; onBack: () => void }) {
-  const [posType, setPosType] = useState<PosType>('none')
-  const [storeId, setStoreId] = useState('')
-  const [saved,   setSaved]   = useState(false)
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%', boxSizing: 'border-box', background: 'rgba(232,228,220,0.04)',
-    border: `1px solid rgba(232,228,220,0.12)`, borderRadius: 2, padding: '10px 12px',
-    fontSize: 16, color: txt, fontFamily: zen, outline: 'none',
-  }
-
-  function save() {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
-  }
-
-  return (
-    <div>
-      <BackHeader title={store.name} onBack={onBack} />
-
-      <GroupLabel>接続するPOSシステム</GroupLabel>
-      <SettingGroup>
-        {(['none', 'smaregi', 'square'] as PosType[]).map((t, i, arr) => (
-          <div
-            key={t}
-            onClick={() => setPosType(t)}
-            style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: i < arr.length - 1 ? `1px solid ${border}` : 'none', cursor: 'pointer' }}
-          >
-            <div style={{ flex: 1, fontSize: 15, color: posType === t ? gold : txt, fontFamily: zen }}>{POS_LABEL[t]}</div>
-            {posType === t && (
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <polyline points="2.5,7 5.5,10.5 11.5,3.5" stroke={gold} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-          </div>
-        ))}
-      </SettingGroup>
-
-      {posType === 'smaregi' && (
-        <>
-          <GroupLabel>スマレジ設定</GroupLabel>
-          <SettingGroup>
-            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}` }}>
-              <div style={{ fontSize: 13, color: muted, fontFamily: zen, marginBottom: 8 }}>Store ID</div>
-              <input
-                type="text" inputMode="numeric" value={storeId} onChange={e => setStoreId(e.target.value)}
-                placeholder="例: 00123"
-                style={inputStyle}
-              />
-            </div>
-            <div style={{ padding: '12px 16px' }}>
-              <div style={{ fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
-                スマレジのStore IDはスマレジ管理画面の「設定 → 店舗」から確認できます。
-              </div>
-            </div>
-          </SettingGroup>
-        </>
-      )}
-
-      {posType === 'square' && (
-        <>
-          <GroupLabel>Square設定</GroupLabel>
-          <SquareSettings inputStyle={inputStyle} />
-        </>
-      )}
-
-      {posType !== 'none' && (
-        <button
-          onClick={save}
-          style={{ width: '100%', padding: 14, background: saved ? greenDim : gold, border: saved ? '1px solid rgba(109,186,142,0.3)' : 'none', borderRadius: 2, fontFamily: zen, fontSize: 15, color: saved ? green : '#1a1816', cursor: 'pointer' }}
-        >
-          {saved ? '保存しました ✓' : '保存する'}
-        </button>
-      )}
     </div>
   )
 }
 
-// ─── 店舗管理サブページ ────────────────────────────────────────────────────────
 function StoreManagement({ storeList, onBack, onUpdated }: {
   storeList: Store[]
   onBack: () => void
@@ -1312,6 +1062,15 @@ function StoreManagement({ storeList, onBack, onUpdated }: {
   const [addName, setAddName] = useState('')
   const [adding, setAdding]   = useState(false)
   const [saving, setSaving]   = useState(false)
+  const [copiedId, setCopiedId] = useState<number | null>(null)
+  const [qrStore, setQrStore]   = useState<{ id: number; name: string } | null>(null)
+
+  function copy(url: string, id: number) {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(prev => prev === id ? null : prev), 1600)
+    })
+  }
 
   async function addStore() {
     if (!addName.trim()) return
@@ -1348,20 +1107,48 @@ function StoreManagement({ storeList, onBack, onUpdated }: {
       <BackHeader title="店舗管理" onBack={onBack} />
       <GroupLabel>店舗一覧 ({storeList.length}店舗)</GroupLabel>
       <SettingGroup>
-        {storeList.map((s, i) => (
-          <div key={s.id} style={{
-            padding: '14px 16px', display: 'flex', alignItems: 'center',
-            gap: 12, borderBottom: i < storeList.length - 1 ? `1px solid ${border}` : 'none',
-          }}>
-            <div style={{ flex: 1, fontSize: 15, color: txt, fontFamily: zen }}>{s.name}</div>
-            {storeList.length > 1 && (
-              <button
-                onClick={() => deleteStore(s.id, s.name)}
-                style={{ background: 'none', border: 'none', color: alertColor, fontSize: 12, fontFamily: zen, cursor: 'pointer', padding: '4px 8px' }}
-              >削除</button>
-            )}
-          </div>
-        ))}
+        {storeList.map((s, i) => {
+          const voiceUrl = `https://voice.cygnus.style/s/${s.id}`
+          return (
+            <div key={s.id} style={{
+              padding: '14px 16px',
+              borderBottom: i < storeList.length - 1 ? `1px solid ${border}` : 'none',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                <div style={{ flex: 1, fontSize: 15, color: txt, fontFamily: zen }}>{s.name}</div>
+                {storeList.length > 1 && (
+                  <button
+                    onClick={() => deleteStore(s.id, s.name)}
+                    style={{ background: 'none', border: 'none', color: alertColor, fontSize: 12, fontFamily: zen, cursor: 'pointer', padding: '4px 8px' }}
+                  >削除</button>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: inputBg, border: `1px solid ${border}`, borderRadius: 4, padding: '8px 10px' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: 11, color: muted, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{voiceUrl}</span>
+                <button
+                  onClick={() => copy(voiceUrl, s.id)}
+                  style={{
+                    background: copiedId === s.id ? green : 'none',
+                    border: `1px solid ${copiedId === s.id ? green : gold}`,
+                    borderRadius: 3, padding: '3px 10px',
+                    fontFamily: 'sans-serif', fontSize: 11, letterSpacing: '0.1em',
+                    color: copiedId === s.id ? 'var(--on-accent)' : gold,
+                    cursor: 'pointer', transition: 'all 0.15s',
+                    minWidth: copiedId === s.id ? 72 : 50,
+                  }}
+                >{copiedId === s.id ? 'COPIED ✓' : 'COPY'}</button>
+                <button
+                  onClick={() => setQrStore({ id: s.id, name: s.name })}
+                  style={{
+                    background: 'none', border: `1px solid ${gold}`, borderRadius: 3,
+                    padding: '3px 10px', fontFamily: 'sans-serif', fontSize: 11, letterSpacing: '0.1em',
+                    color: gold, cursor: 'pointer',
+                  }}
+                >QR</button>
+              </div>
+            </div>
+          )
+        })}
         {adding ? (
           <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <input
@@ -1374,7 +1161,7 @@ function StoreManagement({ storeList, onBack, onUpdated }: {
             />
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { setAdding(false); setAddName('') }} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${border}`, borderRadius: 2, fontFamily: zen, fontSize: 14, color: muted, cursor: 'pointer' }}>キャンセル</button>
-              <button onClick={addStore} disabled={saving || !addName.trim()} style={{ flex: 2, padding: '10px 0', background: (!addName.trim() || saving) ? 'rgba(200,168,130,0.4)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 14, color: 'var(--on-accent)', cursor: addName.trim() && !saving ? 'pointer' : 'default' }}>
+              <button onClick={addStore} disabled={saving || !addName.trim()} style={{ flex: 2, padding: '10px 0', background: (!addName.trim() || saving) ? 'var(--accent-dim)' : gold, border: 'none', borderRadius: 2, fontFamily: zen, fontSize: 14, color: 'var(--on-accent)', cursor: addName.trim() && !saving ? 'pointer' : 'default' }}>
                 {saving ? '追加中...' : '追加する'}
               </button>
             </div>
@@ -1389,48 +1176,13 @@ function StoreManagement({ storeList, onBack, onUpdated }: {
           </div>
         )}
       </SettingGroup>
-    </div>
-  )
-}
-
-// ─── POS連携サブページ（店舗一覧） ────────────────────────────────────────────
-function PosSettings({
-  storeList,
-  onBack,
-}: {
-  storeList: Store[]
-  onBack: () => void
-}) {
-  const [selectedStore, setSelectedStore] = useState<Store | null>(null)
-
-  if (selectedStore) {
-    return <PosStoreSettings store={selectedStore} onBack={() => setSelectedStore(null)} />
-  }
-
-  return (
-    <div>
-      <BackHeader title="POS連携" onBack={onBack} />
-      <div style={{ padding: '10px 14px', background: 'rgba(200,168,130,0.06)', border: `1px solid ${goldBorder}`, borderRadius: 2, marginBottom: 20, fontSize: 13, color: muted, fontFamily: zen, lineHeight: 1.8 }}>
-        店舗ごとにPOSシステムとの連携を設定できます。
-      </div>
-      <GroupLabel>店舗を選択</GroupLabel>
-      <SettingGroup>
-        {storeList.length === 0 ? (
-          <div style={{ padding: '20px 16px', textAlign: 'center', color: muted, fontSize: 14, fontFamily: zen }}>店舗が登録されていません</div>
-        ) : (
-          storeList.map((store, i) => (
-            <SettingRow
-              key={store.id}
-              icon={<PosCardIcon color="rgba(232,228,220,0.3)" />} iconBg="gray"
-              label={store.name}
-              value="未接続"
-              badge={<SBadge type="warning" />}
-              onClick={() => setSelectedStore(store)}
-              last={i === storeList.length - 1}
-            />
-          ))
-        )}
-      </SettingGroup>
+      {qrStore && (
+        <VoiceQrSheet
+          url={`https://voice.cygnus.style/s/${qrStore.id}`}
+          storeName={qrStore.name}
+          onClose={() => setQrStore(null)}
+        />
+      )}
     </div>
   )
 }
@@ -1440,9 +1192,7 @@ export default function SettingsPage() {
   const claims   = getClaims()
   const navigate = useNavigate()
   const [sub,            setSub]            = useState<SubPage>(null)
-  const [dealers,        setDealers]        = useState<Dealer[]>([])
-  const [addOpen,        setAddOpen]        = useState(false)
-  const [notif,          setNotif]          = useState({ stock: true, daily: false })
+  const [notif,          setNotif]          = useState({ daily: false })
   const [hours,          setHours]          = useState<BusinessHours | null>(null)
   const [staffList,      setStaffList]      = useState<Staff[]>([])
   const [storeList,      setStoreList]      = useState<Store[]>([])
@@ -1452,14 +1202,7 @@ export default function SettingsPage() {
   const [retailCount,    setRetailCount]    = useState(0)
   const [selectedStaff,       setSelectedStaff]       = useState<Staff | null>(null)
   const [salonShimeiCharge,   setSalonShimeiCharge]   = useState(1100)
-  const [closingEditDealer,   setClosingEditDealer]   = useState<Dealer | null>(null)
   const [showClosureSheet,    setShowClosureSheet]    = useState(false)
-
-  function loadDealers() {
-    apiFetch<Dealer[]>('/api/v1/dealers')
-      .then(d => setDealers(Array.isArray(d) ? d : []))
-      .catch(() => {})
-  }
 
   function loadStores() {
     apiFetch<Store[]>('/api/v1/stores')
@@ -1482,7 +1225,6 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    loadDealers()
     apiFetch<{ shimei_charge: number }>('/api/v1/settings')
       .then(d => { if (d?.shimei_charge !== undefined) setSalonShimeiCharge(d.shimei_charge) })
       .catch(() => {})
@@ -1558,13 +1300,6 @@ export default function SettingsPage() {
       </div>
     )
   }
-  if (sub === 'pos') {
-    return (
-      <div style={{ padding: '14px 20px 80px' }}>
-        <PosSettings storeList={storeList} onBack={() => setSub(null)} />
-      </div>
-    )
-  }
   if (sub === 'stores') {
     return (
       <div style={{ padding: '14px 20px 80px' }}>
@@ -1591,119 +1326,63 @@ export default function SettingsPage() {
         {/* サロンカード */}
         <SalonCard salonName={claims?.salon_name ?? '—'} />
 
-        {/* サロン管理 */}
-        <GroupLabel>サロン管理</GroupLabel>
-        <SettingGroup>
-          <SettingRow
-            icon={<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="4" width="10" height="8" rx="1" stroke={gold} strokeWidth="1.1"/><path d="M5 4V3C5 2.4 5.4 2 6 2H8C8.6 2 9 2.4 9 3V4" stroke={gold} strokeWidth="1.1"/><line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1" strokeDasharray="2 1.5"/></svg>} iconBg="gold"
-            label="店舗管理"
-            value={storeList.length > 0 ? `${storeList.length}店舗` : '店舗未登録'}
-            onClick={() => setSub('stores')}
-          />
-          <SettingRow
-            icon={<PersonIcon color={gold} />} iconBg="gold"
-            label="スタッフ一覧・招待"
-            value={staffList.length > 0 ? `${staffList.length}名` : '—'}
-            onClick={() => setSub('staff-list')}
-            last
-          />
-        </SettingGroup>
+        {/* サロン管理・メニュー管理・営業時間は owner/admin のみ表示 */}
+        {(claims?.role === 'owner' || claims?.role === 'admin') && (
+          <>
+            <GroupLabel>サロン管理</GroupLabel>
+            <SettingGroup>
+              <SettingRow
+                icon={<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="4" width="10" height="8" rx="1" stroke={gold} strokeWidth="1.1"/><path d="M5 4V3C5 2.4 5.4 2 6 2H8C8.6 2 9 2.4 9 3V4" stroke={gold} strokeWidth="1.1"/><line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1" strokeDasharray="2 1.5"/></svg>} iconBg="gold"
+                label="店舗管理"
+                value={storeList.length > 0 ? `${storeList.length}店舗` : '店舗未登録'}
+                onClick={() => setSub('stores')}
+              />
+              <SettingRow
+                icon={<PersonIcon color={gold} />} iconBg="gold"
+                label="スタッフ一覧・招待"
+                value={staffList.length > 0 ? `${staffList.length}名` : '—'}
+                onClick={() => setSub('staff-list')}
+                last
+              />
+            </SettingGroup>
 
-        {/* メニュー管理 */}
-        <GroupLabel>メニュー管理</GroupLabel>
-        <SettingGroup>
-          <SettingRow
-            icon={<MenuListIcon color={gold} />} iconBg="gold"
-            label="メニュー一覧・編集"
-            value={`施術 ${treatmentCount}件 · 物販 ${retailCount}件`}
-            onClick={() => navigate('/menus')}
-            last
-          />
-        </SettingGroup>
+            <GroupLabel>メニュー管理</GroupLabel>
+            <SettingGroup>
+              <SettingRow
+                icon={<MenuListIcon color={gold} />} iconBg="gold"
+                label="メニュー一覧・編集"
+                value={`施術 ${treatmentCount}件 · 物販 ${retailCount}件`}
+                onClick={() => navigate('/menus')}
+                last
+              />
+            </SettingGroup>
 
-        {/* POS連携 */}
-        <GroupLabel>POS連携</GroupLabel>
-        <SettingGroup>
-          <SettingRow
-            icon={<PosCardIcon color="rgba(232,228,220,0.3)" />} iconBg="gray"
-            label="POS連携設定"
-            value={storeList.length > 0 ? `${storeList.length}店舗` : '店舗未登録'}
-            onClick={() => setSub('pos')}
-            last
-          />
-        </SettingGroup>
+            <GroupLabel>通知設定</GroupLabel>
+            <SettingGroup>
+              <SettingRow
+                icon={<MailIcon color={purple} />} iconBg="purple"
+                label="日次レポート"
+                action={<Toggle on={notif.daily} onToggle={() => setNotif(n => ({ ...n, daily: !n.daily }))} />}
+                last
+              />
+            </SettingGroup>
 
-        {/* ディーラー登録 */}
-        <GroupLabel>ディーラー登録</GroupLabel>
-        <SettingGroup>
-          {dealers.map((d, i) => (
-            <div
-              key={d.id}
-              onClick={() => setClosingEditDealer(d)}
-              style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${border}`, cursor: 'pointer' }}
-            >
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 14, color: muted, minWidth: 16, textAlign: 'center' }}>{i + 1}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 400, color: txt, fontFamily: zen, marginBottom: 2 }}>{d.name}</div>
-                <div style={{ fontSize: 13, color: muted, fontFamily: zen }}>
-                  {d.contact_method === 'LINE' ? 'LINE' : 'メール'} · {d.contact_info}
-                </div>
-                <div style={{ fontSize: 12, color: d.closing_day !== null ? gold : muted, fontFamily: josefin, fontWeight: 100, marginTop: 2 }}>
-                  {d.closing_day !== null ? `締日: 毎月${d.closing_day}日` : '締日: 未設定'}
-                </div>
-              </div>
-              <div style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' as const, padding: '2px 8px', borderRadius: 1, background: greenDim, color: green, border: '1px solid rgba(109,186,142,0.3)' }}>
-                有効
-              </div>
-            </div>
-          ))}
-          {addOpen ? (
-            <DealerAddForm
-              onDone={() => { loadDealers(); setAddOpen(false) }}
-              onCancel={() => setAddOpen(false)}
-            />
-          ) : (
-            <div onClick={() => setAddOpen(true)} style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <line x1="7" y1="2" x2="7" y2="12" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="2" y1="7" x2="12" y2="7" stroke={gold} strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              <div style={{ fontSize: 15, color: gold, fontFamily: zen }}>ディーラーを追加</div>
-            </div>
-          )}
-        </SettingGroup>
-
-        {/* 通知設定 */}
-        <GroupLabel>通知設定</GroupLabel>
-        <SettingGroup>
-          <SettingRow
-            icon={<BellIcon color={purple} />} iconBg="purple"
-            label="在庫アラート通知"
-            action={<Toggle on={notif.stock} onToggle={() => setNotif(n => ({ ...n, stock: !n.stock }))} />}
-          />
-          <SettingRow
-            icon={<MailIcon color={purple} />} iconBg="purple"
-            label="日次レポート"
-            action={<Toggle on={notif.daily} onToggle={() => setNotif(n => ({ ...n, daily: !n.daily }))} />}
-            last
-          />
-        </SettingGroup>
-
-        {/* 営業時間・休業日 */}
-        <GroupLabel>営業時間・休業日</GroupLabel>
-        <SettingGroup>
-          <SettingRow
-            icon={<ClockIcon color={gold} />} iconBg="gold"
-            label="営業時間・定休日" value={hoursLabel}
-            onClick={() => setSub('hours')}
-          />
-          <SettingRow
-            icon={<CalPlusIcon color={gold} />} iconBg="gold"
-            label="臨時休業日の追加" value="年末年始・GW等を登録"
-            onClick={() => setShowClosureSheet(true)}
-            last
-          />
-        </SettingGroup>
+            <GroupLabel>営業時間・休業日</GroupLabel>
+            <SettingGroup>
+              <SettingRow
+                icon={<ClockIcon color={gold} />} iconBg="gold"
+                label="営業時間・定休日" value={hoursLabel}
+                onClick={() => setSub('hours')}
+              />
+              <SettingRow
+                icon={<CalPlusIcon color={gold} />} iconBg="gold"
+                label="臨時休業日の追加" value="年末年始・GW等を登録"
+                onClick={() => setShowClosureSheet(true)}
+                last
+              />
+            </SettingGroup>
+          </>
+        )}
 
         {/* アカウント */}
         <GroupLabel>アカウント</GroupLabel>
@@ -1734,13 +1413,6 @@ export default function SettingsPage() {
       </div>
 
     {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
-    {closingEditDealer && (
-      <DealerEditModal
-        dealer={closingEditDealer}
-        onClose={() => setClosingEditDealer(null)}
-        onSaved={() => { loadDealers(); setClosingEditDealer(null) }}
-      />
-    )}
     {showClosureSheet && claims?.store_id && (
       <SpecialClosureSheet
         storeId={claims.store_id}

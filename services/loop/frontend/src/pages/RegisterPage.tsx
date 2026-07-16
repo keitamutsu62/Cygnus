@@ -66,7 +66,7 @@ export default function RegisterPage() {
       }
       const { token } = await res.json()
       localStorage.setItem('token', token)
-      navigate('/dashboard', { state: { registered: true } })
+      navigate('/insights', { state: { registered: true } })
     } catch {
       setError('通信エラーが発生しました')
     } finally {

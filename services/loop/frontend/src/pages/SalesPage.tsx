@@ -63,7 +63,6 @@ function fetchRange(period: Period) {
 
 // ── Bar data ─────────────────────────────────────────────────────────────
 const DAYS = ['月', '火', '水', '木', '金', '土', '日']
-const FUTURE_H = [80, 60, 45, 30, 20]
 
 type BarItem = { day: string; amount: number; label: string; isToday: boolean; isFuture: boolean; height: number }
 
@@ -81,11 +80,10 @@ function buildWeekBars(sales: DailySales[]): BarItem[] {
     return { day, amount, label: amount ? `¥${fmt(amount)}` : '—', isToday: dstr === wb.today, isFuture }
   })
 
-  const max = Math.max(...raw.filter(b => !b.isFuture).map(b => b.amount), 1)
-  let fi = 0
+  const max = Math.max(...raw.map(b => b.amount), 1)
   return raw.map(b => ({
     ...b,
-    height: b.isFuture ? FUTURE_H[fi++ % FUTURE_H.length] : Math.max(5, (b.amount / max) * 90),
+    height: b.amount === 0 ? 0 : Math.max(3, (b.amount / max) * 90),
   }))
 }
 
@@ -277,7 +275,7 @@ function MonthlyBarChart({ bars }: { bars: MonthBarItem[] }) {
       >
         {months.map((m, i) => {
           const isAct = i === activeIdx
-          const h = Math.max(5, Math.round(m.amount / max * 90))
+          const h = m.amount === 0 ? 0 : Math.max(3, Math.round(m.amount / max * 90))
           return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
               <div style={{ width: '100%', borderRadius: '2px 2px 0 0', background: isAct ? gold : goldDim, border: `1px solid ${isAct ? gold : goldBorder}`, height: `${h}%`, transition: 'background 0.15s' }}/>
