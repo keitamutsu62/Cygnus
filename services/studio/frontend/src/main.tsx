@@ -13,6 +13,7 @@ import HomePage from './pages/HomePage'
 import ArchivePage from './pages/ArchivePage'
 import TimelinePage from './pages/TimelinePage'
 import ProfilePage from './pages/ProfilePage'
+import PreviewPage from './pages/PreviewPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -20,6 +21,10 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route element={<AppLayout />}>
+          <Route path="/preview" element={<PreviewPage />} />
+          <Route path="/preview/:page" element={<PreviewPage />} />
+        </Route>
         <Route element={<AuthGuard />}>
           <Route element={<AppLayout />}>
             <Route path="/home" element={<HomePage />} />
