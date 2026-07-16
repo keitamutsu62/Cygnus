@@ -8,6 +8,7 @@ import StaffsPage from './pages/admin/StaffsPage'
 import ResponsesPage from './pages/admin/ResponsesPage'
 import SettingsPage from './pages/admin/SettingsPage'
 import StaffDetailPage from './pages/admin/StaffDetailPage'
+import PreviewPage from './pages/PreviewPage'
 
 export default function App() {
   return (
@@ -15,7 +16,11 @@ export default function App() {
       <Routes>
         <Route path="/" element={<SurveyPage />} />
         <Route path="/thanks" element={<ThankYouPage />} />
+        <Route path="/s/:storeId" element={<SurveyPage />} />
+        <Route path="/s/:storeId/thanks" element={<ThankYouPage />} />
         <Route path="/admin/login" element={<LoginPage />} />
+        <Route path="/preview/:section/*" element={<PreviewPage />} />
+        <Route path="/preview" element={<PreviewPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="staffs" element={<StaffsPage />} />

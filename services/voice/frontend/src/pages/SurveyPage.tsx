@@ -1,5 +1,7 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? 'https://api.cygnus.style'
 
 const josefin = "'Josefin Sans', sans-serif"
 const zen     = "'Zen Kaku Gothic New', sans-serif"
@@ -8,14 +10,10 @@ const border  = '#E4E0D8'
 const bg      = '#F8F7F4'
 const muted   = '#999'
 
-function loadStaffNames(): string[] {
-  try {
-    const stored = localStorage.getItem('cygnus_staffs')
-    if (stored) return JSON.parse(stored).map((s: { name: string }) => s.name)
-  } catch { /* ignore */ }
-  return ['田中 美咲', '佐藤 れな', '山本 あい', '鈴木 花']
-}
 const RATING_LABELS = ['', '残念でした', 'もう少し', '普通', '良かった', '最高でした']
+const SALON_NAME_KEY = 'cygnus_salon_name'
+
+type Item = { id: number; name: string }
 
 const OrbitSVG = () => (
   <svg width="16" height="16" viewBox="0 0 80 80" fill="none">
@@ -70,24 +68,43 @@ const QUESTIONS: { key: keyof Ratings; label: string; sub: string }[] = [
   { key: 'service', label: '接客・コミュニケーション', sub: 'スタッフの対応はいかがでしたか？' },
 ]
 
-const STORAGE_KEY = 'cygnus_salon_name'
-
-export default function SurveyPage() {
+export default function SurveyPage({ previewStoreId }: { previewStoreId?: string } = {}) {
   const navigate = useNavigate()
-  const [staff, setStaff] = useState('')
-  const salonName = localStorage.getItem(STORAGE_KEY) ?? ''
-  const staffNames = loadStaffNames()
+  const params = useParams<{ storeId: string }>()
+  const storeId = previewStoreId ?? params.storeId
+  const salonName = localStorage.getItem(SALON_NAME_KEY) ?? ''
+
+  const [staffs, setStaffs] = useState<Item[]>([])
+  const [menus,  setMenus]  = useState<Item[]>([])
+  const [loading, setLoading] = useState(!!storeId)
+
+  const [staffId, setStaffId] = useState<number | null>(null)
+  const [menuId,  setMenuId]  = useState<number | null>(null)
   const [ratings, setRatings] = useState<Ratings>({ overall: 0, finish: 0, service: 0 })
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
 
-  const filled = staff !== '' && ratings.overall > 0 && ratings.finish > 0 && ratings.service > 0
+  useEffect(() => {
+    if (!storeId) return
+    setLoading(true)
+    Promise.all([
+      fetch(`${API_BASE}/api/v1/public/stores/${storeId}/staffs`).then(r => r.ok ? r.json() : []),
+      fetch(`${API_BASE}/api/v1/public/stores/${storeId}/menus?type=treatment`).then(r => r.ok ? r.json() : []),
+    ]).then(([s, m]) => {
+      setStaffs(Array.isArray(s) ? s : [])
+      setMenus(Array.isArray(m) ? m : [])
+    }).catch(() => {})
+      .finally(() => setLoading(false))
+  }, [storeId])
+
+  const filled = staffId != null && menuId != null && ratings.overall > 0 && ratings.finish > 0 && ratings.service > 0
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const errs: string[] = []
-    if (!staff) errs.push('担当スタッフを選択してください')
+    if (staffId == null) errs.push('担当スタッフを選択してください')
+    if (menuId == null)  errs.push('施術内容を選択してください')
     if (ratings.overall === 0) errs.push('総合満足度を選択してください')
     if (ratings.finish === 0) errs.push('仕上がりを選択してください')
     if (ratings.service === 0) errs.push('接客・コミュニケーションを選択してください')
@@ -95,8 +112,58 @@ export default function SurveyPage() {
     setErrors([])
     setSubmitting(true)
     if (comment.trim()) sessionStorage.setItem('cygnus_review_draft', comment.trim())
-    await new Promise(r => setTimeout(r, 700))
-    navigate('/thanks')
+
+    try {
+      if (storeId) {
+        const res = await fetch(`${API_BASE}/api/v1/public/stores/${storeId}/reviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staff_id: staffId,
+            menu_id:  menuId,
+            rating_overall: ratings.overall,
+            rating_finish:  ratings.finish,
+            rating_service: ratings.service,
+            comment: comment.trim(),
+          }),
+        })
+        if (!res.ok) throw new Error(String(res.status))
+      } else {
+        await new Promise(r => setTimeout(r, 700))
+      }
+      navigate(storeId ? `/s/${storeId}/thanks` : '/thanks')
+    } catch {
+      setErrors(['送信に失敗しました。時間をおいて再度お試しください。'])
+      setSubmitting(false)
+    }
+  }
+
+  if (!storeId) {
+    return (
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <p style={{ fontFamily: zen, fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 1.8 }}>
+          サロンのQRコードから<br />アクセスしてください
+        </p>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 12, letterSpacing: '0.2em', color: muted }}>LOADING…</span>
+      </div>
+    )
+  }
+
+  if (staffs.length === 0 && menus.length === 0) {
+    return (
+      <div style={{ minHeight: '100dvh', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <p style={{ fontFamily: zen, fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 1.8 }}>
+          このサロンのフォームは<br />準備中です
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -131,26 +198,49 @@ export default function SurveyPage() {
             </div>
             <div style={{ background: '#fff', border: `1px solid ${border}`, borderRadius: 4, padding: '16px 16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {staffNames.map(s => (
-                  <button key={s} type="button" onClick={() => setStaff(s)} style={{
+                {staffs.map(s => (
+                  <button key={s.id} type="button" onClick={() => setStaffId(s.id)} style={{
                     padding: '12px 0',
-                    border: `1px solid ${staff === s ? '#1a1816' : border}`,
+                    border: `1px solid ${staffId === s.id ? '#1a1816' : border}`,
                     borderRadius: 4,
-                    background: staff === s ? '#1a1816' : '#FAFAF8',
-                    color: staff === s ? '#e8e4dc' : muted,
+                    background: staffId === s.id ? '#1a1816' : '#FAFAF8',
+                    color: staffId === s.id ? '#e8e4dc' : muted,
                     fontFamily: zen, fontWeight: 300, fontSize: 14,
                     cursor: 'pointer', transition: 'all 0.15s',
-                  }}>{s}</button>
+                  }}>{s.name}</button>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* 02-04 Star ratings */}
+          {/* 02 Menu */}
+          <div style={{ marginTop: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', color: gold }}>02</span>
+              <span style={{ fontFamily: josefin, fontWeight: 200, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: '#555' }}>施術内容</span>
+            </div>
+            <div style={{ background: '#fff', border: `1px solid ${border}`, borderRadius: 4, padding: '16px 16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {menus.map(m => (
+                  <button key={m.id} type="button" onClick={() => setMenuId(m.id)} style={{
+                    padding: '12px 6px',
+                    border: `1px solid ${menuId === m.id ? '#1a1816' : border}`,
+                    borderRadius: 4,
+                    background: menuId === m.id ? '#1a1816' : '#FAFAF8',
+                    color: menuId === m.id ? '#e8e4dc' : muted,
+                    fontFamily: zen, fontWeight: 300, fontSize: 13,
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}>{m.name}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 03-05 Star ratings */}
           {QUESTIONS.map((q, i) => (
             <div key={q.key} style={{ marginTop: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', color: gold }}>0{i + 2}</span>
+                <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', color: gold }}>0{i + 3}</span>
                 <span style={{ fontFamily: josefin, fontWeight: 200, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: '#555' }}>{q.label}</span>
               </div>
               <div style={{ background: '#fff', border: `1px solid ${border}`, borderRadius: 4, padding: '20px 16px' }}>
@@ -162,10 +252,10 @@ export default function SurveyPage() {
             </div>
           ))}
 
-          {/* 05 Comment */}
+          {/* 06 Comment */}
           <div style={{ marginTop: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', color: gold }}>05</span>
+              <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, letterSpacing: '0.2em', color: gold }}>06</span>
               <span style={{ fontFamily: josefin, fontWeight: 200, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: '#555' }}>Comment</span>
               <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, color: '#bbb', letterSpacing: '0.1em' }}>任意</span>
               <span style={{ fontFamily: josefin, fontWeight: 100, fontSize: 10, color: 'rgba(66,133,244,0.7)', letterSpacing: '0.08em', marginLeft: 4 }}>— Googleレビューにも使えます</span>
