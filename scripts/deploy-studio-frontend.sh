@@ -20,7 +20,10 @@ echo "✅ ビルド完了"
 echo ""
 
 echo "▶ [2/3] S3アップロード..."
-aws s3 sync services/studio/frontend/dist/ "s3://$STUDIO_S3/" --delete --region "$REGION"
+aws s3 sync services/studio/frontend/dist/ "s3://$STUDIO_S3/" --delete --region "$REGION" --exclude "index.html"
+# index.html だけは no-cache（PWA が古い HTML を掴んで新JS参照を取りこぼすのを防ぐ）
+aws s3 cp services/studio/frontend/dist/index.html "s3://$STUDIO_S3/index.html" \
+  --region "$REGION" --cache-control "no-cache, no-store, must-revalidate" --content-type "text/html"
 echo "✅ S3アップロード完了"
 echo ""
 

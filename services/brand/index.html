@@ -1368,7 +1368,7 @@
             <svg width="28" height="28" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#C6A47A" strokeWidth="5" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#C6A47A" strokeWidth="5" opacity="0.5"/></svg>
           </div>
           <div class="tool-card-name">LOOP</div>
-          <div class="tool-card-problem">在庫・売上・会計を<br>ひとつの画面で完結させる</div>
+          <div class="tool-card-problem">スタッフと店舗、両方の<br>成長を見える化する</div>
           <div class="tool-card-tap">タップして詳しく見る</div>
         </div>
       </div>
@@ -1380,19 +1380,19 @@
             <svg width="28" height="28" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#C6A47A" strokeWidth="5" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#C6A47A" strokeWidth="5" opacity="0.5"/></svg>
           </div>
           <div class="tool-card-name">STUDIO</div>
-          <div class="tool-card-problem">作品と実績を<br>自分の名前で積み上げる</div>
+          <div class="tool-card-problem">実績と作品を、<br>あなたの資産として残す</div>
           <div class="tool-card-tap">タップして詳しく見る</div>
         </div>
       </div>
 
-      <div class="tool-card tool-soon" data-tool="voice">
+      <div class="tool-card tool-live" data-tool="voice">
         <div class="tool-card-inner">
-          <div class="tool-soon-badge">COMING SOON</div>
+          <div class="tool-live-badge">LIVE</div>
           <div class="tool-card-icon">
-            <svg width="28" height="28" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#C6A47A" strokeWidth="5" opacity="0.4"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#C6A47A" strokeWidth="5" opacity="0.2"/></svg>
+            <svg width="28" height="28" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(18 40 40)" stroke="#C6A47A" strokeWidth="5" opacity="0.9"/><ellipse cx="40" cy="40" rx="28" ry="14" transform="rotate(-18 40 40)" stroke="#C6A47A" strokeWidth="5" opacity="0.5"/></svg>
           </div>
           <div class="tool-card-name">VOICE</div>
-          <div class="tool-card-problem">お客様の声を集めて<br>Googleにも広げる</div>
+          <div class="tool-card-problem">お客様の声を、<br>スタッフ育成の資材に変える</div>
           <div class="tool-card-tap">タップして詳しく見る</div>
         </div>
       </div>
@@ -1475,11 +1475,14 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 8px 40px 24px;
+  padding: 8px calc(50% - 110px) 24px;
   cursor: grab;
 }
 .tools-track::-webkit-scrollbar { display: none; }
 .tools-track:active { cursor: grabbing; }
+@media (min-width: 900px) {
+  .tools-track { padding: 8px 60px 24px; }
+}
 .tools-track-fade-l,
 .tools-track-fade-r {
   position: absolute;
@@ -1500,7 +1503,7 @@
 .tool-card {
   flex-shrink: 0;
   width: 220px;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
   border: 1px solid var(--line-gold);
   border-radius: 8px;
   background: var(--bg-elevate);
@@ -1660,8 +1663,6 @@
 }
 .tool-modal-screen {
   width: 100%;
-  aspect-ratio: 9/16;
-  max-height: 320px;
   background: var(--bg-deep);
   border: 1px solid var(--line-gold);
   border-radius: 12px;
@@ -1671,6 +1672,68 @@
   justify-content: center;
   overflow: hidden;
   position: relative;
+}
+.tool-modal-screen img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+}
+.tool-modal-screen:has(> .tool-modal-screen-placeholder) {
+  aspect-ratio: 9/16;
+  max-height: 320px;
+}
+.tool-modal-shots {
+  margin-bottom: 28px;
+}
+.tool-modal-shots-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 12px;
+}
+.tool-modal-shots-track::-webkit-scrollbar { display: none; }
+.tool-modal-shot {
+  flex: 0 0 78%;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tool-modal-shot-frame {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid var(--line-gold);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.tool-modal-shot-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.tool-modal-shot-label {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 200;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 2px 0;
+}
+.tool-modal-shots-hint {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 100;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+  text-align: center;
+  margin-top: 4px;
+  text-transform: uppercase;
 }
 .tool-modal-screen-placeholder {
   font-family: 'Josefin Sans', sans-serif;
@@ -1737,30 +1800,30 @@
   var TOOLS = {
     loop: {
       name: 'LOOP',
-      tagline: 'サロン経営を、もっとシンプルに。',
+      tagline: '育成のヒントが、毎日届く経営支援ツール。',
       badge: 'live',
-      problem: '在庫はExcel、売上はノート、会計はまた別のアプリ。\nバラバラなデータが、経営の判断を遅らせていた。',
-      solution: 'LOOPはサロン経営に必要なすべてを一画面に集約します。在庫管理・売上確認・メニュー設定・スタッフ管理まで、毎日の業務をひとつのツールで完結。',
-      link: 'https://loop.cygnus.style',
+      problem: '勘と経験に頼ったスタッフ育成には、限界がある。\n誰を・いつ・どう見るべきかを判断する材料が、日々の忙しさに埋もれていた。',
+      solution: 'LOOPは売上データとお客様の声を掛け合わせ、AIがスタッフ一人ひとりの強みと伸びしろを言語化します。店舗の傾向・スタッフの動向・口コミサマリを一画面で確認でき、育成と経営判断を支えます。',
+      link: 'https://loop-v2.cygnus.style',
       linkLabel: 'LOOPを試す'
     },
     studio: {
       name: 'STUDIO',
-      tagline: '作品は、あなた自身のものだから。',
+      tagline: 'あなたの技術と実績は、あなた自身の資産。',
       badge: 'live',
-      problem: '丹精込めて仕上げた作品がSNSに流れていく。\n積み上げてきた技術に、自分の名前がついていない。',
-      solution: 'STUDIOは美容師個人のポートフォリオプラットフォームです。作品・スキル・実績を自分のページに集約。サロンを移っても、独立しても、あなたの価値はここに残る。',
+      problem: 'サロンに勤めている間の努力が、キャリアとして個人に残らない。\n作品はSNSに流れ、数字はサロンの管理表に埋もれていた。',
+      solution: 'STUDIOは美容師個人の記録帳。LOOPで積み上げた売上・指名の実績、作品ポートフォリオ、日々の振り返りメモが、あなた自身の名前で蓄積されていきます。サロンを移っても、独立しても、Cygnus IDとして持ち歩ける。',
       link: 'https://studio.cygnus.style',
       linkLabel: 'STUDIOを見る'
     },
     voice: {
       name: 'VOICE',
-      tagline: '口コミを、サービスの力に変える。',
-      badge: 'soon',
-      problem: '良い施術をしても口コミが増えない。\nお客様の声が、改善やマーケティングに活かされていない。',
-      solution: 'VOICEはアンケート収集とGoogle口コミ誘導を一体化したツールです。施術後のQRコードひとつで顧客の声を集め、AIが改善ポイントを分析。良い評判が自然と広がる仕組みをつくります。',
-      link: null,
-      linkLabel: 'Coming Soon'
+      tagline: 'お客様の声が、スタッフ育成の資材になる。',
+      badge: 'live',
+      problem: '良い施術をしても、口コミが増えない。\n集まったお客様の声も、改善や育成に活かせない状態で終わっていた。',
+      solution: 'VOICEは店頭QRから収集したアンケートを、スタッフID紐付きのファーストパーティデータとしてLOOPに蓄積します。AIが定性データから強み・伸びしろを言語化し、育成の中核資材として活用可能。同時にGoogleレビュー投稿への導線も内蔵。',
+      link: 'https://voice.cygnus.style',
+      linkLabel: 'VOICEを見る'
     },
     reserve: {
       name: 'RESERVE',
@@ -1798,7 +1861,42 @@
   function openModal(toolKey) {
     var t = TOOLS[toolKey];
     if (!t) return;
-    var screenHtml = '<div class="tool-modal-screen"><span class="tool-modal-screen-placeholder">SCREENSHOT</span></div>';
+    var SCREENSHOTS = {
+      loop: [
+        { src: '/img/loop-insights.png', label: 'インサイト' },
+        { src: '/img/loop-sales.png',    label: '売上' },
+        { src: '/img/loop-reviews.png',  label: '口コミ' }
+      ],
+      studio: [
+        { src: '/img/studio-home.png',     label: 'HOME' },
+        { src: '/img/studio-archive.png',  label: 'ARCHIVE' },
+        { src: '/img/studio-timeline.png', label: 'TIMELINE' },
+        { src: '/img/studio-profile.png',  label: 'PROFILE' }
+      ],
+      voice: [
+        { src: '/img/voice-survey.png',              label: 'アンケート' },
+        { src: '/img/voice-thanks.png',              label: '送信完了' },
+        { src: '/img/voice-admin-dashboard.png',     label: 'ダッシュボード' },
+        { src: '/img/voice-admin-staffs.png',        label: 'スタッフ一覧' },
+        { src: '/img/voice-admin-staff-detail.png',  label: 'AI 分析' },
+        { src: '/img/voice-admin-responses.png',     label: '回答一覧' }
+      ]
+    };
+    var screenHtml;
+    if (SCREENSHOTS[toolKey]) {
+      var shots = SCREENSHOTS[toolKey].map(function(s) {
+        return '<div class="tool-modal-shot">' +
+          '<div class="tool-modal-shot-label">' + s.label + '</div>' +
+          '<div class="tool-modal-shot-frame"><img src="' + s.src + '" alt="' + t.name + ' - ' + s.label + '" /></div>' +
+          '</div>';
+      }).join('');
+      screenHtml = '<div class="tool-modal-shots">' +
+        '<div class="tool-modal-shots-track">' + shots + '</div>' +
+        (SCREENSHOTS[toolKey].length > 1 ? '<div class="tool-modal-shots-hint">スワイプで切り替え →</div>' : '') +
+        '</div>';
+    } else {
+      screenHtml = '<div class="tool-modal-screen"><span class="tool-modal-screen-placeholder">SCREENSHOT</span></div>';
+    }
     modalBody.innerHTML =
       '<div class="tool-modal-badge ' + t.badge + '">' + (t.badge === 'live' ? 'LIVE' : 'COMING SOON') + '</div>' +
       '<div class="tool-modal-name">' + t.name + '</div>' +
